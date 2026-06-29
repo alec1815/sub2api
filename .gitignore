@@ -133,8 +133,21 @@ docs/*
 !docs/ADMIN_PAYMENT_INTEGRATION_API.md
 !docs/legal/
 !docs/legal/*.md
+docs/troubleshooting/
 .serena/
 .codex/
 frontend/coverage/
 aicodex
 output/
+.codebuddy/
+
+# ===================
+# 分析/需求文档（暂不提交）
+# ===================
+need/
+docs/enterprise/
+
+# ===================
+# 分析输出留存
+# ===================
+vx/
