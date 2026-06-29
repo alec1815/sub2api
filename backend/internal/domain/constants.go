@@ -10,10 +10,22 @@ const (
 	StatusExpired  = "expired"
 )
 
-// Role constants
+// Role constants (platform layer — users.role)
 const (
-	RoleAdmin = "admin"
-	RoleUser  = "user"
+	RoleAdmin = "admin" // 平台管理员
+	RoleUser  = "user"  // 普通用户
+)
+
+// Enterprise role constants (enterprise layer — enterprise_members.role)
+// 详见 docs/enterprise/v1/02-核心设计决策.md 决策 2：两层角色体系
+const (
+	EnterpriseRoleAdmin  = "enterprise_admin"  // 企业管理员
+	EnterpriseRoleMember = "enterprise_member" // 企业普通成员
+)
+
+// Enterprise member statuses
+const (
+	MemberStatusUnbound = "unbound" // 成员已解绑
 )
 
 // Platform constants
