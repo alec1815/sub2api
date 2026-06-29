@@ -12,6 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Wei-Shaw/sub2api/ent/apikey"
+	"github.com/Wei-Shaw/sub2api/ent/apikeygroup"
+	"github.com/Wei-Shaw/sub2api/ent/enterprisemember"
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/usagelog"
 	"github.com/Wei-Shaw/sub2api/ent/user"
@@ -95,6 +97,48 @@ func (_c *APIKeyCreate) SetGroupID(v int64) *APIKeyCreate {
 func (_c *APIKeyCreate) SetNillableGroupID(v *int64) *APIKeyCreate {
 	if v != nil {
 		_c.SetGroupID(*v)
+	}
+	return _c
+}
+
+// SetAssignedTo sets the "assigned_to" field.
+func (_c *APIKeyCreate) SetAssignedTo(v int64) *APIKeyCreate {
+	_c.mutation.SetAssignedTo(v)
+	return _c
+}
+
+// SetNillableAssignedTo sets the "assigned_to" field if the given value is not nil.
+func (_c *APIKeyCreate) SetNillableAssignedTo(v *int64) *APIKeyCreate {
+	if v != nil {
+		_c.SetAssignedTo(*v)
+	}
+	return _c
+}
+
+// SetUsagePurpose sets the "usage_purpose" field.
+func (_c *APIKeyCreate) SetUsagePurpose(v string) *APIKeyCreate {
+	_c.mutation.SetUsagePurpose(v)
+	return _c
+}
+
+// SetNillableUsagePurpose sets the "usage_purpose" field if the given value is not nil.
+func (_c *APIKeyCreate) SetNillableUsagePurpose(v *string) *APIKeyCreate {
+	if v != nil {
+		_c.SetUsagePurpose(*v)
+	}
+	return _c
+}
+
+// SetBoundTool sets the "bound_tool" field.
+func (_c *APIKeyCreate) SetBoundTool(v string) *APIKeyCreate {
+	_c.mutation.SetBoundTool(v)
+	return _c
+}
+
+// SetNillableBoundTool sets the "bound_tool" field if the given value is not nil.
+func (_c *APIKeyCreate) SetNillableBoundTool(v *string) *APIKeyCreate {
+	if v != nil {
+		_c.SetBoundTool(*v)
 	}
 	return _c
 }
@@ -332,6 +376,55 @@ func (_c *APIKeyCreate) AddUsageLogs(v ...*UsageLog) *APIKeyCreate {
 	return _c.AddUsageLogIDs(ids...)
 }
 
+// SetAssignedMemberID sets the "assigned_member" edge to the EnterpriseMember entity by ID.
+func (_c *APIKeyCreate) SetAssignedMemberID(id int64) *APIKeyCreate {
+	_c.mutation.SetAssignedMemberID(id)
+	return _c
+}
+
+// SetNillableAssignedMemberID sets the "assigned_member" edge to the EnterpriseMember entity by ID if the given value is not nil.
+func (_c *APIKeyCreate) SetNillableAssignedMemberID(id *int64) *APIKeyCreate {
+	if id != nil {
+		_c = _c.SetAssignedMemberID(*id)
+	}
+	return _c
+}
+
+// SetAssignedMember sets the "assigned_member" edge to the EnterpriseMember entity.
+func (_c *APIKeyCreate) SetAssignedMember(v *EnterpriseMember) *APIKeyCreate {
+	return _c.SetAssignedMemberID(v.ID)
+}
+
+// AddKeyGroupIDs adds the "key_groups" edge to the Group entity by IDs.
+func (_c *APIKeyCreate) AddKeyGroupIDs(ids ...int64) *APIKeyCreate {
+	_c.mutation.AddKeyGroupIDs(ids...)
+	return _c
+}
+
+// AddKeyGroups adds the "key_groups" edges to the Group entity.
+func (_c *APIKeyCreate) AddKeyGroups(v ...*Group) *APIKeyCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddKeyGroupIDs(ids...)
+}
+
+// AddAPIKeyGroupIDs adds the "api_key_groups" edge to the APIKeyGroup entity by IDs.
+func (_c *APIKeyCreate) AddAPIKeyGroupIDs(ids ...int64) *APIKeyCreate {
+	_c.mutation.AddAPIKeyGroupIDs(ids...)
+	return _c
+}
+
+// AddAPIKeyGroups adds the "api_key_groups" edges to the APIKeyGroup entity.
+func (_c *APIKeyCreate) AddAPIKeyGroups(v ...*APIKeyGroup) *APIKeyCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAPIKeyGroupIDs(ids...)
+}
+
 // Mutation returns the APIKeyMutation object of the builder.
 func (_c *APIKeyCreate) Mutation() *APIKeyMutation {
 	return _c.mutation
@@ -382,6 +475,14 @@ func (_c *APIKeyCreate) defaults() error {
 		}
 		v := apikey.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := _c.mutation.UsagePurpose(); !ok {
+		v := apikey.DefaultUsagePurpose
+		_c.mutation.SetUsagePurpose(v)
+	}
+	if _, ok := _c.mutation.BoundTool(); !ok {
+		v := apikey.DefaultBoundTool
+		_c.mutation.SetBoundTool(v)
 	}
 	if _, ok := _c.mutation.Status(); !ok {
 		v := apikey.DefaultStatus
@@ -447,6 +548,22 @@ func (_c *APIKeyCreate) check() error {
 	if v, ok := _c.mutation.Name(); ok {
 		if err := apikey.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "APIKey.name": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.UsagePurpose(); !ok {
+		return &ValidationError{Name: "usage_purpose", err: errors.New(`ent: missing required field "APIKey.usage_purpose"`)}
+	}
+	if v, ok := _c.mutation.UsagePurpose(); ok {
+		if err := apikey.UsagePurposeValidator(v); err != nil {
+			return &ValidationError{Name: "usage_purpose", err: fmt.Errorf(`ent: validator failed for field "APIKey.usage_purpose": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.BoundTool(); !ok {
+		return &ValidationError{Name: "bound_tool", err: errors.New(`ent: missing required field "APIKey.bound_tool"`)}
+	}
+	if v, ok := _c.mutation.BoundTool(); ok {
+		if err := apikey.BoundToolValidator(v); err != nil {
+			return &ValidationError{Name: "bound_tool", err: fmt.Errorf(`ent: validator failed for field "APIKey.bound_tool": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Status(); !ok {
@@ -530,6 +647,14 @@ func (_c *APIKeyCreate) createSpec() (*APIKey, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(apikey.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := _c.mutation.UsagePurpose(); ok {
+		_spec.SetField(apikey.FieldUsagePurpose, field.TypeString, value)
+		_node.UsagePurpose = value
+	}
+	if value, ok := _c.mutation.BoundTool(); ok {
+		_spec.SetField(apikey.FieldBoundTool, field.TypeString, value)
+		_node.BoundTool = value
 	}
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(apikey.FieldStatus, field.TypeString, value)
@@ -638,6 +763,59 @@ func (_c *APIKeyCreate) createSpec() (*APIKey, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(usagelog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AssignedMemberIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   apikey.AssignedMemberTable,
+			Columns: []string{apikey.AssignedMemberColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprisemember.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.AssignedTo = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.KeyGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   apikey.KeyGroupsTable,
+			Columns: apikey.KeyGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &APIKeyGroupCreate{config: _c.config, mutation: newAPIKeyGroupMutation(_c.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.APIKeyGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   apikey.APIKeyGroupsTable,
+			Columns: []string{apikey.APIKeyGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikeygroup.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -778,6 +956,48 @@ func (u *APIKeyUpsert) UpdateGroupID() *APIKeyUpsert {
 // ClearGroupID clears the value of the "group_id" field.
 func (u *APIKeyUpsert) ClearGroupID() *APIKeyUpsert {
 	u.SetNull(apikey.FieldGroupID)
+	return u
+}
+
+// SetAssignedTo sets the "assigned_to" field.
+func (u *APIKeyUpsert) SetAssignedTo(v int64) *APIKeyUpsert {
+	u.Set(apikey.FieldAssignedTo, v)
+	return u
+}
+
+// UpdateAssignedTo sets the "assigned_to" field to the value that was provided on create.
+func (u *APIKeyUpsert) UpdateAssignedTo() *APIKeyUpsert {
+	u.SetExcluded(apikey.FieldAssignedTo)
+	return u
+}
+
+// ClearAssignedTo clears the value of the "assigned_to" field.
+func (u *APIKeyUpsert) ClearAssignedTo() *APIKeyUpsert {
+	u.SetNull(apikey.FieldAssignedTo)
+	return u
+}
+
+// SetUsagePurpose sets the "usage_purpose" field.
+func (u *APIKeyUpsert) SetUsagePurpose(v string) *APIKeyUpsert {
+	u.Set(apikey.FieldUsagePurpose, v)
+	return u
+}
+
+// UpdateUsagePurpose sets the "usage_purpose" field to the value that was provided on create.
+func (u *APIKeyUpsert) UpdateUsagePurpose() *APIKeyUpsert {
+	u.SetExcluded(apikey.FieldUsagePurpose)
+	return u
+}
+
+// SetBoundTool sets the "bound_tool" field.
+func (u *APIKeyUpsert) SetBoundTool(v string) *APIKeyUpsert {
+	u.Set(apikey.FieldBoundTool, v)
+	return u
+}
+
+// UpdateBoundTool sets the "bound_tool" field to the value that was provided on create.
+func (u *APIKeyUpsert) UpdateBoundTool() *APIKeyUpsert {
+	u.SetExcluded(apikey.FieldBoundTool)
 	return u
 }
 
@@ -1203,6 +1423,55 @@ func (u *APIKeyUpsertOne) UpdateGroupID() *APIKeyUpsertOne {
 func (u *APIKeyUpsertOne) ClearGroupID() *APIKeyUpsertOne {
 	return u.Update(func(s *APIKeyUpsert) {
 		s.ClearGroupID()
+	})
+}
+
+// SetAssignedTo sets the "assigned_to" field.
+func (u *APIKeyUpsertOne) SetAssignedTo(v int64) *APIKeyUpsertOne {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.SetAssignedTo(v)
+	})
+}
+
+// UpdateAssignedTo sets the "assigned_to" field to the value that was provided on create.
+func (u *APIKeyUpsertOne) UpdateAssignedTo() *APIKeyUpsertOne {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.UpdateAssignedTo()
+	})
+}
+
+// ClearAssignedTo clears the value of the "assigned_to" field.
+func (u *APIKeyUpsertOne) ClearAssignedTo() *APIKeyUpsertOne {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.ClearAssignedTo()
+	})
+}
+
+// SetUsagePurpose sets the "usage_purpose" field.
+func (u *APIKeyUpsertOne) SetUsagePurpose(v string) *APIKeyUpsertOne {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.SetUsagePurpose(v)
+	})
+}
+
+// UpdateUsagePurpose sets the "usage_purpose" field to the value that was provided on create.
+func (u *APIKeyUpsertOne) UpdateUsagePurpose() *APIKeyUpsertOne {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.UpdateUsagePurpose()
+	})
+}
+
+// SetBoundTool sets the "bound_tool" field.
+func (u *APIKeyUpsertOne) SetBoundTool(v string) *APIKeyUpsertOne {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.SetBoundTool(v)
+	})
+}
+
+// UpdateBoundTool sets the "bound_tool" field to the value that was provided on create.
+func (u *APIKeyUpsertOne) UpdateBoundTool() *APIKeyUpsertOne {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.UpdateBoundTool()
 	})
 }
 
@@ -1841,6 +2110,55 @@ func (u *APIKeyUpsertBulk) UpdateGroupID() *APIKeyUpsertBulk {
 func (u *APIKeyUpsertBulk) ClearGroupID() *APIKeyUpsertBulk {
 	return u.Update(func(s *APIKeyUpsert) {
 		s.ClearGroupID()
+	})
+}
+
+// SetAssignedTo sets the "assigned_to" field.
+func (u *APIKeyUpsertBulk) SetAssignedTo(v int64) *APIKeyUpsertBulk {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.SetAssignedTo(v)
+	})
+}
+
+// UpdateAssignedTo sets the "assigned_to" field to the value that was provided on create.
+func (u *APIKeyUpsertBulk) UpdateAssignedTo() *APIKeyUpsertBulk {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.UpdateAssignedTo()
+	})
+}
+
+// ClearAssignedTo clears the value of the "assigned_to" field.
+func (u *APIKeyUpsertBulk) ClearAssignedTo() *APIKeyUpsertBulk {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.ClearAssignedTo()
+	})
+}
+
+// SetUsagePurpose sets the "usage_purpose" field.
+func (u *APIKeyUpsertBulk) SetUsagePurpose(v string) *APIKeyUpsertBulk {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.SetUsagePurpose(v)
+	})
+}
+
+// UpdateUsagePurpose sets the "usage_purpose" field to the value that was provided on create.
+func (u *APIKeyUpsertBulk) UpdateUsagePurpose() *APIKeyUpsertBulk {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.UpdateUsagePurpose()
+	})
+}
+
+// SetBoundTool sets the "bound_tool" field.
+func (u *APIKeyUpsertBulk) SetBoundTool(v string) *APIKeyUpsertBulk {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.SetBoundTool(v)
+	})
+}
+
+// UpdateBoundTool sets the "bound_tool" field to the value that was provided on create.
+func (u *APIKeyUpsertBulk) UpdateBoundTool() *APIKeyUpsertBulk {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.UpdateBoundTool()
 	})
 }
 

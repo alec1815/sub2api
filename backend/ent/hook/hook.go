@@ -21,6 +21,18 @@ func (f APIKeyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.APIKeyMutation", m)
 }
 
+// The APIKeyGroupFunc type is an adapter to allow the use of ordinary
+// function as APIKeyGroup mutator.
+type APIKeyGroupFunc func(context.Context, *ent.APIKeyGroupMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f APIKeyGroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.APIKeyGroupMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.APIKeyGroupMutation", m)
+}
+
 // The AccountFunc type is an adapter to allow the use of ordinary
 // function as Account mutator.
 type AccountFunc func(context.Context, *ent.AccountMutation) (ent.Value, error)
@@ -139,6 +151,54 @@ func (f ChannelMonitorRequestTemplateFunc) Mutate(ctx context.Context, m ent.Mut
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelMonitorRequestTemplateMutation", m)
+}
+
+// The DepartmentFunc type is an adapter to allow the use of ordinary
+// function as Department mutator.
+type DepartmentFunc func(context.Context, *ent.DepartmentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DepartmentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DepartmentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DepartmentMutation", m)
+}
+
+// The EnterpriseFunc type is an adapter to allow the use of ordinary
+// function as Enterprise mutator.
+type EnterpriseFunc func(context.Context, *ent.EnterpriseMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EnterpriseFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EnterpriseMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EnterpriseMutation", m)
+}
+
+// The EnterpriseMemberFunc type is an adapter to allow the use of ordinary
+// function as EnterpriseMember mutator.
+type EnterpriseMemberFunc func(context.Context, *ent.EnterpriseMemberMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EnterpriseMemberFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EnterpriseMemberMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EnterpriseMemberMutation", m)
+}
+
+// The EnterpriseSubscriptionFunc type is an adapter to allow the use of ordinary
+// function as EnterpriseSubscription mutator.
+type EnterpriseSubscriptionFunc func(context.Context, *ent.EnterpriseSubscriptionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EnterpriseSubscriptionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EnterpriseSubscriptionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EnterpriseSubscriptionMutation", m)
 }
 
 // The ErrorPassthroughRuleFunc type is an adapter to allow the use of ordinary

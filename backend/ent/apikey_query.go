@@ -14,6 +14,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Wei-Shaw/sub2api/ent/apikey"
+	"github.com/Wei-Shaw/sub2api/ent/apikeygroup"
+	"github.com/Wei-Shaw/sub2api/ent/enterprisemember"
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/predicate"
 	"github.com/Wei-Shaw/sub2api/ent/usagelog"
@@ -23,14 +25,17 @@ import (
 // APIKeyQuery is the builder for querying APIKey entities.
 type APIKeyQuery struct {
 	config
-	ctx           *QueryContext
-	order         []apikey.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.APIKey
-	withUser      *UserQuery
-	withGroup     *GroupQuery
-	withUsageLogs *UsageLogQuery
-	modifiers     []func(*sql.Selector)
+	ctx                *QueryContext
+	order              []apikey.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.APIKey
+	withUser           *UserQuery
+	withGroup          *GroupQuery
+	withUsageLogs      *UsageLogQuery
+	withAssignedMember *EnterpriseMemberQuery
+	withKeyGroups      *GroupQuery
+	withAPIKeyGroups   *APIKeyGroupQuery
+	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -126,6 +131,72 @@ func (_q *APIKeyQuery) QueryUsageLogs() *UsageLogQuery {
 			sqlgraph.From(apikey.Table, apikey.FieldID, selector),
 			sqlgraph.To(usagelog.Table, usagelog.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, apikey.UsageLogsTable, apikey.UsageLogsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAssignedMember chains the current query on the "assigned_member" edge.
+func (_q *APIKeyQuery) QueryAssignedMember() *EnterpriseMemberQuery {
+	query := (&EnterpriseMemberClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(apikey.Table, apikey.FieldID, selector),
+			sqlgraph.To(enterprisemember.Table, enterprisemember.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, apikey.AssignedMemberTable, apikey.AssignedMemberColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryKeyGroups chains the current query on the "key_groups" edge.
+func (_q *APIKeyQuery) QueryKeyGroups() *GroupQuery {
+	query := (&GroupClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(apikey.Table, apikey.FieldID, selector),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, apikey.KeyGroupsTable, apikey.KeyGroupsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAPIKeyGroups chains the current query on the "api_key_groups" edge.
+func (_q *APIKeyQuery) QueryAPIKeyGroups() *APIKeyGroupQuery {
+	query := (&APIKeyGroupClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(apikey.Table, apikey.FieldID, selector),
+			sqlgraph.To(apikeygroup.Table, apikeygroup.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, apikey.APIKeyGroupsTable, apikey.APIKeyGroupsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -320,14 +391,17 @@ func (_q *APIKeyQuery) Clone() *APIKeyQuery {
 		return nil
 	}
 	return &APIKeyQuery{
-		config:        _q.config,
-		ctx:           _q.ctx.Clone(),
-		order:         append([]apikey.OrderOption{}, _q.order...),
-		inters:        append([]Interceptor{}, _q.inters...),
-		predicates:    append([]predicate.APIKey{}, _q.predicates...),
-		withUser:      _q.withUser.Clone(),
-		withGroup:     _q.withGroup.Clone(),
-		withUsageLogs: _q.withUsageLogs.Clone(),
+		config:             _q.config,
+		ctx:                _q.ctx.Clone(),
+		order:              append([]apikey.OrderOption{}, _q.order...),
+		inters:             append([]Interceptor{}, _q.inters...),
+		predicates:         append([]predicate.APIKey{}, _q.predicates...),
+		withUser:           _q.withUser.Clone(),
+		withGroup:          _q.withGroup.Clone(),
+		withUsageLogs:      _q.withUsageLogs.Clone(),
+		withAssignedMember: _q.withAssignedMember.Clone(),
+		withKeyGroups:      _q.withKeyGroups.Clone(),
+		withAPIKeyGroups:   _q.withAPIKeyGroups.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -364,6 +438,39 @@ func (_q *APIKeyQuery) WithUsageLogs(opts ...func(*UsageLogQuery)) *APIKeyQuery 
 		opt(query)
 	}
 	_q.withUsageLogs = query
+	return _q
+}
+
+// WithAssignedMember tells the query-builder to eager-load the nodes that are connected to
+// the "assigned_member" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *APIKeyQuery) WithAssignedMember(opts ...func(*EnterpriseMemberQuery)) *APIKeyQuery {
+	query := (&EnterpriseMemberClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAssignedMember = query
+	return _q
+}
+
+// WithKeyGroups tells the query-builder to eager-load the nodes that are connected to
+// the "key_groups" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *APIKeyQuery) WithKeyGroups(opts ...func(*GroupQuery)) *APIKeyQuery {
+	query := (&GroupClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withKeyGroups = query
+	return _q
+}
+
+// WithAPIKeyGroups tells the query-builder to eager-load the nodes that are connected to
+// the "api_key_groups" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *APIKeyQuery) WithAPIKeyGroups(opts ...func(*APIKeyGroupQuery)) *APIKeyQuery {
+	query := (&APIKeyGroupClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAPIKeyGroups = query
 	return _q
 }
 
@@ -445,10 +552,13 @@ func (_q *APIKeyQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*APIKe
 	var (
 		nodes       = []*APIKey{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [6]bool{
 			_q.withUser != nil,
 			_q.withGroup != nil,
 			_q.withUsageLogs != nil,
+			_q.withAssignedMember != nil,
+			_q.withKeyGroups != nil,
+			_q.withAPIKeyGroups != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -488,6 +598,26 @@ func (_q *APIKeyQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*APIKe
 		if err := _q.loadUsageLogs(ctx, query, nodes,
 			func(n *APIKey) { n.Edges.UsageLogs = []*UsageLog{} },
 			func(n *APIKey, e *UsageLog) { n.Edges.UsageLogs = append(n.Edges.UsageLogs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAssignedMember; query != nil {
+		if err := _q.loadAssignedMember(ctx, query, nodes, nil,
+			func(n *APIKey, e *EnterpriseMember) { n.Edges.AssignedMember = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withKeyGroups; query != nil {
+		if err := _q.loadKeyGroups(ctx, query, nodes,
+			func(n *APIKey) { n.Edges.KeyGroups = []*Group{} },
+			func(n *APIKey, e *Group) { n.Edges.KeyGroups = append(n.Edges.KeyGroups, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAPIKeyGroups; query != nil {
+		if err := _q.loadAPIKeyGroups(ctx, query, nodes,
+			func(n *APIKey) { n.Edges.APIKeyGroups = []*APIKeyGroup{} },
+			func(n *APIKey, e *APIKeyGroup) { n.Edges.APIKeyGroups = append(n.Edges.APIKeyGroups, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -585,6 +715,129 @@ func (_q *APIKeyQuery) loadUsageLogs(ctx context.Context, query *UsageLogQuery, 
 	}
 	return nil
 }
+func (_q *APIKeyQuery) loadAssignedMember(ctx context.Context, query *EnterpriseMemberQuery, nodes []*APIKey, init func(*APIKey), assign func(*APIKey, *EnterpriseMember)) error {
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*APIKey)
+	for i := range nodes {
+		if nodes[i].AssignedTo == nil {
+			continue
+		}
+		fk := *nodes[i].AssignedTo
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(enterprisemember.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "assigned_to" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *APIKeyQuery) loadKeyGroups(ctx context.Context, query *GroupQuery, nodes []*APIKey, init func(*APIKey), assign func(*APIKey, *Group)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int64]*APIKey)
+	nids := make(map[int64]map[*APIKey]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(apikey.KeyGroupsTable)
+		s.Join(joinT).On(s.C(group.FieldID), joinT.C(apikey.KeyGroupsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(apikey.KeyGroupsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(apikey.KeyGroupsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := values[0].(*sql.NullInt64).Int64
+				inValue := values[1].(*sql.NullInt64).Int64
+				if nids[inValue] == nil {
+					nids[inValue] = map[*APIKey]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Group](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "key_groups" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (_q *APIKeyQuery) loadAPIKeyGroups(ctx context.Context, query *APIKeyGroupQuery, nodes []*APIKey, init func(*APIKey), assign func(*APIKey, *APIKeyGroup)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*APIKey)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(apikeygroup.FieldAPIKeyID)
+	}
+	query.Where(predicate.APIKeyGroup(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(apikey.APIKeyGroupsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.APIKeyID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "api_key_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (_q *APIKeyQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -619,6 +872,9 @@ func (_q *APIKeyQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withGroup != nil {
 			_spec.Node.AddColumnOnce(apikey.FieldGroupID)
+		}
+		if _q.withAssignedMember != nil {
+			_spec.Node.AddColumnOnce(apikey.FieldAssignedTo)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

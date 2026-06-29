@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Wei-Shaw/sub2api/ent/account"
 	"github.com/Wei-Shaw/sub2api/ent/apikey"
+	"github.com/Wei-Shaw/sub2api/ent/enterprise"
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/predicate"
 	"github.com/Wei-Shaw/sub2api/ent/usagelog"
@@ -33,6 +34,7 @@ type UsageLogQuery struct {
 	withAccount      *AccountQuery
 	withGroup        *GroupQuery
 	withSubscription *UserSubscriptionQuery
+	withEnterprise   *EnterpriseQuery
 	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -173,6 +175,28 @@ func (_q *UsageLogQuery) QuerySubscription() *UserSubscriptionQuery {
 			sqlgraph.From(usagelog.Table, usagelog.FieldID, selector),
 			sqlgraph.To(usersubscription.Table, usersubscription.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, usagelog.SubscriptionTable, usagelog.SubscriptionColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryEnterprise chains the current query on the "enterprise" edge.
+func (_q *UsageLogQuery) QueryEnterprise() *EnterpriseQuery {
+	query := (&EnterpriseClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usagelog.Table, usagelog.FieldID, selector),
+			sqlgraph.To(enterprise.Table, enterprise.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, usagelog.EnterpriseTable, usagelog.EnterpriseColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -377,6 +401,7 @@ func (_q *UsageLogQuery) Clone() *UsageLogQuery {
 		withAccount:      _q.withAccount.Clone(),
 		withGroup:        _q.withGroup.Clone(),
 		withSubscription: _q.withSubscription.Clone(),
+		withEnterprise:   _q.withEnterprise.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -435,6 +460,17 @@ func (_q *UsageLogQuery) WithSubscription(opts ...func(*UserSubscriptionQuery)) 
 		opt(query)
 	}
 	_q.withSubscription = query
+	return _q
+}
+
+// WithEnterprise tells the query-builder to eager-load the nodes that are connected to
+// the "enterprise" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UsageLogQuery) WithEnterprise(opts ...func(*EnterpriseQuery)) *UsageLogQuery {
+	query := (&EnterpriseClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withEnterprise = query
 	return _q
 }
 
@@ -516,12 +552,13 @@ func (_q *UsageLogQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Usa
 	var (
 		nodes       = []*UsageLog{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			_q.withUser != nil,
 			_q.withAPIKey != nil,
 			_q.withAccount != nil,
 			_q.withGroup != nil,
 			_q.withSubscription != nil,
+			_q.withEnterprise != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -572,6 +609,12 @@ func (_q *UsageLogQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Usa
 	if query := _q.withSubscription; query != nil {
 		if err := _q.loadSubscription(ctx, query, nodes, nil,
 			func(n *UsageLog, e *UserSubscription) { n.Edges.Subscription = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withEnterprise; query != nil {
+		if err := _q.loadEnterprise(ctx, query, nodes, nil,
+			func(n *UsageLog, e *Enterprise) { n.Edges.Enterprise = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -729,6 +772,38 @@ func (_q *UsageLogQuery) loadSubscription(ctx context.Context, query *UserSubscr
 	}
 	return nil
 }
+func (_q *UsageLogQuery) loadEnterprise(ctx context.Context, query *EnterpriseQuery, nodes []*UsageLog, init func(*UsageLog), assign func(*UsageLog, *Enterprise)) error {
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*UsageLog)
+	for i := range nodes {
+		if nodes[i].EnterpriseID == nil {
+			continue
+		}
+		fk := *nodes[i].EnterpriseID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(enterprise.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "enterprise_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (_q *UsageLogQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -772,6 +847,9 @@ func (_q *UsageLogQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withSubscription != nil {
 			_spec.Node.AddColumnOnce(usagelog.FieldSubscriptionID)
+		}
+		if _q.withEnterprise != nil {
+			_spec.Node.AddColumnOnce(usagelog.FieldEnterpriseID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

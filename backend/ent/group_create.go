@@ -13,6 +13,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Wei-Shaw/sub2api/ent/account"
 	"github.com/Wei-Shaw/sub2api/ent/apikey"
+	"github.com/Wei-Shaw/sub2api/ent/apikeygroup"
+	"github.com/Wei-Shaw/sub2api/ent/enterprisesubscription"
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/redeemcode"
 	"github.com/Wei-Shaw/sub2api/ent/usagelog"
@@ -585,6 +587,51 @@ func (_c *GroupCreate) AddAllowedUsers(v ...*User) *GroupCreate {
 	return _c.AddAllowedUserIDs(ids...)
 }
 
+// AddEnterpriseSubscriptionIDs adds the "enterprise_subscriptions" edge to the EnterpriseSubscription entity by IDs.
+func (_c *GroupCreate) AddEnterpriseSubscriptionIDs(ids ...int64) *GroupCreate {
+	_c.mutation.AddEnterpriseSubscriptionIDs(ids...)
+	return _c
+}
+
+// AddEnterpriseSubscriptions adds the "enterprise_subscriptions" edges to the EnterpriseSubscription entity.
+func (_c *GroupCreate) AddEnterpriseSubscriptions(v ...*EnterpriseSubscription) *GroupCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddEnterpriseSubscriptionIDs(ids...)
+}
+
+// AddGroupedKeyIDs adds the "grouped_keys" edge to the APIKey entity by IDs.
+func (_c *GroupCreate) AddGroupedKeyIDs(ids ...int64) *GroupCreate {
+	_c.mutation.AddGroupedKeyIDs(ids...)
+	return _c
+}
+
+// AddGroupedKeys adds the "grouped_keys" edges to the APIKey entity.
+func (_c *GroupCreate) AddGroupedKeys(v ...*APIKey) *GroupCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddGroupedKeyIDs(ids...)
+}
+
+// AddAPIKeyGroupIDs adds the "api_key_groups" edge to the APIKeyGroup entity by IDs.
+func (_c *GroupCreate) AddAPIKeyGroupIDs(ids ...int64) *GroupCreate {
+	_c.mutation.AddAPIKeyGroupIDs(ids...)
+	return _c
+}
+
+// AddAPIKeyGroups adds the "api_key_groups" edges to the APIKeyGroup entity.
+func (_c *GroupCreate) AddAPIKeyGroups(v ...*APIKeyGroup) *GroupCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAPIKeyGroupIDs(ids...)
+}
+
 // Mutation returns the GroupMutation object of the builder.
 func (_c *GroupCreate) Mutation() *GroupMutation {
 	return _c.mutation
@@ -1091,6 +1138,58 @@ func (_c *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.EnterpriseSubscriptionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   group.EnterpriseSubscriptionsTable,
+			Columns: []string{group.EnterpriseSubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprisesubscription.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GroupedKeysIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   group.GroupedKeysTable,
+			Columns: group.GroupedKeysPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &APIKeyGroupCreate{config: _c.config, mutation: newAPIKeyGroupMutation(_c.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.APIKeyGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   group.APIKeyGroupsTable,
+			Columns: []string{group.APIKeyGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikeygroup.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

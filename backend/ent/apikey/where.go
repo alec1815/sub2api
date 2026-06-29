@@ -90,6 +90,21 @@ func GroupID(v int64) predicate.APIKey {
 	return predicate.APIKey(sql.FieldEQ(FieldGroupID, v))
 }
 
+// AssignedTo applies equality check predicate on the "assigned_to" field. It's identical to AssignedToEQ.
+func AssignedTo(v int64) predicate.APIKey {
+	return predicate.APIKey(sql.FieldEQ(FieldAssignedTo, v))
+}
+
+// UsagePurpose applies equality check predicate on the "usage_purpose" field. It's identical to UsagePurposeEQ.
+func UsagePurpose(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldEQ(FieldUsagePurpose, v))
+}
+
+// BoundTool applies equality check predicate on the "bound_tool" field. It's identical to BoundToolEQ.
+func BoundTool(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldEQ(FieldBoundTool, v))
+}
+
 // Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
 func Status(v string) predicate.APIKey {
 	return predicate.APIKey(sql.FieldEQ(FieldStatus, v))
@@ -468,6 +483,166 @@ func GroupIDIsNil() predicate.APIKey {
 // GroupIDNotNil applies the NotNil predicate on the "group_id" field.
 func GroupIDNotNil() predicate.APIKey {
 	return predicate.APIKey(sql.FieldNotNull(FieldGroupID))
+}
+
+// AssignedToEQ applies the EQ predicate on the "assigned_to" field.
+func AssignedToEQ(v int64) predicate.APIKey {
+	return predicate.APIKey(sql.FieldEQ(FieldAssignedTo, v))
+}
+
+// AssignedToNEQ applies the NEQ predicate on the "assigned_to" field.
+func AssignedToNEQ(v int64) predicate.APIKey {
+	return predicate.APIKey(sql.FieldNEQ(FieldAssignedTo, v))
+}
+
+// AssignedToIn applies the In predicate on the "assigned_to" field.
+func AssignedToIn(vs ...int64) predicate.APIKey {
+	return predicate.APIKey(sql.FieldIn(FieldAssignedTo, vs...))
+}
+
+// AssignedToNotIn applies the NotIn predicate on the "assigned_to" field.
+func AssignedToNotIn(vs ...int64) predicate.APIKey {
+	return predicate.APIKey(sql.FieldNotIn(FieldAssignedTo, vs...))
+}
+
+// AssignedToIsNil applies the IsNil predicate on the "assigned_to" field.
+func AssignedToIsNil() predicate.APIKey {
+	return predicate.APIKey(sql.FieldIsNull(FieldAssignedTo))
+}
+
+// AssignedToNotNil applies the NotNil predicate on the "assigned_to" field.
+func AssignedToNotNil() predicate.APIKey {
+	return predicate.APIKey(sql.FieldNotNull(FieldAssignedTo))
+}
+
+// UsagePurposeEQ applies the EQ predicate on the "usage_purpose" field.
+func UsagePurposeEQ(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldEQ(FieldUsagePurpose, v))
+}
+
+// UsagePurposeNEQ applies the NEQ predicate on the "usage_purpose" field.
+func UsagePurposeNEQ(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldNEQ(FieldUsagePurpose, v))
+}
+
+// UsagePurposeIn applies the In predicate on the "usage_purpose" field.
+func UsagePurposeIn(vs ...string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldIn(FieldUsagePurpose, vs...))
+}
+
+// UsagePurposeNotIn applies the NotIn predicate on the "usage_purpose" field.
+func UsagePurposeNotIn(vs ...string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldNotIn(FieldUsagePurpose, vs...))
+}
+
+// UsagePurposeGT applies the GT predicate on the "usage_purpose" field.
+func UsagePurposeGT(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldGT(FieldUsagePurpose, v))
+}
+
+// UsagePurposeGTE applies the GTE predicate on the "usage_purpose" field.
+func UsagePurposeGTE(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldGTE(FieldUsagePurpose, v))
+}
+
+// UsagePurposeLT applies the LT predicate on the "usage_purpose" field.
+func UsagePurposeLT(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldLT(FieldUsagePurpose, v))
+}
+
+// UsagePurposeLTE applies the LTE predicate on the "usage_purpose" field.
+func UsagePurposeLTE(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldLTE(FieldUsagePurpose, v))
+}
+
+// UsagePurposeContains applies the Contains predicate on the "usage_purpose" field.
+func UsagePurposeContains(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldContains(FieldUsagePurpose, v))
+}
+
+// UsagePurposeHasPrefix applies the HasPrefix predicate on the "usage_purpose" field.
+func UsagePurposeHasPrefix(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldHasPrefix(FieldUsagePurpose, v))
+}
+
+// UsagePurposeHasSuffix applies the HasSuffix predicate on the "usage_purpose" field.
+func UsagePurposeHasSuffix(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldHasSuffix(FieldUsagePurpose, v))
+}
+
+// UsagePurposeEqualFold applies the EqualFold predicate on the "usage_purpose" field.
+func UsagePurposeEqualFold(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldEqualFold(FieldUsagePurpose, v))
+}
+
+// UsagePurposeContainsFold applies the ContainsFold predicate on the "usage_purpose" field.
+func UsagePurposeContainsFold(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldContainsFold(FieldUsagePurpose, v))
+}
+
+// BoundToolEQ applies the EQ predicate on the "bound_tool" field.
+func BoundToolEQ(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldEQ(FieldBoundTool, v))
+}
+
+// BoundToolNEQ applies the NEQ predicate on the "bound_tool" field.
+func BoundToolNEQ(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldNEQ(FieldBoundTool, v))
+}
+
+// BoundToolIn applies the In predicate on the "bound_tool" field.
+func BoundToolIn(vs ...string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldIn(FieldBoundTool, vs...))
+}
+
+// BoundToolNotIn applies the NotIn predicate on the "bound_tool" field.
+func BoundToolNotIn(vs ...string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldNotIn(FieldBoundTool, vs...))
+}
+
+// BoundToolGT applies the GT predicate on the "bound_tool" field.
+func BoundToolGT(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldGT(FieldBoundTool, v))
+}
+
+// BoundToolGTE applies the GTE predicate on the "bound_tool" field.
+func BoundToolGTE(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldGTE(FieldBoundTool, v))
+}
+
+// BoundToolLT applies the LT predicate on the "bound_tool" field.
+func BoundToolLT(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldLT(FieldBoundTool, v))
+}
+
+// BoundToolLTE applies the LTE predicate on the "bound_tool" field.
+func BoundToolLTE(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldLTE(FieldBoundTool, v))
+}
+
+// BoundToolContains applies the Contains predicate on the "bound_tool" field.
+func BoundToolContains(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldContains(FieldBoundTool, v))
+}
+
+// BoundToolHasPrefix applies the HasPrefix predicate on the "bound_tool" field.
+func BoundToolHasPrefix(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldHasPrefix(FieldBoundTool, v))
+}
+
+// BoundToolHasSuffix applies the HasSuffix predicate on the "bound_tool" field.
+func BoundToolHasSuffix(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldHasSuffix(FieldBoundTool, v))
+}
+
+// BoundToolEqualFold applies the EqualFold predicate on the "bound_tool" field.
+func BoundToolEqualFold(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldEqualFold(FieldBoundTool, v))
+}
+
+// BoundToolContainsFold applies the ContainsFold predicate on the "bound_tool" field.
+func BoundToolContainsFold(v string) predicate.APIKey {
+	return predicate.APIKey(sql.FieldContainsFold(FieldBoundTool, v))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.
@@ -1186,6 +1361,75 @@ func HasUsageLogs() predicate.APIKey {
 func HasUsageLogsWith(preds ...predicate.UsageLog) predicate.APIKey {
 	return predicate.APIKey(func(s *sql.Selector) {
 		step := newUsageLogsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAssignedMember applies the HasEdge predicate on the "assigned_member" edge.
+func HasAssignedMember() predicate.APIKey {
+	return predicate.APIKey(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, AssignedMemberTable, AssignedMemberColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAssignedMemberWith applies the HasEdge predicate on the "assigned_member" edge with a given conditions (other predicates).
+func HasAssignedMemberWith(preds ...predicate.EnterpriseMember) predicate.APIKey {
+	return predicate.APIKey(func(s *sql.Selector) {
+		step := newAssignedMemberStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasKeyGroups applies the HasEdge predicate on the "key_groups" edge.
+func HasKeyGroups() predicate.APIKey {
+	return predicate.APIKey(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, KeyGroupsTable, KeyGroupsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasKeyGroupsWith applies the HasEdge predicate on the "key_groups" edge with a given conditions (other predicates).
+func HasKeyGroupsWith(preds ...predicate.Group) predicate.APIKey {
+	return predicate.APIKey(func(s *sql.Selector) {
+		step := newKeyGroupsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAPIKeyGroups applies the HasEdge predicate on the "api_key_groups" edge.
+func HasAPIKeyGroups() predicate.APIKey {
+	return predicate.APIKey(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, APIKeyGroupsTable, APIKeyGroupsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAPIKeyGroupsWith applies the HasEdge predicate on the "api_key_groups" edge with a given conditions (other predicates).
+func HasAPIKeyGroupsWith(preds ...predicate.APIKeyGroup) predicate.APIKey {
+	return predicate.APIKey(func(s *sql.Selector) {
+		step := newAPIKeyGroupsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

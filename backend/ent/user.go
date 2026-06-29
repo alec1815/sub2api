@@ -97,11 +97,15 @@ type UserEdges struct {
 	PendingAuthSessions []*PendingAuthSession `json:"pending_auth_sessions,omitempty"`
 	// PlatformQuotas holds the value of the platform_quotas edge.
 	PlatformQuotas []*UserPlatformQuota `json:"platform_quotas,omitempty"`
+	// 用户的企业成员记录（1:1 约束下最多一条）
+	EnterpriseMembers []*EnterpriseMember `json:"enterprise_members,omitempty"`
+	// 用户作为管理员管理的企业
+	ManagedEnterprises []*Enterprise `json:"managed_enterprises,omitempty"`
 	// UserAllowedGroups holds the value of the user_allowed_groups edge.
 	UserAllowedGroups []*UserAllowedGroup `json:"user_allowed_groups,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [14]bool
+	loadedTypes [16]bool
 }
 
 // APIKeysOrErr returns the APIKeys value or an error if the edge
@@ -221,10 +225,28 @@ func (e UserEdges) PlatformQuotasOrErr() ([]*UserPlatformQuota, error) {
 	return nil, &NotLoadedError{edge: "platform_quotas"}
 }
 
+// EnterpriseMembersOrErr returns the EnterpriseMembers value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) EnterpriseMembersOrErr() ([]*EnterpriseMember, error) {
+	if e.loadedTypes[13] {
+		return e.EnterpriseMembers, nil
+	}
+	return nil, &NotLoadedError{edge: "enterprise_members"}
+}
+
+// ManagedEnterprisesOrErr returns the ManagedEnterprises value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ManagedEnterprisesOrErr() ([]*Enterprise, error) {
+	if e.loadedTypes[14] {
+		return e.ManagedEnterprises, nil
+	}
+	return nil, &NotLoadedError{edge: "managed_enterprises"}
+}
+
 // UserAllowedGroupsOrErr returns the UserAllowedGroups value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) UserAllowedGroupsOrErr() ([]*UserAllowedGroup, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[15] {
 		return e.UserAllowedGroups, nil
 	}
 	return nil, &NotLoadedError{edge: "user_allowed_groups"}
@@ -486,6 +508,16 @@ func (_m *User) QueryPendingAuthSessions() *PendingAuthSessionQuery {
 // QueryPlatformQuotas queries the "platform_quotas" edge of the User entity.
 func (_m *User) QueryPlatformQuotas() *UserPlatformQuotaQuery {
 	return NewUserClient(_m.config).QueryPlatformQuotas(_m)
+}
+
+// QueryEnterpriseMembers queries the "enterprise_members" edge of the User entity.
+func (_m *User) QueryEnterpriseMembers() *EnterpriseMemberQuery {
+	return NewUserClient(_m.config).QueryEnterpriseMembers(_m)
+}
+
+// QueryManagedEnterprises queries the "managed_enterprises" edge of the User entity.
+func (_m *User) QueryManagedEnterprises() *EnterpriseQuery {
+	return NewUserClient(_m.config).QueryManagedEnterprises(_m)
 }
 
 // QueryUserAllowedGroups queries the "user_allowed_groups" edge of the User entity.
