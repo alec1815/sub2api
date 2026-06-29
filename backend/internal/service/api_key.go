@@ -33,6 +33,10 @@ type APIKey struct {
 	Key         string
 	Name        string
 	GroupID     *int64
+	// Enterprise fields (P1 新增)
+	AssignedTo   *int64  // 分配给企业成员的 enterprise_members.id
+	UsagePurpose string  // 用途说明
+	BoundTool    string  // 绑定工具
 	Status      string
 	IPWhitelist []string
 	IPBlacklist []string
