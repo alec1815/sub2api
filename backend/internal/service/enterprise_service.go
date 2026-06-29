@@ -47,9 +47,10 @@ var (
 var (
 	ErrEnterpriseNameRequired = infraerrors.BadRequest("ENTERPRISE_NAME_REQUIRED", "enterprise name is required")
 	ErrEnterpriseAdminRequired = infraerrors.BadRequest("ENTERPRISE_ADMIN_REQUIRED", "enterprise admin user is required")
-	ErrEnterpriseInvalidStatus = infraerrors.BadRequest("ENTERPRISE_STATUS_INVALID", "enterprise status is invalid")
-	ErrMemberAlreadyInDept     = infraerrors.Conflict("MEMBER_ALREADY_IN_DEPT", "member already belongs to another department")
-	ErrMemberInvalidRole       = infraerrors.BadRequest("MEMBER_ROLE_INVALID", "member role is invalid")
+	ErrEnterpriseInvalidStatus       = infraerrors.BadRequest("ENTERPRISE_STATUS_INVALID", "enterprise status is invalid")
+	ErrEnterpriseInsufficientBalance = infraerrors.BadRequest("ENTERPRISE_INSUFFICIENT_BALANCE", "enterprise balance is insufficient")
+	ErrMemberAlreadyInDept           = infraerrors.Conflict("MEMBER_ALREADY_IN_DEPT", "member already belongs to another department")
+	ErrMemberInvalidRole             = infraerrors.BadRequest("MEMBER_ROLE_INVALID", "member role is invalid")
 	ErrDepartmentNameRequired  = infraerrors.BadRequest("DEPARTMENT_NAME_REQUIRED", "department name is required")
 )
 
@@ -67,6 +68,8 @@ type EnterpriseRepository interface {
 	Update(ctx context.Context, e *Enterprise) error
 	SoftDelete(ctx context.Context, id int64) error
 	GetBalance(ctx context.Context, id int64) (float64, error)
+	// DeductBalance 扣减企业余额，返回 newBalance
+	DeductBalance(ctx context.Context, id int64, amount float64) (float64, error)
 }
 
 // EnterpriseMemberListFilters defines list query filters for enterprise members.

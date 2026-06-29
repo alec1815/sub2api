@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
@@ -170,6 +171,32 @@ func (r *enterpriseRepository) GetBalance(ctx context.Context, id int64) (float6
 		return 0, translatePersistenceError(err, service.ErrEnterpriseNotFound, nil)
 	}
 	return m.Balance, nil
+}
+
+// DeductBalance 原子扣减企业余额，返回扣减后的余额。
+// 使用 WHERE balance >= amount 防止超扣。
+func (r *enterpriseRepository) DeductBalance(ctx context.Context, id int64, amount float64) (float64, error) {
+	client := clientFromContext(ctx, r.client)
+	n, err := client.Enterprise.Update().
+		Where(
+			enterprise.IDEQ(id),
+			enterprise.DeletedAtIsNil(),
+			enterprise.BalanceGTE(amount),
+		).
+		AddBalance(-amount).
+		Save(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("deduct enterprise balance: %w", err)
+	}
+	if n == 0 {
+		return 0, service.ErrEnterpriseInsufficientBalance
+	}
+	// 查询扣减后的余额
+	bal, err := r.GetBalance(ctx, id)
+	if err != nil {
+		return 0, err
+	}
+	return bal, nil
 }
 
 // --- entity ↔ service mapping ---
