@@ -22,6 +22,17 @@ const (
 	RoleUser  = domain.RoleUser
 )
 
+// Enterprise role constants (enterprise layer — enterprise_members.role)
+const (
+	EnterpriseRoleAdmin  = domain.EnterpriseRoleAdmin
+	EnterpriseRoleMember = domain.EnterpriseRoleMember
+)
+
+// Enterprise member statuses
+const (
+	MemberStatusUnbound = domain.MemberStatusUnbound
+)
+
 // Affiliate rebate settings
 const (
 	AffiliateRebateRateDefault          = 20.0
