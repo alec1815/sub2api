@@ -650,6 +650,7 @@ type GatewayService struct {
 	tlsFPProfileService   *TLSFingerprintProfileService
 	balanceNotifyService  *BalanceNotifyService
 	userPlatformQuotaRepo UserPlatformQuotaRepository
+	enterpriseRepo        EnterpriseRepository // P4: enterprise billing support
 }
 
 // NewGatewayService creates a new GatewayService
@@ -731,6 +732,11 @@ func NewGatewayService(
 		svc.initDebugGatewayBodyFile(path)
 	}
 	return svc
+}
+
+// SetEnterpriseRepo sets the enterprise repository for enterprise billing support (P4).
+func (s *GatewayService) SetEnterpriseRepo(repo EnterpriseRepository) {
+	s.enterpriseRepo = repo
 }
 
 // GenerateSessionHash 从预解析请求计算粘性会话 hash
@@ -8825,6 +8831,10 @@ type RecordUsageInput struct {
 	APIKeyService      APIKeyQuotaUpdater // 可选：用于更新API Key配额
 	QuotaPlatform      string             // user×platform 配额计量平台：handler 在请求 ctx 内经 QuotaPlatform() 算定后传入（后扣运行在 worker 池 background ctx 上，取不到 ForcePlatform）
 
+	// Enterprise billing fields (P4)
+	EnterpriseID          *int64  // 企业ID（企业池消费时）
+	EnterprisePoolType    string  // "personal" / "enterprise"
+
 	ChannelUsageFields // 渠道映射信息（由 handler 在 Forward 前解析）
 }
 
@@ -8854,6 +8864,10 @@ type postUsageBillingParams struct {
 	AccountRateMultiplier float64
 	APIKeyService         APIKeyQuotaUpdater
 	Platform              string // 来自 APIKey 关联 Group 的平台标识
+
+	// Enterprise billing fields (P4)
+	EnterpriseID       *int64
+	EnterprisePoolType string
 }
 
 // PlatformFromAPIKey 从 APIKey 关联的 Group 推导 platform 名称。
@@ -8910,12 +8924,22 @@ func postUsageBilling(ctx context.Context, p *postUsageBillingParams, deps *bill
 			}
 		}
 	} else {
-		if cost.ActualCost > 0 {
-			if err := deps.userRepo.DeductBalance(billingCtx, p.User.ID, cost.ActualCost); err != nil {
-				slog.Error("deduct balance failed", "user_id", p.User.ID, "error", err)
-			} else if deps.billingCacheService != nil {
-				if err := deps.billingCacheService.InvalidateUserBalance(billingCtx, p.User.ID); err != nil {
-					slog.Warn("invalidate balance cache after legacy deduction failed", "user_id", p.User.ID, "error", err)
+		// P4 隔离门：企业池 → 企业余额扣减；个人池 → 个人余额扣减（原有逻辑）
+		if p.EnterprisePoolType == "enterprise" && p.EnterpriseID != nil && deps.enterpriseRepo != nil {
+			if cost.ActualCost > 0 {
+				if _, err := deps.enterpriseRepo.DeductBalance(billingCtx, *p.EnterpriseID, cost.ActualCost); err != nil {
+					slog.Error("deduct enterprise balance failed", "enterprise_id", *p.EnterpriseID, "error", err)
+				}
+			}
+			// TODO(P4): invalidate enterprise balance cache when enterprise billing cache is implemented
+		} else {
+			if cost.ActualCost > 0 {
+				if err := deps.userRepo.DeductBalance(billingCtx, p.User.ID, cost.ActualCost); err != nil {
+					slog.Error("deduct balance failed", "user_id", p.User.ID, "error", err)
+				} else if deps.billingCacheService != nil {
+					if err := deps.billingCacheService.InvalidateUserBalance(billingCtx, p.User.ID); err != nil {
+						slog.Warn("invalidate balance cache after legacy deduction failed", "user_id", p.User.ID, "error", err)
+					}
 				}
 			}
 		}
@@ -9270,6 +9294,7 @@ type billingDeps struct {
 	deferredService       *DeferredService
 	balanceNotifyService  *BalanceNotifyService
 	userPlatformQuotaRepo UserPlatformQuotaRepository
+	enterpriseRepo        EnterpriseRepository // P4: enterprise billing support
 	cfg                   *config.Config
 }
 
@@ -9282,6 +9307,7 @@ func (s *GatewayService) billingDeps() *billingDeps {
 		deferredService:       s.deferredService,
 		balanceNotifyService:  s.balanceNotifyService,
 		userPlatformQuotaRepo: s.userPlatformQuotaRepo,
+		enterpriseRepo:        s.enterpriseRepo,
 		cfg:                   s.cfg,
 	}
 }
@@ -9334,6 +9360,8 @@ func (s *GatewayService) RecordUsage(ctx context.Context, input *RecordUsageInpu
 		ForceCacheBilling:  input.ForceCacheBilling,
 		APIKeyService:      input.APIKeyService,
 		QuotaPlatform:      input.QuotaPlatform,
+		EnterpriseID:       input.EnterpriseID,
+		EnterprisePoolType: input.EnterprisePoolType,
 		ChannelUsageFields: input.ChannelUsageFields,
 	}, &recordUsageOpts{})
 }
@@ -9397,6 +9425,11 @@ type recordUsageCoreInput struct {
 	ForceCacheBilling  bool
 	APIKeyService      APIKeyQuotaUpdater
 	QuotaPlatform      string
+
+	// Enterprise billing fields (P4)
+	EnterpriseID       *int64
+	EnterprisePoolType string
+
 	ChannelUsageFields
 }
 
@@ -9511,6 +9544,8 @@ func (s *GatewayService) recordUsageCore(ctx context.Context, input *recordUsage
 		AccountRateMultiplier: accountRateMultiplier,
 		APIKeyService:         input.APIKeyService,
 		Platform:              quotaPlatform,
+		EnterpriseID:          input.EnterpriseID,
+		EnterprisePoolType:    input.EnterprisePoolType,
 	}, s.billingDeps(), s.usageBillingRepo)
 
 	if billingErr != nil {
@@ -9711,6 +9746,8 @@ func (s *GatewayService) buildRecordUsageLog(
 		IPAddress:             optionalTrimmedStringPtr(input.IPAddress),
 		GroupID:               apiKey.GroupID,
 		SubscriptionID:        optionalSubscriptionID(subscription),
+		EnterpriseID:          input.EnterpriseID,
+		PoolType:              input.EnterprisePoolType,
 		CreatedAt:             time.Now(),
 	}
 	if result.ImageCount > 0 && (cost == nil || cost.BillingMode != string(BillingModeToken)) {
