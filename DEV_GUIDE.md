@@ -1,6 +1,9 @@
 # sub2api 项目开发指南
 
 > 本文档记录项目环境配置、常见坑点和注意事项，供 Claude Code 和团队成员参考。
+>
+> **📖 完整排错手册**: [docs/troubleshooting/](./docs/troubleshooting/README.md)
+> — 覆盖从零搭建到登录的全流程，含 14 个问题的排查思路与代码分析。
 
 ## 一、项目基本信息
 
@@ -19,8 +22,9 @@
 | 配置项 | 值 |
 |--------|-----|
 | 端口 | 5432 |
-| psql 路径 | `C:\Program Files\PostgreSQL\16\bin\psql.exe` |
-| pg_hba.conf | `C:\Program Files\PostgreSQL\16\data\pg_hba.conf` |
+| 安装目录 | `D:\Develop\PostgreSQL\16` |
+| psql 路径 | `D:\Develop\PostgreSQL\16\bin\psql.exe` |
+| pg_hba.conf | `D:\Develop\PostgreSQL\16\data\pg_hba.conf` |
 | 数据库凭据 | user=`sub2api`, password=`sub2api`, dbname=`sub2api` |
 | 超级用户 | user=`postgres`, password=`postgres` |
 
@@ -28,18 +32,80 @@
 
 | 配置项 | 值 |
 |--------|-----|
+| 安装目录 | `D:\Develop\Redis` |
+| redis-cli | `D:\Develop\Redis\redis-cli.exe` |
 | 端口 | 6379 |
 | 密码 | 无 |
 
-### 开发工具
+### Node.js & pnpm
+
+| 配置项 | 值 |
+|--------|-----|
+| 安装目录 | `D:\Develop\Nodejs` |
+| Node.js | v22.15.0 |
+| pnpm | 11.9.0（已内置于 Node.js，通过 `corepack enable` 启用） |
+
+### 开发工具（可选）
 
 ```bash
-# golangci-lint v2.7
+# golangci-lint v2.7（仅 CI/提 PR 前需要，本地开发非必须）
 go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.7
-
-# pnpm (前端包管理)
-npm install -g pnpm
 ```
+
+### 管理员账号
+
+> 通过自动安装流程创建（`AUTO_SETUP=true` + 环境变量）
+
+| 配置项 | 值 |
+|--------|-----|
+| 邮箱 | `admin@sub2api.local` |
+| 密码 | `admin123` |
+| 角色 | admin |
+| 登录地址 | `http://localhost:8080` |
+
+**如何修改密码**：登录后在前端面板中修改，或通过 psql 重置（见 [坑 5](#坑-5忘记-postgresql-密码)）。
+
+### config.yaml 关键配置
+
+```yaml
+# 路径: backend/config.yaml（由 setup 流程自动生成）
+server:
+  host: 0.0.0.0
+  port: 8080
+  mode: debug
+
+database:
+  host: 127.0.0.1
+  port: 5432
+  user: sub2api
+  password: sub2api
+  dbname: sub2api
+  sslmode: disable
+
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password: ""
+  db: 0
+
+timezone: Asia/Shanghai
+```
+
+### 启动方式
+
+```powershell
+# 后端（需先确保 PostgreSQL + Redis 已启动）
+cd backend
+$env:DATA_DIR="D:\Project\sub2api\backend"
+go run ./cmd/server/
+
+# 前端（另一个终端）
+cd frontend
+pnpm dev
+```
+
+> **注意**：Windows 上必须设置 `DATA_DIR` 环境变量，否则默认写 `/app/data` 会导致权限错误。
+> 首次安装时使用 `AUTO_SETUP=true` 走自动配置流程（见 [坑 9](#坑-9首次安装管理员账号不自动创建)）。
 
 ## 三、CI/CD 流水线
 
@@ -136,7 +202,7 @@ psql -f "C:\temp.sql"
 **场景**：忘记 PostgreSQL 密码。
 
 **步骤**：
-1. 修改 `C:\Program Files\PostgreSQL\16\data\pg_hba.conf`
+1. 修改 `D:\Develop\PostgreSQL\16\data\pg_hba.conf`
    ```
    # 将 scram-sha-256 改为 trust
    host    all    all    127.0.0.1/32    trust
@@ -243,22 +309,72 @@ git add ent/       # 生成的文件也要提交
 - [ ] 所有 test stub 补全新接口方法（如果改了 interface）
 - [ ] Ent 生成的代码已提交（如果改了 schema）
 
+---
+
+### 坑 12：首次安装管理员账号不自动创建
+
+**问题**：只是 `go run ./cmd/server/` 启动，**不会自动创建管理员账号**。管理员仅在 setup 安装流程中创建。
+
+**原因**：`config.yaml` 存在时，`NeedsSetup()` 返回 false，跳过安装向导，直接启动服务器。
+
+**解决**：使用自动安装模式（非交互）：
+
+```powershell
+cd backend
+Remove-Item config.yaml -Force -ErrorAction SilentlyContinue
+Remove-Item .installed -Force -ErrorAction SilentlyContinue
+
+# 设置环境变量走自动安装
+$env:DATA_DIR="D:\Project\sub2api\backend"
+$env:AUTO_SETUP="true"
+$env:DATABASE_HOST="127.0.0.1"
+$env:DATABASE_USER="sub2api"
+$env:DATABASE_PASSWORD="sub2api"
+$env:DATABASE_DBNAME="sub2api"
+$env:REDIS_HOST="127.0.0.1"
+$env:ADMIN_EMAIL="admin@sub2api.local"
+$env:ADMIN_PASSWORD="admin123"
+$env:TIMEZONE="Asia/Shanghai"
+go run ./cmd/server/
+```
+
+> **Windows 特别注意**：必须设置 `$env:DATA_DIR`，否则默认路径 `/app/data` 会导致权限错误（Access is denied）。
+
 ## 五、常用命令速查
 
-### 数据库操作
+### 数据库操作（PostgreSQL）
+
+> **PowerShell 注意**：本地 psql 路径为 `D:\Develop\PostgreSQL\16\bin\psql.exe`。
+> 以下命令用 `& "路径"` 形式在 PowerShell 中执行。
 
 ```bash
-# 连接数据库
-psql -U sub2api -h 127.0.0.1 -d sub2api
+# ===== 登录 =====
+# 登录 sub2api 数据库（密码: sub2api）
+& "D:\Develop\PostgreSQL\16\bin\psql.exe" -U sub2api -h 127.0.0.1 -d sub2api
 
+# 登录 postgres 超级用户（密码: postgres）
+& "D:\Develop\PostgreSQL\16\bin\psql.exe" -U postgres -h 127.0.0.1
+
+# ===== psql 内部命令（登录后执行）=====
+\l          # 查看所有数据库
+\dt         # 查看当前库所有表
+\d 表名     # 查看表结构（如 \d users）
+\du         # 查看所有用户/角色
+\c 库名     # 切换数据库
+\q          # 退出
+
+# ===== 快速查询（一行命令）=====
 # 查看所有用户
-psql -U postgres -h 127.0.0.1 -c "\du"
+& "D:\Develop\PostgreSQL\16\bin\psql.exe" -U postgres -h 127.0.0.1 -c "\du"
 
-# 查看所有数据库
-psql -U postgres -h 127.0.0.1 -c "\l"
+# 查询用户余额
+& "D:\Develop\PostgreSQL\16\bin\psql.exe" -U sub2api -h 127.0.0.1 -d sub2api -c "SELECT id, email, balance FROM users;"
+
+# 查看所有表
+& "D:\Develop\PostgreSQL\16\bin\psql.exe" -U sub2api -h 127.0.0.1 -d sub2api -c "\dt"
 
 # 执行 SQL 文件
-psql -U sub2api -h 127.0.0.1 -d sub2api -f migration.sql
+& "D:\Develop\PostgreSQL\16\bin\psql.exe" -U sub2api -h 127.0.0.1 -d sub2api -f migration.sql
 ```
 
 ### Git 操作
