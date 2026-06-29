@@ -87,6 +87,10 @@ const (
 	EdgePendingAuthSessions = "pending_auth_sessions"
 	// EdgePlatformQuotas holds the string denoting the platform_quotas edge name in mutations.
 	EdgePlatformQuotas = "platform_quotas"
+	// EdgeEnterpriseMembers holds the string denoting the enterprise_members edge name in mutations.
+	EdgeEnterpriseMembers = "enterprise_members"
+	// EdgeManagedEnterprises holds the string denoting the managed_enterprises edge name in mutations.
+	EdgeManagedEnterprises = "managed_enterprises"
 	// EdgeUserAllowedGroups holds the string denoting the user_allowed_groups edge name in mutations.
 	EdgeUserAllowedGroups = "user_allowed_groups"
 	// Table holds the table name of the user in the database.
@@ -180,6 +184,20 @@ const (
 	PlatformQuotasInverseTable = "user_platform_quotas"
 	// PlatformQuotasColumn is the table column denoting the platform_quotas relation/edge.
 	PlatformQuotasColumn = "user_id"
+	// EnterpriseMembersTable is the table that holds the enterprise_members relation/edge.
+	EnterpriseMembersTable = "enterprise_members"
+	// EnterpriseMembersInverseTable is the table name for the EnterpriseMember entity.
+	// It exists in this package in order to avoid circular dependency with the "enterprisemember" package.
+	EnterpriseMembersInverseTable = "enterprise_members"
+	// EnterpriseMembersColumn is the table column denoting the enterprise_members relation/edge.
+	EnterpriseMembersColumn = "user_id"
+	// ManagedEnterprisesTable is the table that holds the managed_enterprises relation/edge.
+	ManagedEnterprisesTable = "enterprises"
+	// ManagedEnterprisesInverseTable is the table name for the Enterprise entity.
+	// It exists in this package in order to avoid circular dependency with the "enterprise" package.
+	ManagedEnterprisesInverseTable = "enterprises"
+	// ManagedEnterprisesColumn is the table column denoting the managed_enterprises relation/edge.
+	ManagedEnterprisesColumn = "admin_user_id"
 	// UserAllowedGroupsTable is the table that holds the user_allowed_groups relation/edge.
 	UserAllowedGroupsTable = "user_allowed_groups"
 	// UserAllowedGroupsInverseTable is the table name for the UserAllowedGroup entity.
@@ -592,6 +610,34 @@ func ByPlatformQuotas(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByEnterpriseMembersCount orders the results by enterprise_members count.
+func ByEnterpriseMembersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newEnterpriseMembersStep(), opts...)
+	}
+}
+
+// ByEnterpriseMembers orders the results by enterprise_members terms.
+func ByEnterpriseMembers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEnterpriseMembersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByManagedEnterprisesCount orders the results by managed_enterprises count.
+func ByManagedEnterprisesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newManagedEnterprisesStep(), opts...)
+	}
+}
+
+// ByManagedEnterprises orders the results by managed_enterprises terms.
+func ByManagedEnterprises(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newManagedEnterprisesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByUserAllowedGroupsCount orders the results by user_allowed_groups count.
 func ByUserAllowedGroupsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -694,6 +740,20 @@ func newPlatformQuotasStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PlatformQuotasInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, PlatformQuotasTable, PlatformQuotasColumn),
+	)
+}
+func newEnterpriseMembersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EnterpriseMembersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, EnterpriseMembersTable, EnterpriseMembersColumn),
+	)
+}
+func newManagedEnterprisesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ManagedEnterprisesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ManagedEnterprisesTable, ManagedEnterprisesColumn),
 	)
 }
 func newUserAllowedGroupsStep() *sqlgraph.Step {

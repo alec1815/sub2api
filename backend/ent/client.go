@@ -20,12 +20,17 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/announcement"
 	"github.com/Wei-Shaw/sub2api/ent/announcementread"
 	"github.com/Wei-Shaw/sub2api/ent/apikey"
+	"github.com/Wei-Shaw/sub2api/ent/apikeygroup"
 	"github.com/Wei-Shaw/sub2api/ent/authidentity"
 	"github.com/Wei-Shaw/sub2api/ent/authidentitychannel"
 	"github.com/Wei-Shaw/sub2api/ent/channelmonitor"
 	"github.com/Wei-Shaw/sub2api/ent/channelmonitordailyrollup"
 	"github.com/Wei-Shaw/sub2api/ent/channelmonitorhistory"
 	"github.com/Wei-Shaw/sub2api/ent/channelmonitorrequesttemplate"
+	"github.com/Wei-Shaw/sub2api/ent/department"
+	"github.com/Wei-Shaw/sub2api/ent/enterprise"
+	"github.com/Wei-Shaw/sub2api/ent/enterprisemember"
+	"github.com/Wei-Shaw/sub2api/ent/enterprisesubscription"
 	"github.com/Wei-Shaw/sub2api/ent/errorpassthroughrule"
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/idempotencyrecord"
@@ -61,6 +66,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// APIKey is the client for interacting with the APIKey builders.
 	APIKey *APIKeyClient
+	// APIKeyGroup is the client for interacting with the APIKeyGroup builders.
+	APIKeyGroup *APIKeyGroupClient
 	// Account is the client for interacting with the Account builders.
 	Account *AccountClient
 	// AccountGroup is the client for interacting with the AccountGroup builders.
@@ -81,6 +88,14 @@ type Client struct {
 	ChannelMonitorHistory *ChannelMonitorHistoryClient
 	// ChannelMonitorRequestTemplate is the client for interacting with the ChannelMonitorRequestTemplate builders.
 	ChannelMonitorRequestTemplate *ChannelMonitorRequestTemplateClient
+	// Department is the client for interacting with the Department builders.
+	Department *DepartmentClient
+	// Enterprise is the client for interacting with the Enterprise builders.
+	Enterprise *EnterpriseClient
+	// EnterpriseMember is the client for interacting with the EnterpriseMember builders.
+	EnterpriseMember *EnterpriseMemberClient
+	// EnterpriseSubscription is the client for interacting with the EnterpriseSubscription builders.
+	EnterpriseSubscription *EnterpriseSubscriptionClient
 	// ErrorPassthroughRule is the client for interacting with the ErrorPassthroughRule builders.
 	ErrorPassthroughRule *ErrorPassthroughRuleClient
 	// Group is the client for interacting with the Group builders.
@@ -141,6 +156,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.APIKey = NewAPIKeyClient(c.config)
+	c.APIKeyGroup = NewAPIKeyGroupClient(c.config)
 	c.Account = NewAccountClient(c.config)
 	c.AccountGroup = NewAccountGroupClient(c.config)
 	c.Announcement = NewAnnouncementClient(c.config)
@@ -151,6 +167,10 @@ func (c *Client) init() {
 	c.ChannelMonitorDailyRollup = NewChannelMonitorDailyRollupClient(c.config)
 	c.ChannelMonitorHistory = NewChannelMonitorHistoryClient(c.config)
 	c.ChannelMonitorRequestTemplate = NewChannelMonitorRequestTemplateClient(c.config)
+	c.Department = NewDepartmentClient(c.config)
+	c.Enterprise = NewEnterpriseClient(c.config)
+	c.EnterpriseMember = NewEnterpriseMemberClient(c.config)
+	c.EnterpriseSubscription = NewEnterpriseSubscriptionClient(c.config)
 	c.ErrorPassthroughRule = NewErrorPassthroughRuleClient(c.config)
 	c.Group = NewGroupClient(c.config)
 	c.IdempotencyRecord = NewIdempotencyRecordClient(c.config)
@@ -268,6 +288,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                           ctx,
 		config:                        cfg,
 		APIKey:                        NewAPIKeyClient(cfg),
+		APIKeyGroup:                   NewAPIKeyGroupClient(cfg),
 		Account:                       NewAccountClient(cfg),
 		AccountGroup:                  NewAccountGroupClient(cfg),
 		Announcement:                  NewAnnouncementClient(cfg),
@@ -278,6 +299,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ChannelMonitorDailyRollup:     NewChannelMonitorDailyRollupClient(cfg),
 		ChannelMonitorHistory:         NewChannelMonitorHistoryClient(cfg),
 		ChannelMonitorRequestTemplate: NewChannelMonitorRequestTemplateClient(cfg),
+		Department:                    NewDepartmentClient(cfg),
+		Enterprise:                    NewEnterpriseClient(cfg),
+		EnterpriseMember:              NewEnterpriseMemberClient(cfg),
+		EnterpriseSubscription:        NewEnterpriseSubscriptionClient(cfg),
 		ErrorPassthroughRule:          NewErrorPassthroughRuleClient(cfg),
 		Group:                         NewGroupClient(cfg),
 		IdempotencyRecord:             NewIdempotencyRecordClient(cfg),
@@ -322,6 +347,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:                           ctx,
 		config:                        cfg,
 		APIKey:                        NewAPIKeyClient(cfg),
+		APIKeyGroup:                   NewAPIKeyGroupClient(cfg),
 		Account:                       NewAccountClient(cfg),
 		AccountGroup:                  NewAccountGroupClient(cfg),
 		Announcement:                  NewAnnouncementClient(cfg),
@@ -332,6 +358,10 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ChannelMonitorDailyRollup:     NewChannelMonitorDailyRollupClient(cfg),
 		ChannelMonitorHistory:         NewChannelMonitorHistoryClient(cfg),
 		ChannelMonitorRequestTemplate: NewChannelMonitorRequestTemplateClient(cfg),
+		Department:                    NewDepartmentClient(cfg),
+		Enterprise:                    NewEnterpriseClient(cfg),
+		EnterpriseMember:              NewEnterpriseMemberClient(cfg),
+		EnterpriseSubscription:        NewEnterpriseSubscriptionClient(cfg),
 		ErrorPassthroughRule:          NewErrorPassthroughRuleClient(cfg),
 		Group:                         NewGroupClient(cfg),
 		IdempotencyRecord:             NewIdempotencyRecordClient(cfg),
@@ -385,10 +415,11 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.APIKey, c.Account, c.AccountGroup, c.Announcement, c.AnnouncementRead,
-		c.AuthIdentity, c.AuthIdentityChannel, c.ChannelMonitor,
+		c.APIKey, c.APIKeyGroup, c.Account, c.AccountGroup, c.Announcement,
+		c.AnnouncementRead, c.AuthIdentity, c.AuthIdentityChannel, c.ChannelMonitor,
 		c.ChannelMonitorDailyRollup, c.ChannelMonitorHistory,
-		c.ChannelMonitorRequestTemplate, c.ErrorPassthroughRule, c.Group,
+		c.ChannelMonitorRequestTemplate, c.Department, c.Enterprise,
+		c.EnterpriseMember, c.EnterpriseSubscription, c.ErrorPassthroughRule, c.Group,
 		c.IdempotencyRecord, c.IdentityAdoptionDecision, c.PaymentAuditLog,
 		c.PaymentOrder, c.PaymentProviderInstance, c.PendingAuthSession, c.PromoCode,
 		c.PromoCodeUsage, c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting,
@@ -404,10 +435,11 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.APIKey, c.Account, c.AccountGroup, c.Announcement, c.AnnouncementRead,
-		c.AuthIdentity, c.AuthIdentityChannel, c.ChannelMonitor,
+		c.APIKey, c.APIKeyGroup, c.Account, c.AccountGroup, c.Announcement,
+		c.AnnouncementRead, c.AuthIdentity, c.AuthIdentityChannel, c.ChannelMonitor,
 		c.ChannelMonitorDailyRollup, c.ChannelMonitorHistory,
-		c.ChannelMonitorRequestTemplate, c.ErrorPassthroughRule, c.Group,
+		c.ChannelMonitorRequestTemplate, c.Department, c.Enterprise,
+		c.EnterpriseMember, c.EnterpriseSubscription, c.ErrorPassthroughRule, c.Group,
 		c.IdempotencyRecord, c.IdentityAdoptionDecision, c.PaymentAuditLog,
 		c.PaymentOrder, c.PaymentProviderInstance, c.PendingAuthSession, c.PromoCode,
 		c.PromoCodeUsage, c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting,
@@ -424,6 +456,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *APIKeyMutation:
 		return c.APIKey.mutate(ctx, m)
+	case *APIKeyGroupMutation:
+		return c.APIKeyGroup.mutate(ctx, m)
 	case *AccountMutation:
 		return c.Account.mutate(ctx, m)
 	case *AccountGroupMutation:
@@ -444,6 +478,14 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ChannelMonitorHistory.mutate(ctx, m)
 	case *ChannelMonitorRequestTemplateMutation:
 		return c.ChannelMonitorRequestTemplate.mutate(ctx, m)
+	case *DepartmentMutation:
+		return c.Department.mutate(ctx, m)
+	case *EnterpriseMutation:
+		return c.Enterprise.mutate(ctx, m)
+	case *EnterpriseMemberMutation:
+		return c.EnterpriseMember.mutate(ctx, m)
+	case *EnterpriseSubscriptionMutation:
+		return c.EnterpriseSubscription.mutate(ctx, m)
 	case *ErrorPassthroughRuleMutation:
 		return c.ErrorPassthroughRule.mutate(ctx, m)
 	case *GroupMutation:
@@ -653,6 +695,54 @@ func (c *APIKeyClient) QueryUsageLogs(_m *APIKey) *UsageLogQuery {
 	return query
 }
 
+// QueryAssignedMember queries the assigned_member edge of a APIKey.
+func (c *APIKeyClient) QueryAssignedMember(_m *APIKey) *EnterpriseMemberQuery {
+	query := (&EnterpriseMemberClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(apikey.Table, apikey.FieldID, id),
+			sqlgraph.To(enterprisemember.Table, enterprisemember.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, apikey.AssignedMemberTable, apikey.AssignedMemberColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKeyGroups queries the key_groups edge of a APIKey.
+func (c *APIKeyClient) QueryKeyGroups(_m *APIKey) *GroupQuery {
+	query := (&GroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(apikey.Table, apikey.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, apikey.KeyGroupsTable, apikey.KeyGroupsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAPIKeyGroups queries the api_key_groups edge of a APIKey.
+func (c *APIKeyClient) QueryAPIKeyGroups(_m *APIKey) *APIKeyGroupQuery {
+	query := (&APIKeyGroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(apikey.Table, apikey.FieldID, id),
+			sqlgraph.To(apikeygroup.Table, apikeygroup.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, apikey.APIKeyGroupsTable, apikey.APIKeyGroupsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *APIKeyClient) Hooks() []Hook {
 	hooks := c.hooks.APIKey
@@ -677,6 +767,171 @@ func (c *APIKeyClient) mutate(ctx context.Context, m *APIKeyMutation) (Value, er
 		return (&APIKeyDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown APIKey mutation op: %q", m.Op())
+	}
+}
+
+// APIKeyGroupClient is a client for the APIKeyGroup schema.
+type APIKeyGroupClient struct {
+	config
+}
+
+// NewAPIKeyGroupClient returns a client for the APIKeyGroup from the given config.
+func NewAPIKeyGroupClient(c config) *APIKeyGroupClient {
+	return &APIKeyGroupClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `apikeygroup.Hooks(f(g(h())))`.
+func (c *APIKeyGroupClient) Use(hooks ...Hook) {
+	c.hooks.APIKeyGroup = append(c.hooks.APIKeyGroup, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `apikeygroup.Intercept(f(g(h())))`.
+func (c *APIKeyGroupClient) Intercept(interceptors ...Interceptor) {
+	c.inters.APIKeyGroup = append(c.inters.APIKeyGroup, interceptors...)
+}
+
+// Create returns a builder for creating a APIKeyGroup entity.
+func (c *APIKeyGroupClient) Create() *APIKeyGroupCreate {
+	mutation := newAPIKeyGroupMutation(c.config, OpCreate)
+	return &APIKeyGroupCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of APIKeyGroup entities.
+func (c *APIKeyGroupClient) CreateBulk(builders ...*APIKeyGroupCreate) *APIKeyGroupCreateBulk {
+	return &APIKeyGroupCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *APIKeyGroupClient) MapCreateBulk(slice any, setFunc func(*APIKeyGroupCreate, int)) *APIKeyGroupCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &APIKeyGroupCreateBulk{err: fmt.Errorf("calling to APIKeyGroupClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*APIKeyGroupCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &APIKeyGroupCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for APIKeyGroup.
+func (c *APIKeyGroupClient) Update() *APIKeyGroupUpdate {
+	mutation := newAPIKeyGroupMutation(c.config, OpUpdate)
+	return &APIKeyGroupUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *APIKeyGroupClient) UpdateOne(_m *APIKeyGroup) *APIKeyGroupUpdateOne {
+	mutation := newAPIKeyGroupMutation(c.config, OpUpdateOne, withAPIKeyGroup(_m))
+	return &APIKeyGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *APIKeyGroupClient) UpdateOneID(id int64) *APIKeyGroupUpdateOne {
+	mutation := newAPIKeyGroupMutation(c.config, OpUpdateOne, withAPIKeyGroupID(id))
+	return &APIKeyGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for APIKeyGroup.
+func (c *APIKeyGroupClient) Delete() *APIKeyGroupDelete {
+	mutation := newAPIKeyGroupMutation(c.config, OpDelete)
+	return &APIKeyGroupDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *APIKeyGroupClient) DeleteOne(_m *APIKeyGroup) *APIKeyGroupDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *APIKeyGroupClient) DeleteOneID(id int64) *APIKeyGroupDeleteOne {
+	builder := c.Delete().Where(apikeygroup.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &APIKeyGroupDeleteOne{builder}
+}
+
+// Query returns a query builder for APIKeyGroup.
+func (c *APIKeyGroupClient) Query() *APIKeyGroupQuery {
+	return &APIKeyGroupQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAPIKeyGroup},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a APIKeyGroup entity by its id.
+func (c *APIKeyGroupClient) Get(ctx context.Context, id int64) (*APIKeyGroup, error) {
+	return c.Query().Where(apikeygroup.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *APIKeyGroupClient) GetX(ctx context.Context, id int64) *APIKeyGroup {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAPIKey queries the api_key edge of a APIKeyGroup.
+func (c *APIKeyGroupClient) QueryAPIKey(_m *APIKeyGroup) *APIKeyQuery {
+	query := (&APIKeyClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(apikeygroup.Table, apikeygroup.FieldID, id),
+			sqlgraph.To(apikey.Table, apikey.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, apikeygroup.APIKeyTable, apikeygroup.APIKeyColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGroup queries the group edge of a APIKeyGroup.
+func (c *APIKeyGroupClient) QueryGroup(_m *APIKeyGroup) *GroupQuery {
+	query := (&GroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(apikeygroup.Table, apikeygroup.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, apikeygroup.GroupTable, apikeygroup.GroupColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *APIKeyGroupClient) Hooks() []Hook {
+	return c.hooks.APIKeyGroup
+}
+
+// Interceptors returns the client interceptors.
+func (c *APIKeyGroupClient) Interceptors() []Interceptor {
+	return c.inters.APIKeyGroup
+}
+
+func (c *APIKeyGroupClient) mutate(ctx context.Context, m *APIKeyGroupMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&APIKeyGroupCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&APIKeyGroupUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&APIKeyGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&APIKeyGroupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown APIKeyGroup mutation op: %q", m.Op())
 	}
 }
 
@@ -2267,6 +2522,768 @@ func (c *ChannelMonitorRequestTemplateClient) mutate(ctx context.Context, m *Cha
 	}
 }
 
+// DepartmentClient is a client for the Department schema.
+type DepartmentClient struct {
+	config
+}
+
+// NewDepartmentClient returns a client for the Department from the given config.
+func NewDepartmentClient(c config) *DepartmentClient {
+	return &DepartmentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `department.Hooks(f(g(h())))`.
+func (c *DepartmentClient) Use(hooks ...Hook) {
+	c.hooks.Department = append(c.hooks.Department, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `department.Intercept(f(g(h())))`.
+func (c *DepartmentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Department = append(c.inters.Department, interceptors...)
+}
+
+// Create returns a builder for creating a Department entity.
+func (c *DepartmentClient) Create() *DepartmentCreate {
+	mutation := newDepartmentMutation(c.config, OpCreate)
+	return &DepartmentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Department entities.
+func (c *DepartmentClient) CreateBulk(builders ...*DepartmentCreate) *DepartmentCreateBulk {
+	return &DepartmentCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DepartmentClient) MapCreateBulk(slice any, setFunc func(*DepartmentCreate, int)) *DepartmentCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DepartmentCreateBulk{err: fmt.Errorf("calling to DepartmentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DepartmentCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DepartmentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Department.
+func (c *DepartmentClient) Update() *DepartmentUpdate {
+	mutation := newDepartmentMutation(c.config, OpUpdate)
+	return &DepartmentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DepartmentClient) UpdateOne(_m *Department) *DepartmentUpdateOne {
+	mutation := newDepartmentMutation(c.config, OpUpdateOne, withDepartment(_m))
+	return &DepartmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DepartmentClient) UpdateOneID(id int64) *DepartmentUpdateOne {
+	mutation := newDepartmentMutation(c.config, OpUpdateOne, withDepartmentID(id))
+	return &DepartmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Department.
+func (c *DepartmentClient) Delete() *DepartmentDelete {
+	mutation := newDepartmentMutation(c.config, OpDelete)
+	return &DepartmentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DepartmentClient) DeleteOne(_m *Department) *DepartmentDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DepartmentClient) DeleteOneID(id int64) *DepartmentDeleteOne {
+	builder := c.Delete().Where(department.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DepartmentDeleteOne{builder}
+}
+
+// Query returns a query builder for Department.
+func (c *DepartmentClient) Query() *DepartmentQuery {
+	return &DepartmentQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDepartment},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Department entity by its id.
+func (c *DepartmentClient) Get(ctx context.Context, id int64) (*Department, error) {
+	return c.Query().Where(department.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DepartmentClient) GetX(ctx context.Context, id int64) *Department {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryEnterprise queries the enterprise edge of a Department.
+func (c *DepartmentClient) QueryEnterprise(_m *Department) *EnterpriseQuery {
+	query := (&EnterpriseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(department.Table, department.FieldID, id),
+			sqlgraph.To(enterprise.Table, enterprise.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, department.EnterpriseTable, department.EnterpriseColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMembers queries the members edge of a Department.
+func (c *DepartmentClient) QueryMembers(_m *Department) *EnterpriseMemberQuery {
+	query := (&EnterpriseMemberClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(department.Table, department.FieldID, id),
+			sqlgraph.To(enterprisemember.Table, enterprisemember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, department.MembersTable, department.MembersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DepartmentClient) Hooks() []Hook {
+	hooks := c.hooks.Department
+	return append(hooks[:len(hooks):len(hooks)], department.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *DepartmentClient) Interceptors() []Interceptor {
+	inters := c.inters.Department
+	return append(inters[:len(inters):len(inters)], department.Interceptors[:]...)
+}
+
+func (c *DepartmentClient) mutate(ctx context.Context, m *DepartmentMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DepartmentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DepartmentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DepartmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DepartmentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Department mutation op: %q", m.Op())
+	}
+}
+
+// EnterpriseClient is a client for the Enterprise schema.
+type EnterpriseClient struct {
+	config
+}
+
+// NewEnterpriseClient returns a client for the Enterprise from the given config.
+func NewEnterpriseClient(c config) *EnterpriseClient {
+	return &EnterpriseClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `enterprise.Hooks(f(g(h())))`.
+func (c *EnterpriseClient) Use(hooks ...Hook) {
+	c.hooks.Enterprise = append(c.hooks.Enterprise, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `enterprise.Intercept(f(g(h())))`.
+func (c *EnterpriseClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Enterprise = append(c.inters.Enterprise, interceptors...)
+}
+
+// Create returns a builder for creating a Enterprise entity.
+func (c *EnterpriseClient) Create() *EnterpriseCreate {
+	mutation := newEnterpriseMutation(c.config, OpCreate)
+	return &EnterpriseCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Enterprise entities.
+func (c *EnterpriseClient) CreateBulk(builders ...*EnterpriseCreate) *EnterpriseCreateBulk {
+	return &EnterpriseCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *EnterpriseClient) MapCreateBulk(slice any, setFunc func(*EnterpriseCreate, int)) *EnterpriseCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &EnterpriseCreateBulk{err: fmt.Errorf("calling to EnterpriseClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*EnterpriseCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &EnterpriseCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Enterprise.
+func (c *EnterpriseClient) Update() *EnterpriseUpdate {
+	mutation := newEnterpriseMutation(c.config, OpUpdate)
+	return &EnterpriseUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EnterpriseClient) UpdateOne(_m *Enterprise) *EnterpriseUpdateOne {
+	mutation := newEnterpriseMutation(c.config, OpUpdateOne, withEnterprise(_m))
+	return &EnterpriseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EnterpriseClient) UpdateOneID(id int64) *EnterpriseUpdateOne {
+	mutation := newEnterpriseMutation(c.config, OpUpdateOne, withEnterpriseID(id))
+	return &EnterpriseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Enterprise.
+func (c *EnterpriseClient) Delete() *EnterpriseDelete {
+	mutation := newEnterpriseMutation(c.config, OpDelete)
+	return &EnterpriseDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *EnterpriseClient) DeleteOne(_m *Enterprise) *EnterpriseDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *EnterpriseClient) DeleteOneID(id int64) *EnterpriseDeleteOne {
+	builder := c.Delete().Where(enterprise.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EnterpriseDeleteOne{builder}
+}
+
+// Query returns a query builder for Enterprise.
+func (c *EnterpriseClient) Query() *EnterpriseQuery {
+	return &EnterpriseQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeEnterprise},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Enterprise entity by its id.
+func (c *EnterpriseClient) Get(ctx context.Context, id int64) (*Enterprise, error) {
+	return c.Query().Where(enterprise.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EnterpriseClient) GetX(ctx context.Context, id int64) *Enterprise {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAdmin queries the admin edge of a Enterprise.
+func (c *EnterpriseClient) QueryAdmin(_m *Enterprise) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(enterprise.Table, enterprise.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, enterprise.AdminTable, enterprise.AdminColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMembers queries the members edge of a Enterprise.
+func (c *EnterpriseClient) QueryMembers(_m *Enterprise) *EnterpriseMemberQuery {
+	query := (&EnterpriseMemberClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(enterprise.Table, enterprise.FieldID, id),
+			sqlgraph.To(enterprisemember.Table, enterprisemember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, enterprise.MembersTable, enterprise.MembersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDepartments queries the departments edge of a Enterprise.
+func (c *EnterpriseClient) QueryDepartments(_m *Enterprise) *DepartmentQuery {
+	query := (&DepartmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(enterprise.Table, enterprise.FieldID, id),
+			sqlgraph.To(department.Table, department.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, enterprise.DepartmentsTable, enterprise.DepartmentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySubscriptions queries the subscriptions edge of a Enterprise.
+func (c *EnterpriseClient) QuerySubscriptions(_m *Enterprise) *EnterpriseSubscriptionQuery {
+	query := (&EnterpriseSubscriptionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(enterprise.Table, enterprise.FieldID, id),
+			sqlgraph.To(enterprisesubscription.Table, enterprisesubscription.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, enterprise.SubscriptionsTable, enterprise.SubscriptionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUsageLogs queries the usage_logs edge of a Enterprise.
+func (c *EnterpriseClient) QueryUsageLogs(_m *Enterprise) *UsageLogQuery {
+	query := (&UsageLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(enterprise.Table, enterprise.FieldID, id),
+			sqlgraph.To(usagelog.Table, usagelog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, enterprise.UsageLogsTable, enterprise.UsageLogsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *EnterpriseClient) Hooks() []Hook {
+	hooks := c.hooks.Enterprise
+	return append(hooks[:len(hooks):len(hooks)], enterprise.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *EnterpriseClient) Interceptors() []Interceptor {
+	inters := c.inters.Enterprise
+	return append(inters[:len(inters):len(inters)], enterprise.Interceptors[:]...)
+}
+
+func (c *EnterpriseClient) mutate(ctx context.Context, m *EnterpriseMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EnterpriseCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EnterpriseUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EnterpriseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EnterpriseDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Enterprise mutation op: %q", m.Op())
+	}
+}
+
+// EnterpriseMemberClient is a client for the EnterpriseMember schema.
+type EnterpriseMemberClient struct {
+	config
+}
+
+// NewEnterpriseMemberClient returns a client for the EnterpriseMember from the given config.
+func NewEnterpriseMemberClient(c config) *EnterpriseMemberClient {
+	return &EnterpriseMemberClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `enterprisemember.Hooks(f(g(h())))`.
+func (c *EnterpriseMemberClient) Use(hooks ...Hook) {
+	c.hooks.EnterpriseMember = append(c.hooks.EnterpriseMember, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `enterprisemember.Intercept(f(g(h())))`.
+func (c *EnterpriseMemberClient) Intercept(interceptors ...Interceptor) {
+	c.inters.EnterpriseMember = append(c.inters.EnterpriseMember, interceptors...)
+}
+
+// Create returns a builder for creating a EnterpriseMember entity.
+func (c *EnterpriseMemberClient) Create() *EnterpriseMemberCreate {
+	mutation := newEnterpriseMemberMutation(c.config, OpCreate)
+	return &EnterpriseMemberCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of EnterpriseMember entities.
+func (c *EnterpriseMemberClient) CreateBulk(builders ...*EnterpriseMemberCreate) *EnterpriseMemberCreateBulk {
+	return &EnterpriseMemberCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *EnterpriseMemberClient) MapCreateBulk(slice any, setFunc func(*EnterpriseMemberCreate, int)) *EnterpriseMemberCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &EnterpriseMemberCreateBulk{err: fmt.Errorf("calling to EnterpriseMemberClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*EnterpriseMemberCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &EnterpriseMemberCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for EnterpriseMember.
+func (c *EnterpriseMemberClient) Update() *EnterpriseMemberUpdate {
+	mutation := newEnterpriseMemberMutation(c.config, OpUpdate)
+	return &EnterpriseMemberUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EnterpriseMemberClient) UpdateOne(_m *EnterpriseMember) *EnterpriseMemberUpdateOne {
+	mutation := newEnterpriseMemberMutation(c.config, OpUpdateOne, withEnterpriseMember(_m))
+	return &EnterpriseMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EnterpriseMemberClient) UpdateOneID(id int64) *EnterpriseMemberUpdateOne {
+	mutation := newEnterpriseMemberMutation(c.config, OpUpdateOne, withEnterpriseMemberID(id))
+	return &EnterpriseMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for EnterpriseMember.
+func (c *EnterpriseMemberClient) Delete() *EnterpriseMemberDelete {
+	mutation := newEnterpriseMemberMutation(c.config, OpDelete)
+	return &EnterpriseMemberDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *EnterpriseMemberClient) DeleteOne(_m *EnterpriseMember) *EnterpriseMemberDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *EnterpriseMemberClient) DeleteOneID(id int64) *EnterpriseMemberDeleteOne {
+	builder := c.Delete().Where(enterprisemember.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EnterpriseMemberDeleteOne{builder}
+}
+
+// Query returns a query builder for EnterpriseMember.
+func (c *EnterpriseMemberClient) Query() *EnterpriseMemberQuery {
+	return &EnterpriseMemberQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeEnterpriseMember},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a EnterpriseMember entity by its id.
+func (c *EnterpriseMemberClient) Get(ctx context.Context, id int64) (*EnterpriseMember, error) {
+	return c.Query().Where(enterprisemember.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EnterpriseMemberClient) GetX(ctx context.Context, id int64) *EnterpriseMember {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryEnterprise queries the enterprise edge of a EnterpriseMember.
+func (c *EnterpriseMemberClient) QueryEnterprise(_m *EnterpriseMember) *EnterpriseQuery {
+	query := (&EnterpriseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(enterprisemember.Table, enterprisemember.FieldID, id),
+			sqlgraph.To(enterprise.Table, enterprise.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, enterprisemember.EnterpriseTable, enterprisemember.EnterpriseColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a EnterpriseMember.
+func (c *EnterpriseMemberClient) QueryUser(_m *EnterpriseMember) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(enterprisemember.Table, enterprisemember.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, enterprisemember.UserTable, enterprisemember.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDepartment queries the department edge of a EnterpriseMember.
+func (c *EnterpriseMemberClient) QueryDepartment(_m *EnterpriseMember) *DepartmentQuery {
+	query := (&DepartmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(enterprisemember.Table, enterprisemember.FieldID, id),
+			sqlgraph.To(department.Table, department.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, enterprisemember.DepartmentTable, enterprisemember.DepartmentColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAssignedKeys queries the assigned_keys edge of a EnterpriseMember.
+func (c *EnterpriseMemberClient) QueryAssignedKeys(_m *EnterpriseMember) *APIKeyQuery {
+	query := (&APIKeyClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(enterprisemember.Table, enterprisemember.FieldID, id),
+			sqlgraph.To(apikey.Table, apikey.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, enterprisemember.AssignedKeysTable, enterprisemember.AssignedKeysColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *EnterpriseMemberClient) Hooks() []Hook {
+	hooks := c.hooks.EnterpriseMember
+	return append(hooks[:len(hooks):len(hooks)], enterprisemember.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *EnterpriseMemberClient) Interceptors() []Interceptor {
+	inters := c.inters.EnterpriseMember
+	return append(inters[:len(inters):len(inters)], enterprisemember.Interceptors[:]...)
+}
+
+func (c *EnterpriseMemberClient) mutate(ctx context.Context, m *EnterpriseMemberMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EnterpriseMemberCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EnterpriseMemberUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EnterpriseMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EnterpriseMemberDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown EnterpriseMember mutation op: %q", m.Op())
+	}
+}
+
+// EnterpriseSubscriptionClient is a client for the EnterpriseSubscription schema.
+type EnterpriseSubscriptionClient struct {
+	config
+}
+
+// NewEnterpriseSubscriptionClient returns a client for the EnterpriseSubscription from the given config.
+func NewEnterpriseSubscriptionClient(c config) *EnterpriseSubscriptionClient {
+	return &EnterpriseSubscriptionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `enterprisesubscription.Hooks(f(g(h())))`.
+func (c *EnterpriseSubscriptionClient) Use(hooks ...Hook) {
+	c.hooks.EnterpriseSubscription = append(c.hooks.EnterpriseSubscription, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `enterprisesubscription.Intercept(f(g(h())))`.
+func (c *EnterpriseSubscriptionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.EnterpriseSubscription = append(c.inters.EnterpriseSubscription, interceptors...)
+}
+
+// Create returns a builder for creating a EnterpriseSubscription entity.
+func (c *EnterpriseSubscriptionClient) Create() *EnterpriseSubscriptionCreate {
+	mutation := newEnterpriseSubscriptionMutation(c.config, OpCreate)
+	return &EnterpriseSubscriptionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of EnterpriseSubscription entities.
+func (c *EnterpriseSubscriptionClient) CreateBulk(builders ...*EnterpriseSubscriptionCreate) *EnterpriseSubscriptionCreateBulk {
+	return &EnterpriseSubscriptionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *EnterpriseSubscriptionClient) MapCreateBulk(slice any, setFunc func(*EnterpriseSubscriptionCreate, int)) *EnterpriseSubscriptionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &EnterpriseSubscriptionCreateBulk{err: fmt.Errorf("calling to EnterpriseSubscriptionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*EnterpriseSubscriptionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &EnterpriseSubscriptionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for EnterpriseSubscription.
+func (c *EnterpriseSubscriptionClient) Update() *EnterpriseSubscriptionUpdate {
+	mutation := newEnterpriseSubscriptionMutation(c.config, OpUpdate)
+	return &EnterpriseSubscriptionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EnterpriseSubscriptionClient) UpdateOne(_m *EnterpriseSubscription) *EnterpriseSubscriptionUpdateOne {
+	mutation := newEnterpriseSubscriptionMutation(c.config, OpUpdateOne, withEnterpriseSubscription(_m))
+	return &EnterpriseSubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EnterpriseSubscriptionClient) UpdateOneID(id int64) *EnterpriseSubscriptionUpdateOne {
+	mutation := newEnterpriseSubscriptionMutation(c.config, OpUpdateOne, withEnterpriseSubscriptionID(id))
+	return &EnterpriseSubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for EnterpriseSubscription.
+func (c *EnterpriseSubscriptionClient) Delete() *EnterpriseSubscriptionDelete {
+	mutation := newEnterpriseSubscriptionMutation(c.config, OpDelete)
+	return &EnterpriseSubscriptionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *EnterpriseSubscriptionClient) DeleteOne(_m *EnterpriseSubscription) *EnterpriseSubscriptionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *EnterpriseSubscriptionClient) DeleteOneID(id int64) *EnterpriseSubscriptionDeleteOne {
+	builder := c.Delete().Where(enterprisesubscription.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EnterpriseSubscriptionDeleteOne{builder}
+}
+
+// Query returns a query builder for EnterpriseSubscription.
+func (c *EnterpriseSubscriptionClient) Query() *EnterpriseSubscriptionQuery {
+	return &EnterpriseSubscriptionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeEnterpriseSubscription},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a EnterpriseSubscription entity by its id.
+func (c *EnterpriseSubscriptionClient) Get(ctx context.Context, id int64) (*EnterpriseSubscription, error) {
+	return c.Query().Where(enterprisesubscription.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EnterpriseSubscriptionClient) GetX(ctx context.Context, id int64) *EnterpriseSubscription {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryEnterprise queries the enterprise edge of a EnterpriseSubscription.
+func (c *EnterpriseSubscriptionClient) QueryEnterprise(_m *EnterpriseSubscription) *EnterpriseQuery {
+	query := (&EnterpriseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(enterprisesubscription.Table, enterprisesubscription.FieldID, id),
+			sqlgraph.To(enterprise.Table, enterprise.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, enterprisesubscription.EnterpriseTable, enterprisesubscription.EnterpriseColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGroup queries the group edge of a EnterpriseSubscription.
+func (c *EnterpriseSubscriptionClient) QueryGroup(_m *EnterpriseSubscription) *GroupQuery {
+	query := (&GroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(enterprisesubscription.Table, enterprisesubscription.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, enterprisesubscription.GroupTable, enterprisesubscription.GroupColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlan queries the plan edge of a EnterpriseSubscription.
+func (c *EnterpriseSubscriptionClient) QueryPlan(_m *EnterpriseSubscription) *SubscriptionPlanQuery {
+	query := (&SubscriptionPlanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(enterprisesubscription.Table, enterprisesubscription.FieldID, id),
+			sqlgraph.To(subscriptionplan.Table, subscriptionplan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, enterprisesubscription.PlanTable, enterprisesubscription.PlanColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *EnterpriseSubscriptionClient) Hooks() []Hook {
+	return c.hooks.EnterpriseSubscription
+}
+
+// Interceptors returns the client interceptors.
+func (c *EnterpriseSubscriptionClient) Interceptors() []Interceptor {
+	return c.inters.EnterpriseSubscription
+}
+
+func (c *EnterpriseSubscriptionClient) mutate(ctx context.Context, m *EnterpriseSubscriptionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EnterpriseSubscriptionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EnterpriseSubscriptionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EnterpriseSubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EnterpriseSubscriptionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown EnterpriseSubscription mutation op: %q", m.Op())
+	}
+}
+
 // ErrorPassthroughRuleClient is a client for the ErrorPassthroughRule schema.
 type ErrorPassthroughRuleClient struct {
 	config
@@ -2604,6 +3621,38 @@ func (c *GroupClient) QueryAllowedUsers(_m *Group) *UserQuery {
 	return query
 }
 
+// QueryEnterpriseSubscriptions queries the enterprise_subscriptions edge of a Group.
+func (c *GroupClient) QueryEnterpriseSubscriptions(_m *Group) *EnterpriseSubscriptionQuery {
+	query := (&EnterpriseSubscriptionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(enterprisesubscription.Table, enterprisesubscription.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, group.EnterpriseSubscriptionsTable, group.EnterpriseSubscriptionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGroupedKeys queries the grouped_keys edge of a Group.
+func (c *GroupClient) QueryGroupedKeys(_m *Group) *APIKeyQuery {
+	query := (&APIKeyClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(apikey.Table, apikey.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, group.GroupedKeysTable, group.GroupedKeysPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryAccountGroups queries the account_groups edge of a Group.
 func (c *GroupClient) QueryAccountGroups(_m *Group) *AccountGroupQuery {
 	query := (&AccountGroupClient{config: c.config}).Query()
@@ -2629,6 +3678,22 @@ func (c *GroupClient) QueryUserAllowedGroups(_m *Group) *UserAllowedGroupQuery {
 			sqlgraph.From(group.Table, group.FieldID, id),
 			sqlgraph.To(userallowedgroup.Table, userallowedgroup.GroupColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, group.UserAllowedGroupsTable, group.UserAllowedGroupsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAPIKeyGroups queries the api_key_groups edge of a Group.
+func (c *GroupClient) QueryAPIKeyGroups(_m *Group) *APIKeyGroupQuery {
+	query := (&APIKeyGroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(apikeygroup.Table, apikeygroup.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, group.APIKeyGroupsTable, group.APIKeyGroupsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -5040,6 +6105,22 @@ func (c *UsageLogClient) QuerySubscription(_m *UsageLog) *UserSubscriptionQuery 
 	return query
 }
 
+// QueryEnterprise queries the enterprise edge of a UsageLog.
+func (c *UsageLogClient) QueryEnterprise(_m *UsageLog) *EnterpriseQuery {
+	query := (&EnterpriseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usagelog.Table, usagelog.FieldID, id),
+			sqlgraph.To(enterprise.Table, enterprise.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, usagelog.EnterpriseTable, usagelog.EnterpriseColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UsageLogClient) Hooks() []Hook {
 	return c.hooks.UsageLog
@@ -5374,6 +6455,38 @@ func (c *UserClient) QueryPlatformQuotas(_m *User) *UserPlatformQuotaQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(userplatformquota.Table, userplatformquota.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.PlatformQuotasTable, user.PlatformQuotasColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnterpriseMembers queries the enterprise_members edge of a User.
+func (c *UserClient) QueryEnterpriseMembers(_m *User) *EnterpriseMemberQuery {
+	query := (&EnterpriseMemberClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(enterprisemember.Table, enterprisemember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.EnterpriseMembersTable, user.EnterpriseMembersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryManagedEnterprises queries the managed_enterprises edge of a User.
+func (c *UserClient) QueryManagedEnterprises(_m *User) *EnterpriseQuery {
+	query := (&EnterpriseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(enterprise.Table, enterprise.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ManagedEnterprisesTable, user.ManagedEnterprisesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -6209,26 +7322,26 @@ func (c *UserSubscriptionClient) mutate(ctx context.Context, m *UserSubscription
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		APIKey, Account, AccountGroup, Announcement, AnnouncementRead, AuthIdentity,
-		AuthIdentityChannel, ChannelMonitor, ChannelMonitorDailyRollup,
-		ChannelMonitorHistory, ChannelMonitorRequestTemplate, ErrorPassthroughRule,
-		Group, IdempotencyRecord, IdentityAdoptionDecision, PaymentAuditLog,
-		PaymentOrder, PaymentProviderInstance, PendingAuthSession, PromoCode,
-		PromoCodeUsage, Proxy, RedeemCode, SecuritySecret, Setting, SubscriptionPlan,
-		TLSFingerprintProfile, UsageCleanupTask, UsageLog, User, UserAllowedGroup,
-		UserAttributeDefinition, UserAttributeValue, UserPlatformQuota,
-		UserSubscription []ent.Hook
+		APIKey, APIKeyGroup, Account, AccountGroup, Announcement, AnnouncementRead,
+		AuthIdentity, AuthIdentityChannel, ChannelMonitor, ChannelMonitorDailyRollup,
+		ChannelMonitorHistory, ChannelMonitorRequestTemplate, Department, Enterprise,
+		EnterpriseMember, EnterpriseSubscription, ErrorPassthroughRule, Group,
+		IdempotencyRecord, IdentityAdoptionDecision, PaymentAuditLog, PaymentOrder,
+		PaymentProviderInstance, PendingAuthSession, PromoCode, PromoCodeUsage, Proxy,
+		RedeemCode, SecuritySecret, Setting, SubscriptionPlan, TLSFingerprintProfile,
+		UsageCleanupTask, UsageLog, User, UserAllowedGroup, UserAttributeDefinition,
+		UserAttributeValue, UserPlatformQuota, UserSubscription []ent.Hook
 	}
 	inters struct {
-		APIKey, Account, AccountGroup, Announcement, AnnouncementRead, AuthIdentity,
-		AuthIdentityChannel, ChannelMonitor, ChannelMonitorDailyRollup,
-		ChannelMonitorHistory, ChannelMonitorRequestTemplate, ErrorPassthroughRule,
-		Group, IdempotencyRecord, IdentityAdoptionDecision, PaymentAuditLog,
-		PaymentOrder, PaymentProviderInstance, PendingAuthSession, PromoCode,
-		PromoCodeUsage, Proxy, RedeemCode, SecuritySecret, Setting, SubscriptionPlan,
-		TLSFingerprintProfile, UsageCleanupTask, UsageLog, User, UserAllowedGroup,
-		UserAttributeDefinition, UserAttributeValue, UserPlatformQuota,
-		UserSubscription []ent.Interceptor
+		APIKey, APIKeyGroup, Account, AccountGroup, Announcement, AnnouncementRead,
+		AuthIdentity, AuthIdentityChannel, ChannelMonitor, ChannelMonitorDailyRollup,
+		ChannelMonitorHistory, ChannelMonitorRequestTemplate, Department, Enterprise,
+		EnterpriseMember, EnterpriseSubscription, ErrorPassthroughRule, Group,
+		IdempotencyRecord, IdentityAdoptionDecision, PaymentAuditLog, PaymentOrder,
+		PaymentProviderInstance, PendingAuthSession, PromoCode, PromoCodeUsage, Proxy,
+		RedeemCode, SecuritySecret, Setting, SubscriptionPlan, TLSFingerprintProfile,
+		UsageCleanupTask, UsageLog, User, UserAllowedGroup, UserAttributeDefinition,
+		UserAttributeValue, UserPlatformQuota, UserSubscription []ent.Interceptor
 	}
 )
 

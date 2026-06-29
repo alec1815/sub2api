@@ -120,6 +120,16 @@ func SubscriptionID(v int64) predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldEQ(FieldSubscriptionID, v))
 }
 
+// EnterpriseID applies equality check predicate on the "enterprise_id" field. It's identical to EnterpriseIDEQ.
+func EnterpriseID(v int64) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldEnterpriseID, v))
+}
+
+// PoolType applies equality check predicate on the "pool_type" field. It's identical to PoolTypeEQ.
+func PoolType(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldPoolType, v))
+}
+
 // InputTokens applies equality check predicate on the "input_tokens" field. It's identical to InputTokensEQ.
 func InputTokens(v int) predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldEQ(FieldInputTokens, v))
@@ -928,6 +938,101 @@ func SubscriptionIDIsNil() predicate.UsageLog {
 // SubscriptionIDNotNil applies the NotNil predicate on the "subscription_id" field.
 func SubscriptionIDNotNil() predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldNotNull(FieldSubscriptionID))
+}
+
+// EnterpriseIDEQ applies the EQ predicate on the "enterprise_id" field.
+func EnterpriseIDEQ(v int64) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldEnterpriseID, v))
+}
+
+// EnterpriseIDNEQ applies the NEQ predicate on the "enterprise_id" field.
+func EnterpriseIDNEQ(v int64) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNEQ(FieldEnterpriseID, v))
+}
+
+// EnterpriseIDIn applies the In predicate on the "enterprise_id" field.
+func EnterpriseIDIn(vs ...int64) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldIn(FieldEnterpriseID, vs...))
+}
+
+// EnterpriseIDNotIn applies the NotIn predicate on the "enterprise_id" field.
+func EnterpriseIDNotIn(vs ...int64) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNotIn(FieldEnterpriseID, vs...))
+}
+
+// EnterpriseIDIsNil applies the IsNil predicate on the "enterprise_id" field.
+func EnterpriseIDIsNil() predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldIsNull(FieldEnterpriseID))
+}
+
+// EnterpriseIDNotNil applies the NotNil predicate on the "enterprise_id" field.
+func EnterpriseIDNotNil() predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNotNull(FieldEnterpriseID))
+}
+
+// PoolTypeEQ applies the EQ predicate on the "pool_type" field.
+func PoolTypeEQ(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldPoolType, v))
+}
+
+// PoolTypeNEQ applies the NEQ predicate on the "pool_type" field.
+func PoolTypeNEQ(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNEQ(FieldPoolType, v))
+}
+
+// PoolTypeIn applies the In predicate on the "pool_type" field.
+func PoolTypeIn(vs ...string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldIn(FieldPoolType, vs...))
+}
+
+// PoolTypeNotIn applies the NotIn predicate on the "pool_type" field.
+func PoolTypeNotIn(vs ...string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNotIn(FieldPoolType, vs...))
+}
+
+// PoolTypeGT applies the GT predicate on the "pool_type" field.
+func PoolTypeGT(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldGT(FieldPoolType, v))
+}
+
+// PoolTypeGTE applies the GTE predicate on the "pool_type" field.
+func PoolTypeGTE(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldGTE(FieldPoolType, v))
+}
+
+// PoolTypeLT applies the LT predicate on the "pool_type" field.
+func PoolTypeLT(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldLT(FieldPoolType, v))
+}
+
+// PoolTypeLTE applies the LTE predicate on the "pool_type" field.
+func PoolTypeLTE(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldLTE(FieldPoolType, v))
+}
+
+// PoolTypeContains applies the Contains predicate on the "pool_type" field.
+func PoolTypeContains(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldContains(FieldPoolType, v))
+}
+
+// PoolTypeHasPrefix applies the HasPrefix predicate on the "pool_type" field.
+func PoolTypeHasPrefix(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldHasPrefix(FieldPoolType, v))
+}
+
+// PoolTypeHasSuffix applies the HasSuffix predicate on the "pool_type" field.
+func PoolTypeHasSuffix(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldHasSuffix(FieldPoolType, v))
+}
+
+// PoolTypeEqualFold applies the EqualFold predicate on the "pool_type" field.
+func PoolTypeEqualFold(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEqualFold(FieldPoolType, v))
+}
+
+// PoolTypeContainsFold applies the ContainsFold predicate on the "pool_type" field.
+func PoolTypeContainsFold(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldContainsFold(FieldPoolType, v))
 }
 
 // InputTokensEQ applies the EQ predicate on the "input_tokens" field.
@@ -2307,6 +2412,29 @@ func HasSubscription() predicate.UsageLog {
 func HasSubscriptionWith(preds ...predicate.UserSubscription) predicate.UsageLog {
 	return predicate.UsageLog(func(s *sql.Selector) {
 		step := newSubscriptionStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasEnterprise applies the HasEdge predicate on the "enterprise" edge.
+func HasEnterprise() predicate.UsageLog {
+	return predicate.UsageLog(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, EnterpriseTable, EnterpriseColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEnterpriseWith applies the HasEdge predicate on the "enterprise" edge with a given conditions (other predicates).
+func HasEnterpriseWith(preds ...predicate.Enterprise) predicate.UsageLog {
+	return predicate.UsageLog(func(s *sql.Selector) {
+		step := newEnterpriseStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

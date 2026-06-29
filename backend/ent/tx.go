@@ -16,6 +16,8 @@ type Tx struct {
 	config
 	// APIKey is the client for interacting with the APIKey builders.
 	APIKey *APIKeyClient
+	// APIKeyGroup is the client for interacting with the APIKeyGroup builders.
+	APIKeyGroup *APIKeyGroupClient
 	// Account is the client for interacting with the Account builders.
 	Account *AccountClient
 	// AccountGroup is the client for interacting with the AccountGroup builders.
@@ -36,6 +38,14 @@ type Tx struct {
 	ChannelMonitorHistory *ChannelMonitorHistoryClient
 	// ChannelMonitorRequestTemplate is the client for interacting with the ChannelMonitorRequestTemplate builders.
 	ChannelMonitorRequestTemplate *ChannelMonitorRequestTemplateClient
+	// Department is the client for interacting with the Department builders.
+	Department *DepartmentClient
+	// Enterprise is the client for interacting with the Enterprise builders.
+	Enterprise *EnterpriseClient
+	// EnterpriseMember is the client for interacting with the EnterpriseMember builders.
+	EnterpriseMember *EnterpriseMemberClient
+	// EnterpriseSubscription is the client for interacting with the EnterpriseSubscription builders.
+	EnterpriseSubscription *EnterpriseSubscriptionClient
 	// ErrorPassthroughRule is the client for interacting with the ErrorPassthroughRule builders.
 	ErrorPassthroughRule *ErrorPassthroughRuleClient
 	// Group is the client for interacting with the Group builders.
@@ -216,6 +226,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.APIKey = NewAPIKeyClient(tx.config)
+	tx.APIKeyGroup = NewAPIKeyGroupClient(tx.config)
 	tx.Account = NewAccountClient(tx.config)
 	tx.AccountGroup = NewAccountGroupClient(tx.config)
 	tx.Announcement = NewAnnouncementClient(tx.config)
@@ -226,6 +237,10 @@ func (tx *Tx) init() {
 	tx.ChannelMonitorDailyRollup = NewChannelMonitorDailyRollupClient(tx.config)
 	tx.ChannelMonitorHistory = NewChannelMonitorHistoryClient(tx.config)
 	tx.ChannelMonitorRequestTemplate = NewChannelMonitorRequestTemplateClient(tx.config)
+	tx.Department = NewDepartmentClient(tx.config)
+	tx.Enterprise = NewEnterpriseClient(tx.config)
+	tx.EnterpriseMember = NewEnterpriseMemberClient(tx.config)
+	tx.EnterpriseSubscription = NewEnterpriseSubscriptionClient(tx.config)
 	tx.ErrorPassthroughRule = NewErrorPassthroughRuleClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
 	tx.IdempotencyRecord = NewIdempotencyRecordClient(tx.config)

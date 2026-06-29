@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/Wei-Shaw/sub2api/ent/apikey"
+	"github.com/Wei-Shaw/sub2api/ent/enterprisemember"
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/user"
 )
@@ -34,6 +35,12 @@ type APIKey struct {
 	Name string `json:"name,omitempty"`
 	// GroupID holds the value of the "group_id" field.
 	GroupID *int64 `json:"group_id,omitempty"`
+	// 分配给企业成员的 enterprise_members.id，NULL=个人Key
+	AssignedTo *int64 `json:"assigned_to,omitempty"`
+	// 用途说明
+	UsagePurpose string `json:"usage_purpose,omitempty"`
+	// 绑定工具：cursor/trae/claude_code/codex/opencode/pixso/other
+	BoundTool string `json:"bound_tool,omitempty"`
 	// Status holds the value of the "status" field.
 	Status string `json:"status,omitempty"`
 	// Last usage time of this API key
@@ -80,9 +87,15 @@ type APIKeyEdges struct {
 	Group *Group `json:"group,omitempty"`
 	// UsageLogs holds the value of the usage_logs edge.
 	UsageLogs []*UsageLog `json:"usage_logs,omitempty"`
+	// Key 被分配给的企业成员
+	AssignedMember *EnterpriseMember `json:"assigned_member,omitempty"`
+	// Key 关联的多个分组（M:N）
+	KeyGroups []*Group `json:"key_groups,omitempty"`
+	// APIKeyGroups holds the value of the api_key_groups edge.
+	APIKeyGroups []*APIKeyGroup `json:"api_key_groups,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [6]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -116,6 +129,35 @@ func (e APIKeyEdges) UsageLogsOrErr() ([]*UsageLog, error) {
 	return nil, &NotLoadedError{edge: "usage_logs"}
 }
 
+// AssignedMemberOrErr returns the AssignedMember value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e APIKeyEdges) AssignedMemberOrErr() (*EnterpriseMember, error) {
+	if e.AssignedMember != nil {
+		return e.AssignedMember, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: enterprisemember.Label}
+	}
+	return nil, &NotLoadedError{edge: "assigned_member"}
+}
+
+// KeyGroupsOrErr returns the KeyGroups value or an error if the edge
+// was not loaded in eager-loading.
+func (e APIKeyEdges) KeyGroupsOrErr() ([]*Group, error) {
+	if e.loadedTypes[4] {
+		return e.KeyGroups, nil
+	}
+	return nil, &NotLoadedError{edge: "key_groups"}
+}
+
+// APIKeyGroupsOrErr returns the APIKeyGroups value or an error if the edge
+// was not loaded in eager-loading.
+func (e APIKeyEdges) APIKeyGroupsOrErr() ([]*APIKeyGroup, error) {
+	if e.loadedTypes[5] {
+		return e.APIKeyGroups, nil
+	}
+	return nil, &NotLoadedError{edge: "api_key_groups"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*APIKey) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -125,9 +167,9 @@ func (*APIKey) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case apikey.FieldQuota, apikey.FieldQuotaUsed, apikey.FieldRateLimit5h, apikey.FieldRateLimit1d, apikey.FieldRateLimit7d, apikey.FieldUsage5h, apikey.FieldUsage1d, apikey.FieldUsage7d:
 			values[i] = new(sql.NullFloat64)
-		case apikey.FieldID, apikey.FieldUserID, apikey.FieldGroupID:
+		case apikey.FieldID, apikey.FieldUserID, apikey.FieldGroupID, apikey.FieldAssignedTo:
 			values[i] = new(sql.NullInt64)
-		case apikey.FieldKey, apikey.FieldName, apikey.FieldStatus:
+		case apikey.FieldKey, apikey.FieldName, apikey.FieldUsagePurpose, apikey.FieldBoundTool, apikey.FieldStatus:
 			values[i] = new(sql.NullString)
 		case apikey.FieldCreatedAt, apikey.FieldUpdatedAt, apikey.FieldDeletedAt, apikey.FieldLastUsedAt, apikey.FieldExpiresAt, apikey.FieldWindow5hStart, apikey.FieldWindow1dStart, apikey.FieldWindow7dStart:
 			values[i] = new(sql.NullTime)
@@ -195,6 +237,25 @@ func (_m *APIKey) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.GroupID = new(int64)
 				*_m.GroupID = value.Int64
+			}
+		case apikey.FieldAssignedTo:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field assigned_to", values[i])
+			} else if value.Valid {
+				_m.AssignedTo = new(int64)
+				*_m.AssignedTo = value.Int64
+			}
+		case apikey.FieldUsagePurpose:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field usage_purpose", values[i])
+			} else if value.Valid {
+				_m.UsagePurpose = value.String
+			}
+		case apikey.FieldBoundTool:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field bound_tool", values[i])
+			} else if value.Valid {
+				_m.BoundTool = value.String
 			}
 		case apikey.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -329,6 +390,21 @@ func (_m *APIKey) QueryUsageLogs() *UsageLogQuery {
 	return NewAPIKeyClient(_m.config).QueryUsageLogs(_m)
 }
 
+// QueryAssignedMember queries the "assigned_member" edge of the APIKey entity.
+func (_m *APIKey) QueryAssignedMember() *EnterpriseMemberQuery {
+	return NewAPIKeyClient(_m.config).QueryAssignedMember(_m)
+}
+
+// QueryKeyGroups queries the "key_groups" edge of the APIKey entity.
+func (_m *APIKey) QueryKeyGroups() *GroupQuery {
+	return NewAPIKeyClient(_m.config).QueryKeyGroups(_m)
+}
+
+// QueryAPIKeyGroups queries the "api_key_groups" edge of the APIKey entity.
+func (_m *APIKey) QueryAPIKeyGroups() *APIKeyGroupQuery {
+	return NewAPIKeyClient(_m.config).QueryAPIKeyGroups(_m)
+}
+
 // Update returns a builder for updating this APIKey.
 // Note that you need to call APIKey.Unwrap() before calling this method if this APIKey
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -376,6 +452,17 @@ func (_m *APIKey) String() string {
 		builder.WriteString("group_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
+	builder.WriteString(", ")
+	if v := _m.AssignedTo; v != nil {
+		builder.WriteString("assigned_to=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("usage_purpose=")
+	builder.WriteString(_m.UsagePurpose)
+	builder.WriteString(", ")
+	builder.WriteString("bound_tool=")
+	builder.WriteString(_m.BoundTool)
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(_m.Status)

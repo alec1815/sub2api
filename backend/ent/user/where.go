@@ -1639,6 +1639,52 @@ func HasPlatformQuotasWith(preds ...predicate.UserPlatformQuota) predicate.User 
 	})
 }
 
+// HasEnterpriseMembers applies the HasEdge predicate on the "enterprise_members" edge.
+func HasEnterpriseMembers() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, EnterpriseMembersTable, EnterpriseMembersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEnterpriseMembersWith applies the HasEdge predicate on the "enterprise_members" edge with a given conditions (other predicates).
+func HasEnterpriseMembersWith(preds ...predicate.EnterpriseMember) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newEnterpriseMembersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasManagedEnterprises applies the HasEdge predicate on the "managed_enterprises" edge.
+func HasManagedEnterprises() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ManagedEnterprisesTable, ManagedEnterprisesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasManagedEnterprisesWith applies the HasEdge predicate on the "managed_enterprises" edge with a given conditions (other predicates).
+func HasManagedEnterprisesWith(preds ...predicate.Enterprise) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newManagedEnterprisesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasUserAllowedGroups applies the HasEdge predicate on the "user_allowed_groups" edge.
 func HasUserAllowedGroups() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
