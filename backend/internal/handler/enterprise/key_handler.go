@@ -103,7 +103,6 @@ func (h *KeyHandler) DeleteKey(c *gin.Context) {
 	}
 	response.Success(c, gin.H{"message": "Key deleted"})
 }
-
 // ToggleKey POST /api/enterprise/keys/:id/toggle
 func (h *KeyHandler) ToggleKey(c *gin.Context) {
 	subject, ok := middleware2.GetAuthSubjectFromContext(c)

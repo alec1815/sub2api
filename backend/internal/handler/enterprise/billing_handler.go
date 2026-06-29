@@ -63,7 +63,6 @@ func (h *BillingHandler) GetSubscriptions(c *gin.Context) {
 	}
 	response.Success(c, subs)
 }
-
 // GetUsage GET /api/enterprise/usage
 // 企业用量明细（分页查询），TODO(P6): 接入 UsageLogRepository 分页查询
 func (h *BillingHandler) GetUsage(c *gin.Context) {
