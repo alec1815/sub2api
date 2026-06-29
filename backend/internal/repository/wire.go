@@ -94,6 +94,13 @@ var ProviderSet = wire.NewSet(
 	NewContentModerationRepository,
 	NewAffiliateRepository,
 	NewUserPlatformQuotaRepository,     // T14: user × platform quota
+
+	// Enterprise repositories
+	NewEnterpriseRepository,
+	NewEnterpriseMemberRepository,
+	NewEnterpriseSubscriptionRepository,
+	NewDepartmentRepository,
+	NewAPIKeyGroupRepository,
 	NewUserPlatformQuotaServiceAdapter, // T14: adapter → service.UserPlatformQuotaRepository
 
 	// Cache implementations
