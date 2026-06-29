@@ -175,6 +175,10 @@ type UsageLog struct {
 	ImageSizeBreakdown map[string]int
 	MediaType          *string
 
+	// Enterprise fields (P1)
+	EnterpriseID *int64  `json:"enterprise_id,omitempty"`
+	PoolType     string  `json:"pool_type"`
+
 	CreatedAt time.Time
 
 	User         *User
