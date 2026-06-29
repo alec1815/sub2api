@@ -266,6 +266,18 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/enterprise-profile',
+    name: 'EnterpriseProfile',
+    component: () => import('@/views/user/EnterpriseProfileView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Enterprise Profile',
+      titleKey: 'enterpriseProfile.title',
+      descriptionKey: 'enterpriseProfile.description'
+    }
+  },
+  {
     path: '/subscriptions',
     name: 'Subscriptions',
     component: () => import('@/views/user/SubscriptionsView.vue'),
@@ -651,6 +663,56 @@ const routes: RouteRecordRaw[] = [
       title: 'Subscription Plans',
       titleKey: 'nav.paymentPlans',
       requiresPayment: true
+    }
+  },
+
+  // ==================== Enterprise Self-Admin Routes ====================
+  {
+    path: '/enterprise/members',
+    name: 'EnterpriseMemberManagement',
+    component: () => import('@/views/enterprise/MemberManagement.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Enterprise Members',
+      titleKey: 'enterprise.members.title',
+      descriptionKey: 'enterprise.members.description'
+    }
+  },
+  {
+    path: '/enterprise/keys',
+    name: 'EnterpriseKeys',
+    component: () => import('@/views/enterprise/EnterpriseKeys.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Enterprise API Keys',
+      titleKey: 'enterprise.keys.title',
+      descriptionKey: 'enterprise.keys.description'
+    }
+  },
+  {
+    path: '/enterprise/finance',
+    name: 'EnterpriseFinance',
+    component: () => import('@/views/enterprise/EnterpriseFinance.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Enterprise Finance',
+      titleKey: 'enterprise.finance.title',
+      descriptionKey: 'enterprise.finance.description'
+    }
+  },
+  {
+    path: '/enterprise/settings',
+    name: 'EnterpriseSettings',
+    component: () => import('@/views/enterprise/EnterpriseSettings.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Enterprise Settings',
+      titleKey: 'enterprise.settings.title',
+      descriptionKey: 'enterprise.settings.description'
     }
   },
 
