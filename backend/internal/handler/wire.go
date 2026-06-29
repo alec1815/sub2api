@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/Wei-Shaw/sub2api/internal/handler/admin"
+	"github.com/Wei-Shaw/sub2api/internal/handler/enterprise"
 	"github.com/Wei-Shaw/sub2api/internal/service"
 
 	"github.com/google/wire"
@@ -41,6 +42,10 @@ func ProvideAdminHandlers(
 	paymentHandler *admin.PaymentHandler,
 	affiliateHandler *admin.AffiliateHandler,
 	complianceHandler *admin.ComplianceHandler,
+	// P5 Enterprise admin handlers
+	enterpriseHandler *admin.EnterpriseHandler,
+	enterpriseMemberHandler *admin.EnterpriseMemberHandler,
+	enterpriseDeptHandler *admin.EnterpriseDepartmentHandler,
 ) *AdminHandlers {
 	return &AdminHandlers{
 		Dashboard:              dashboardHandler,
@@ -75,6 +80,26 @@ func ProvideAdminHandlers(
 		Payment:                paymentHandler,
 		Affiliate:              affiliateHandler,
 		Compliance:             complianceHandler,
+		Enterprise:             enterpriseHandler,
+		EnterpriseMember:       enterpriseMemberHandler,
+		EnterpriseDept:         enterpriseDeptHandler,
+	}
+}
+
+// ProvideEnterpriseHandlers creates the EnterpriseHandlers struct (P5)
+func ProvideEnterpriseHandlers(
+	memberHandler *enterprise.MemberHandler,
+	keyHandler *enterprise.KeyHandler,
+	departmentHandler *enterprise.DepartmentHandler,
+	billingHandler *enterprise.BillingHandler,
+	profileHandler *enterprise.ProfileHandler,
+) *EnterpriseHandlers {
+	return &EnterpriseHandlers{
+		Member:     memberHandler,
+		Key:        keyHandler,
+		Department: departmentHandler,
+		Billing:    billingHandler,
+		Profile:    profileHandler,
 	}
 }
 
@@ -108,6 +133,7 @@ func ProvideHandlers(
 	announcementHandler *AnnouncementHandler,
 	channelMonitorUserHandler *ChannelMonitorUserHandler,
 	adminHandlers *AdminHandlers,
+	enterpriseHandlers *EnterpriseHandlers,
 	gatewayHandler *GatewayHandler,
 	openaiGatewayHandler *OpenAIGatewayHandler,
 	settingHandler *SettingHandler,
@@ -128,6 +154,7 @@ func ProvideHandlers(
 		Announcement:     announcementHandler,
 		ChannelMonitor:   channelMonitorUserHandler,
 		Admin:            adminHandlers,
+		Enterprise:       enterpriseHandlers,
 		Gateway:          gatewayHandler,
 		OpenAIGateway:    openaiGatewayHandler,
 		Setting:          settingHandler,
@@ -191,7 +218,20 @@ var ProviderSet = wire.NewSet(
 	admin.NewAffiliateHandler,
 	admin.NewComplianceHandler,
 
-	// AdminHandlers and Handlers constructors
+	// P5 Enterprise admin handlers
+	admin.NewEnterpriseHandler,
+	admin.NewEnterpriseMemberHandler,
+	admin.NewEnterpriseDepartmentHandler,
+
+	// P5 Enterprise handlers
+	enterprise.NewMemberHandler,
+	enterprise.NewKeyHandler,
+	enterprise.NewDepartmentHandler,
+	enterprise.NewBillingHandler,
+	enterprise.NewProfileHandler,
+
+	// AdminHandlers, EnterpriseHandlers and Handlers constructors
 	ProvideAdminHandlers,
+	ProvideEnterpriseHandlers,
 	ProvideHandlers,
 )
