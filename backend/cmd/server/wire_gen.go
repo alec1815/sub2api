@@ -12,6 +12,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/config"
 	"github.com/Wei-Shaw/sub2api/internal/handler"
 	"github.com/Wei-Shaw/sub2api/internal/handler/admin"
+	"github.com/Wei-Shaw/sub2api/internal/handler/enterprise"
 	"github.com/Wei-Shaw/sub2api/internal/payment"
 	"github.com/Wei-Shaw/sub2api/internal/repository"
 	"github.com/Wei-Shaw/sub2api/internal/server"
@@ -248,7 +249,27 @@ func initializeApplication(buildInfo handler.BuildInfo) (*Application, error) {
 	paymentHandler := admin.NewPaymentHandler(paymentService, paymentConfigService)
 	affiliateHandler := admin.NewAffiliateHandler(affiliateService, adminService)
 	complianceHandler := admin.NewComplianceHandler(settingService)
-	adminHandlers := handler.ProvideAdminHandlers(dashboardHandler, adminUserHandler, groupHandler, accountHandler, adminAnnouncementHandler, dataManagementHandler, backupHandler, oAuthHandler, openAIOAuthHandler, geminiOAuthHandler, antigravityOAuthHandler, grokOAuthHandler, proxyHandler, adminRedeemHandler, promoHandler, settingHandler, opsHandler, systemHandler, adminSubscriptionHandler, adminUsageHandler, userAttributeHandler, errorPassthroughHandler, tlsFingerprintProfileHandler, adminAPIKeyHandler, scheduledTestHandler, channelHandler, channelMonitorHandler, channelMonitorRequestTemplateHandler, contentModerationHandler, paymentHandler, affiliateHandler, complianceHandler)
+	enterpriseRepository := repository.NewEnterpriseRepository(client)
+	enterpriseMemberRepository := repository.NewEnterpriseMemberRepository(client)
+	enterpriseSubscriptionRepository := repository.NewEnterpriseSubscriptionRepository(client)
+	departmentRepository := repository.NewDepartmentRepository(client)
+	enterpriseService := service.NewEnterpriseService(enterpriseRepository, enterpriseMemberRepository, enterpriseSubscriptionRepository, userRepository, departmentRepository)
+	enterpriseHandler := admin.NewEnterpriseHandler(enterpriseService)
+	enterpriseMemberService := service.NewEnterpriseMemberService(enterpriseMemberRepository, userRepository, enterpriseRepository, departmentRepository)
+	enterpriseMemberHandler := admin.NewEnterpriseMemberHandler(enterpriseMemberService)
+	departmentService := service.NewDepartmentService(departmentRepository, enterpriseRepository)
+	enterpriseDepartmentHandler := admin.NewEnterpriseDepartmentHandler(departmentService)
+	adminHandlers := handler.ProvideAdminHandlers(dashboardHandler, adminUserHandler, groupHandler, accountHandler, adminAnnouncementHandler, dataManagementHandler, backupHandler, oAuthHandler, openAIOAuthHandler, geminiOAuthHandler, antigravityOAuthHandler, grokOAuthHandler, proxyHandler, adminRedeemHandler, promoHandler, settingHandler, opsHandler, systemHandler, adminSubscriptionHandler, adminUsageHandler, userAttributeHandler, errorPassthroughHandler, tlsFingerprintProfileHandler, adminAPIKeyHandler, scheduledTestHandler, channelHandler, channelMonitorHandler, channelMonitorRequestTemplateHandler, contentModerationHandler, paymentHandler, affiliateHandler, complianceHandler, enterpriseHandler, enterpriseMemberHandler, enterpriseDepartmentHandler)
+	memberHandler := enterprise.NewMemberHandler(enterpriseMemberService)
+	apiKeyGroupRepository := repository.NewAPIKeyGroupRepository(client)
+	enterpriseKeyService := service.NewEnterpriseKeyService(apiKeyRepository, enterpriseMemberRepository, enterpriseRepository, apiKeyGroupRepository)
+	keyHandler := enterprise.NewKeyHandler(enterpriseKeyService)
+	departmentHandler := enterprise.NewDepartmentHandler(departmentService)
+	enterpriseBillingService := service.NewEnterpriseBillingService(enterpriseRepository, enterpriseSubscriptionRepository, enterpriseMemberRepository)
+	billingHandler := enterprise.NewBillingHandler(enterpriseBillingService)
+	enterpriseProfileService := service.NewEnterpriseProfileService(enterpriseRepository, enterpriseMemberRepository, departmentRepository)
+	profileHandler := enterprise.NewProfileHandler(enterpriseProfileService, enterpriseService)
+	enterpriseHandlers := handler.ProvideEnterpriseHandlers(memberHandler, keyHandler, departmentHandler, billingHandler, profileHandler)
 	usageRecordWorkerPool := service.NewUsageRecordWorkerPool(configConfig)
 	userMsgQueueCache := repository.NewUserMsgQueueCache(redisClient)
 	userMessageQueueService := service.ProvideUserMessageQueueService(userMsgQueueCache, rpmCache, configConfig)
@@ -261,11 +282,11 @@ func initializeApplication(buildInfo handler.BuildInfo) (*Application, error) {
 	availableChannelHandler := handler.NewAvailableChannelHandler(channelService, apiKeyService, settingService)
 	idempotencyCoordinator := service.ProvideIdempotencyCoordinator(idempotencyRepository, configConfig)
 	idempotencyCleanupService := service.ProvideIdempotencyCleanupService(idempotencyRepository, configConfig)
-	handlers := handler.ProvideHandlers(authHandler, userHandler, apiKeyHandler, usageHandler, redeemHandler, subscriptionHandler, announcementHandler, channelMonitorUserHandler, adminHandlers, gatewayHandler, openAIGatewayHandler, handlerSettingHandler, totpHandler, handlerPaymentHandler, paymentWebhookHandler, availableChannelHandler, idempotencyCoordinator, idempotencyCleanupService)
+	handlers := handler.ProvideHandlers(authHandler, userHandler, apiKeyHandler, usageHandler, redeemHandler, subscriptionHandler, announcementHandler, channelMonitorUserHandler, adminHandlers, enterpriseHandlers, gatewayHandler, openAIGatewayHandler, handlerSettingHandler, totpHandler, handlerPaymentHandler, paymentWebhookHandler, availableChannelHandler, idempotencyCoordinator, idempotencyCleanupService)
 	jwtAuthMiddleware := middleware.NewJWTAuthMiddleware(authService, userService)
 	adminAuthMiddleware := middleware.NewAdminAuthMiddleware(authService, userService, settingService)
 	apiKeyAuthMiddleware := middleware.NewAPIKeyAuthMiddleware(apiKeyService, subscriptionService, configConfig)
-	engine := server.ProvideRouter(configConfig, handlers, jwtAuthMiddleware, adminAuthMiddleware, apiKeyAuthMiddleware, apiKeyService, subscriptionService, opsService, settingService, redisClient)
+	engine := server.ProvideRouter(configConfig, handlers, jwtAuthMiddleware, adminAuthMiddleware, apiKeyAuthMiddleware, apiKeyService, subscriptionService, opsService, settingService, redisClient, enterpriseMemberRepository, enterpriseRepository)
 	httpServer := server.ProvideHTTPServer(configConfig, engine)
 	opsMetricsCollector := service.ProvideOpsMetricsCollector(opsRepository, settingRepository, accountRepository, concurrencyService, db, redisClient, configConfig)
 	opsAggregationService := service.ProvideOpsAggregationService(opsRepository, settingRepository, db, redisClient, configConfig)
