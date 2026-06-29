@@ -654,6 +654,41 @@ const routes: RouteRecordRaw[] = [
     }
   },
 
+  // ==================== Enterprise Admin Routes ====================
+  {
+    path: '/admin/enterprises',
+    name: 'AdminEnterprises',
+    component: () => import('@/views/admin/EnterprisesView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Enterprise Management',
+      titleKey: 'admin.enterprises.title',
+      descriptionKey: 'admin.enterprises.description'
+    }
+  },
+  {
+    path: '/admin/enterprises/:enterpriseId/members',
+    name: 'AdminEnterpriseMembers',
+    component: () => import('@/views/admin/EnterpriseMembersView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Enterprise Members',
+    },
+    props: true
+  },
+  {
+    path: '/admin/departments',
+    name: 'AdminDepartments',
+    component: () => import('@/views/admin/DepartmentsView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Department Management',
+    },
+  },
+
   // ==================== 404 Not Found ====================
   {
     path: '/:pathMatch(.*)*',
