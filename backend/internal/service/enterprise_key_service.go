@@ -232,6 +232,51 @@ func (s *EnterpriseKeyService) ListEnterpriseKeys(
 	return page, simplePaginationResult(total, params), nil
 }
 
+// ToggleEnterpriseKey 启停企业密钥（active ↔ disabled）
+func (s *EnterpriseKeyService) ToggleEnterpriseKey(ctx context.Context, adminUserID int64, keyID int64) (*APIKey, error) {
+	key, err := s.apiKeyRepo.GetByID(ctx, keyID)
+	if err != nil {
+		return nil, fmt.Errorf("get key: %w", err)
+	}
+
+	// 校验操作者是该企业的管理员
+	member, err := s.memberRepo.GetByUserID(ctx, adminUserID)
+	if err != nil {
+		return nil, fmt.Errorf("get member: %w", err)
+	}
+	if member.Role != EnterpriseMemberRoleAdmin {
+		return nil, infraerrors.Forbidden("ENTERPRISE_ADMIN_REQUIRED", "enterprise admin permission required")
+	}
+
+	// 校验 key 属于该企业
+	if key.AssignedTo == nil {
+		if key.UserID != adminUserID {
+			return nil, infraerrors.Forbidden("KEY_NOT_IN_ENTERPRISE", "key does not belong to your enterprise")
+		}
+	} else {
+		targetMember, memberErr := s.memberRepo.GetByID(ctx, *key.AssignedTo)
+		if memberErr != nil {
+			return nil, fmt.Errorf("get target member: %w", memberErr)
+		}
+		if targetMember.EnterpriseID != member.EnterpriseID {
+			return nil, infraerrors.Forbidden("KEY_NOT_IN_ENTERPRISE", "key does not belong to your enterprise")
+		}
+	}
+
+	// 切换状态
+	if key.Status == StatusActive {
+		key.Status = StatusDisabled
+	} else {
+		key.Status = StatusActive
+	}
+
+	if err := s.apiKeyRepo.Update(ctx, key); err != nil {
+		return nil, fmt.Errorf("update key status: %w", err)
+	}
+
+	return key, nil
+}
+
 // DeleteEnterpriseKeyWrapper 删除企业密钥（带权限校验）
 func (s *EnterpriseKeyService) DeleteEnterpriseKeyWrapper(ctx context.Context, adminUserID int64, keyID int64) error {
 	key, err := s.apiKeyRepo.GetByID(ctx, keyID)

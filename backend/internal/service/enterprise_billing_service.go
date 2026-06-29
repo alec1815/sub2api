@@ -141,3 +141,34 @@ func (s *EnterpriseBillingService) GetBalance(ctx context.Context, enterpriseID 
 	}
 	return balance, nil
 }
+
+// GetUsageDetail 获取企业用量明细（分页）
+// TODO(P6): 需要 UsageLogRepository 支持 enterprise_id + pool_type 查询，当前返回空
+func (s *EnterpriseBillingService) GetUsageDetail(_ context.Context, _ int64) (*EnterpriseUsageSummary, error) {
+	summary := s.buildMonthlyUsageSummary(0)
+	return summary, nil
+}
+
+// EnterpriseSubscribeRequest 企业购买套餐请求
+type EnterpriseSubscribeRequest struct {
+	PlanID  int64 `json:"plan_id"`
+	GroupID int64 `json:"group_id"`
+}
+
+// SubscribeEnterprise 企业购买套餐
+// TODO(P6): 需要接入支付系统（复用现有 PaymentService），当前返回占位
+func (s *EnterpriseBillingService) SubscribeEnterprise(_ context.Context, _ int64, _ EnterpriseSubscribeRequest) (map[string]interface{}, error) {
+	return map[string]interface{}{
+		"message": "Enterprise subscription is under development. Payment integration pending.",
+		"status":  "not_implemented",
+	}, nil
+}
+
+// RechargeEnterprise 企业充值
+// TODO(P6): 需要接入支付系统（复用现有 PaymentService），当前返回占位
+func (s *EnterpriseBillingService) RechargeEnterprise(_ context.Context, _ int64, _ EnterpriseRechargeInput) (map[string]interface{}, error) {
+	return map[string]interface{}{
+		"message": "Enterprise recharge is under development. Payment integration pending.",
+		"status":  "not_implemented",
+	}, nil
+}
