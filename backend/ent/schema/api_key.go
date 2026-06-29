@@ -44,6 +44,20 @@ func (APIKey) Fields() []ent.Field {
 		field.Int64("group_id").
 			Optional().
 			Nillable(),
+
+		// 企业分配字段（企业功能 P1 新增）
+		field.Int64("assigned_to").
+			Optional().
+			Nillable().
+			Comment("分配给企业成员的 enterprise_members.id，NULL=个人Key"),
+		field.String("usage_purpose").
+			MaxLen(200).
+			Default("").
+			Comment("用途说明"),
+		field.String("bound_tool").
+			MaxLen(50).
+			Default("").
+			Comment("绑定工具：cursor/trae/claude_code/codex/opencode/pixso/other"),
 		field.String("status").
 			MaxLen(20).
 			Default(domain.StatusActive),
@@ -130,6 +144,18 @@ func (APIKey) Edges() []ent.Edge {
 			Field("group_id").
 			Unique(),
 		edge.To("usage_logs", UsageLog.Type),
+
+		// 企业 Key 分配关系 —— assigned_to → enterprise_members.id
+		edge.From("assigned_member", EnterpriseMember.Type).
+			Ref("assigned_keys").
+			Field("assigned_to").
+			Unique().
+			Comment("Key 被分配给的企业成员"),
+
+		// M:N 分组关联（企业功能 P1 新增，替代 group_id 1:1）
+		edge.To("key_groups", Group.Type).
+			Through("api_key_groups", APIKeyGroup.Type).
+			Comment("Key 关联的多个分组（M:N）"),
 	}
 }
 
@@ -144,5 +170,8 @@ func (APIKey) Indexes() []ent.Index {
 		// Index for quota queries
 		index.Fields("quota", "quota_used"),
 		index.Fields("expires_at"),
+		// 企业 Key 查询索引（企业功能 P1 新增）
+		index.Fields("assigned_to"),
+		index.Fields("assigned_to", "status"),
 	}
 }
