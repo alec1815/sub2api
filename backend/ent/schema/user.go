@@ -132,6 +132,12 @@ func (User) Edges() []ent.Edge {
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("pending_auth_sessions", PendingAuthSession.Type),
 		edge.To("platform_quotas", UserPlatformQuota.Type),
+
+		// 企业功能关联（企业功能 P1 新增，users 表结构不变）
+		edge.To("enterprise_members", EnterpriseMember.Type).
+			Comment("用户的企业成员记录（1:1 约束下最多一条）"),
+		edge.To("managed_enterprises", Enterprise.Type).
+			Comment("用户作为管理员管理的企业"),
 	}
 }
 
