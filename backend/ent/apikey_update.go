@@ -13,6 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/Wei-Shaw/sub2api/ent/apikey"
+	"github.com/Wei-Shaw/sub2api/ent/apikeygroup"
+	"github.com/Wei-Shaw/sub2api/ent/enterprisemember"
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/predicate"
 	"github.com/Wei-Shaw/sub2api/ent/usagelog"
@@ -117,6 +119,54 @@ func (_u *APIKeyUpdate) SetNillableGroupID(v *int64) *APIKeyUpdate {
 // ClearGroupID clears the value of the "group_id" field.
 func (_u *APIKeyUpdate) ClearGroupID() *APIKeyUpdate {
 	_u.mutation.ClearGroupID()
+	return _u
+}
+
+// SetAssignedTo sets the "assigned_to" field.
+func (_u *APIKeyUpdate) SetAssignedTo(v int64) *APIKeyUpdate {
+	_u.mutation.SetAssignedTo(v)
+	return _u
+}
+
+// SetNillableAssignedTo sets the "assigned_to" field if the given value is not nil.
+func (_u *APIKeyUpdate) SetNillableAssignedTo(v *int64) *APIKeyUpdate {
+	if v != nil {
+		_u.SetAssignedTo(*v)
+	}
+	return _u
+}
+
+// ClearAssignedTo clears the value of the "assigned_to" field.
+func (_u *APIKeyUpdate) ClearAssignedTo() *APIKeyUpdate {
+	_u.mutation.ClearAssignedTo()
+	return _u
+}
+
+// SetUsagePurpose sets the "usage_purpose" field.
+func (_u *APIKeyUpdate) SetUsagePurpose(v string) *APIKeyUpdate {
+	_u.mutation.SetUsagePurpose(v)
+	return _u
+}
+
+// SetNillableUsagePurpose sets the "usage_purpose" field if the given value is not nil.
+func (_u *APIKeyUpdate) SetNillableUsagePurpose(v *string) *APIKeyUpdate {
+	if v != nil {
+		_u.SetUsagePurpose(*v)
+	}
+	return _u
+}
+
+// SetBoundTool sets the "bound_tool" field.
+func (_u *APIKeyUpdate) SetBoundTool(v string) *APIKeyUpdate {
+	_u.mutation.SetBoundTool(v)
+	return _u
+}
+
+// SetNillableBoundTool sets the "bound_tool" field if the given value is not nil.
+func (_u *APIKeyUpdate) SetNillableBoundTool(v *string) *APIKeyUpdate {
+	if v != nil {
+		_u.SetBoundTool(*v)
+	}
 	return _u
 }
 
@@ -463,6 +513,55 @@ func (_u *APIKeyUpdate) AddUsageLogs(v ...*UsageLog) *APIKeyUpdate {
 	return _u.AddUsageLogIDs(ids...)
 }
 
+// SetAssignedMemberID sets the "assigned_member" edge to the EnterpriseMember entity by ID.
+func (_u *APIKeyUpdate) SetAssignedMemberID(id int64) *APIKeyUpdate {
+	_u.mutation.SetAssignedMemberID(id)
+	return _u
+}
+
+// SetNillableAssignedMemberID sets the "assigned_member" edge to the EnterpriseMember entity by ID if the given value is not nil.
+func (_u *APIKeyUpdate) SetNillableAssignedMemberID(id *int64) *APIKeyUpdate {
+	if id != nil {
+		_u = _u.SetAssignedMemberID(*id)
+	}
+	return _u
+}
+
+// SetAssignedMember sets the "assigned_member" edge to the EnterpriseMember entity.
+func (_u *APIKeyUpdate) SetAssignedMember(v *EnterpriseMember) *APIKeyUpdate {
+	return _u.SetAssignedMemberID(v.ID)
+}
+
+// AddKeyGroupIDs adds the "key_groups" edge to the Group entity by IDs.
+func (_u *APIKeyUpdate) AddKeyGroupIDs(ids ...int64) *APIKeyUpdate {
+	_u.mutation.AddKeyGroupIDs(ids...)
+	return _u
+}
+
+// AddKeyGroups adds the "key_groups" edges to the Group entity.
+func (_u *APIKeyUpdate) AddKeyGroups(v ...*Group) *APIKeyUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddKeyGroupIDs(ids...)
+}
+
+// AddAPIKeyGroupIDs adds the "api_key_groups" edge to the APIKeyGroup entity by IDs.
+func (_u *APIKeyUpdate) AddAPIKeyGroupIDs(ids ...int64) *APIKeyUpdate {
+	_u.mutation.AddAPIKeyGroupIDs(ids...)
+	return _u
+}
+
+// AddAPIKeyGroups adds the "api_key_groups" edges to the APIKeyGroup entity.
+func (_u *APIKeyUpdate) AddAPIKeyGroups(v ...*APIKeyGroup) *APIKeyUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAPIKeyGroupIDs(ids...)
+}
+
 // Mutation returns the APIKeyMutation object of the builder.
 func (_u *APIKeyUpdate) Mutation() *APIKeyMutation {
 	return _u.mutation
@@ -499,6 +598,54 @@ func (_u *APIKeyUpdate) RemoveUsageLogs(v ...*UsageLog) *APIKeyUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUsageLogIDs(ids...)
+}
+
+// ClearAssignedMember clears the "assigned_member" edge to the EnterpriseMember entity.
+func (_u *APIKeyUpdate) ClearAssignedMember() *APIKeyUpdate {
+	_u.mutation.ClearAssignedMember()
+	return _u
+}
+
+// ClearKeyGroups clears all "key_groups" edges to the Group entity.
+func (_u *APIKeyUpdate) ClearKeyGroups() *APIKeyUpdate {
+	_u.mutation.ClearKeyGroups()
+	return _u
+}
+
+// RemoveKeyGroupIDs removes the "key_groups" edge to Group entities by IDs.
+func (_u *APIKeyUpdate) RemoveKeyGroupIDs(ids ...int64) *APIKeyUpdate {
+	_u.mutation.RemoveKeyGroupIDs(ids...)
+	return _u
+}
+
+// RemoveKeyGroups removes "key_groups" edges to Group entities.
+func (_u *APIKeyUpdate) RemoveKeyGroups(v ...*Group) *APIKeyUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveKeyGroupIDs(ids...)
+}
+
+// ClearAPIKeyGroups clears all "api_key_groups" edges to the APIKeyGroup entity.
+func (_u *APIKeyUpdate) ClearAPIKeyGroups() *APIKeyUpdate {
+	_u.mutation.ClearAPIKeyGroups()
+	return _u
+}
+
+// RemoveAPIKeyGroupIDs removes the "api_key_groups" edge to APIKeyGroup entities by IDs.
+func (_u *APIKeyUpdate) RemoveAPIKeyGroupIDs(ids ...int64) *APIKeyUpdate {
+	_u.mutation.RemoveAPIKeyGroupIDs(ids...)
+	return _u
+}
+
+// RemoveAPIKeyGroups removes "api_key_groups" edges to APIKeyGroup entities.
+func (_u *APIKeyUpdate) RemoveAPIKeyGroups(v ...*APIKeyGroup) *APIKeyUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAPIKeyGroupIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -555,6 +702,16 @@ func (_u *APIKeyUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "APIKey.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.UsagePurpose(); ok {
+		if err := apikey.UsagePurposeValidator(v); err != nil {
+			return &ValidationError{Name: "usage_purpose", err: fmt.Errorf(`ent: validator failed for field "APIKey.usage_purpose": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.BoundTool(); ok {
+		if err := apikey.BoundToolValidator(v); err != nil {
+			return &ValidationError{Name: "bound_tool", err: fmt.Errorf(`ent: validator failed for field "APIKey.bound_tool": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Status(); ok {
 		if err := apikey.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "APIKey.status": %w`, err)}
@@ -592,6 +749,12 @@ func (_u *APIKeyUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(apikey.FieldName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.UsagePurpose(); ok {
+		_spec.SetField(apikey.FieldUsagePurpose, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.BoundTool(); ok {
+		_spec.SetField(apikey.FieldBoundTool, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(apikey.FieldStatus, field.TypeString, value)
@@ -799,6 +962,137 @@ func (_u *APIKeyUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.AssignedMemberCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   apikey.AssignedMemberTable,
+			Columns: []string{apikey.AssignedMemberColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprisemember.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AssignedMemberIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   apikey.AssignedMemberTable,
+			Columns: []string{apikey.AssignedMemberColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprisemember.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.KeyGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   apikey.KeyGroupsTable,
+			Columns: apikey.KeyGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt64),
+			},
+		}
+		createE := &APIKeyGroupCreate{config: _u.config, mutation: newAPIKeyGroupMutation(_u.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedKeyGroupsIDs(); len(nodes) > 0 && !_u.mutation.KeyGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   apikey.KeyGroupsTable,
+			Columns: apikey.KeyGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &APIKeyGroupCreate{config: _u.config, mutation: newAPIKeyGroupMutation(_u.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KeyGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   apikey.KeyGroupsTable,
+			Columns: apikey.KeyGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &APIKeyGroupCreate{config: _u.config, mutation: newAPIKeyGroupMutation(_u.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.APIKeyGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   apikey.APIKeyGroupsTable,
+			Columns: []string{apikey.APIKeyGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikeygroup.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAPIKeyGroupsIDs(); len(nodes) > 0 && !_u.mutation.APIKeyGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   apikey.APIKeyGroupsTable,
+			Columns: []string{apikey.APIKeyGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikeygroup.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.APIKeyGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   apikey.APIKeyGroupsTable,
+			Columns: []string{apikey.APIKeyGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikeygroup.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{apikey.Label}
@@ -904,6 +1198,54 @@ func (_u *APIKeyUpdateOne) SetNillableGroupID(v *int64) *APIKeyUpdateOne {
 // ClearGroupID clears the value of the "group_id" field.
 func (_u *APIKeyUpdateOne) ClearGroupID() *APIKeyUpdateOne {
 	_u.mutation.ClearGroupID()
+	return _u
+}
+
+// SetAssignedTo sets the "assigned_to" field.
+func (_u *APIKeyUpdateOne) SetAssignedTo(v int64) *APIKeyUpdateOne {
+	_u.mutation.SetAssignedTo(v)
+	return _u
+}
+
+// SetNillableAssignedTo sets the "assigned_to" field if the given value is not nil.
+func (_u *APIKeyUpdateOne) SetNillableAssignedTo(v *int64) *APIKeyUpdateOne {
+	if v != nil {
+		_u.SetAssignedTo(*v)
+	}
+	return _u
+}
+
+// ClearAssignedTo clears the value of the "assigned_to" field.
+func (_u *APIKeyUpdateOne) ClearAssignedTo() *APIKeyUpdateOne {
+	_u.mutation.ClearAssignedTo()
+	return _u
+}
+
+// SetUsagePurpose sets the "usage_purpose" field.
+func (_u *APIKeyUpdateOne) SetUsagePurpose(v string) *APIKeyUpdateOne {
+	_u.mutation.SetUsagePurpose(v)
+	return _u
+}
+
+// SetNillableUsagePurpose sets the "usage_purpose" field if the given value is not nil.
+func (_u *APIKeyUpdateOne) SetNillableUsagePurpose(v *string) *APIKeyUpdateOne {
+	if v != nil {
+		_u.SetUsagePurpose(*v)
+	}
+	return _u
+}
+
+// SetBoundTool sets the "bound_tool" field.
+func (_u *APIKeyUpdateOne) SetBoundTool(v string) *APIKeyUpdateOne {
+	_u.mutation.SetBoundTool(v)
+	return _u
+}
+
+// SetNillableBoundTool sets the "bound_tool" field if the given value is not nil.
+func (_u *APIKeyUpdateOne) SetNillableBoundTool(v *string) *APIKeyUpdateOne {
+	if v != nil {
+		_u.SetBoundTool(*v)
+	}
 	return _u
 }
 
@@ -1250,6 +1592,55 @@ func (_u *APIKeyUpdateOne) AddUsageLogs(v ...*UsageLog) *APIKeyUpdateOne {
 	return _u.AddUsageLogIDs(ids...)
 }
 
+// SetAssignedMemberID sets the "assigned_member" edge to the EnterpriseMember entity by ID.
+func (_u *APIKeyUpdateOne) SetAssignedMemberID(id int64) *APIKeyUpdateOne {
+	_u.mutation.SetAssignedMemberID(id)
+	return _u
+}
+
+// SetNillableAssignedMemberID sets the "assigned_member" edge to the EnterpriseMember entity by ID if the given value is not nil.
+func (_u *APIKeyUpdateOne) SetNillableAssignedMemberID(id *int64) *APIKeyUpdateOne {
+	if id != nil {
+		_u = _u.SetAssignedMemberID(*id)
+	}
+	return _u
+}
+
+// SetAssignedMember sets the "assigned_member" edge to the EnterpriseMember entity.
+func (_u *APIKeyUpdateOne) SetAssignedMember(v *EnterpriseMember) *APIKeyUpdateOne {
+	return _u.SetAssignedMemberID(v.ID)
+}
+
+// AddKeyGroupIDs adds the "key_groups" edge to the Group entity by IDs.
+func (_u *APIKeyUpdateOne) AddKeyGroupIDs(ids ...int64) *APIKeyUpdateOne {
+	_u.mutation.AddKeyGroupIDs(ids...)
+	return _u
+}
+
+// AddKeyGroups adds the "key_groups" edges to the Group entity.
+func (_u *APIKeyUpdateOne) AddKeyGroups(v ...*Group) *APIKeyUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddKeyGroupIDs(ids...)
+}
+
+// AddAPIKeyGroupIDs adds the "api_key_groups" edge to the APIKeyGroup entity by IDs.
+func (_u *APIKeyUpdateOne) AddAPIKeyGroupIDs(ids ...int64) *APIKeyUpdateOne {
+	_u.mutation.AddAPIKeyGroupIDs(ids...)
+	return _u
+}
+
+// AddAPIKeyGroups adds the "api_key_groups" edges to the APIKeyGroup entity.
+func (_u *APIKeyUpdateOne) AddAPIKeyGroups(v ...*APIKeyGroup) *APIKeyUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAPIKeyGroupIDs(ids...)
+}
+
 // Mutation returns the APIKeyMutation object of the builder.
 func (_u *APIKeyUpdateOne) Mutation() *APIKeyMutation {
 	return _u.mutation
@@ -1286,6 +1677,54 @@ func (_u *APIKeyUpdateOne) RemoveUsageLogs(v ...*UsageLog) *APIKeyUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUsageLogIDs(ids...)
+}
+
+// ClearAssignedMember clears the "assigned_member" edge to the EnterpriseMember entity.
+func (_u *APIKeyUpdateOne) ClearAssignedMember() *APIKeyUpdateOne {
+	_u.mutation.ClearAssignedMember()
+	return _u
+}
+
+// ClearKeyGroups clears all "key_groups" edges to the Group entity.
+func (_u *APIKeyUpdateOne) ClearKeyGroups() *APIKeyUpdateOne {
+	_u.mutation.ClearKeyGroups()
+	return _u
+}
+
+// RemoveKeyGroupIDs removes the "key_groups" edge to Group entities by IDs.
+func (_u *APIKeyUpdateOne) RemoveKeyGroupIDs(ids ...int64) *APIKeyUpdateOne {
+	_u.mutation.RemoveKeyGroupIDs(ids...)
+	return _u
+}
+
+// RemoveKeyGroups removes "key_groups" edges to Group entities.
+func (_u *APIKeyUpdateOne) RemoveKeyGroups(v ...*Group) *APIKeyUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveKeyGroupIDs(ids...)
+}
+
+// ClearAPIKeyGroups clears all "api_key_groups" edges to the APIKeyGroup entity.
+func (_u *APIKeyUpdateOne) ClearAPIKeyGroups() *APIKeyUpdateOne {
+	_u.mutation.ClearAPIKeyGroups()
+	return _u
+}
+
+// RemoveAPIKeyGroupIDs removes the "api_key_groups" edge to APIKeyGroup entities by IDs.
+func (_u *APIKeyUpdateOne) RemoveAPIKeyGroupIDs(ids ...int64) *APIKeyUpdateOne {
+	_u.mutation.RemoveAPIKeyGroupIDs(ids...)
+	return _u
+}
+
+// RemoveAPIKeyGroups removes "api_key_groups" edges to APIKeyGroup entities.
+func (_u *APIKeyUpdateOne) RemoveAPIKeyGroups(v ...*APIKeyGroup) *APIKeyUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAPIKeyGroupIDs(ids...)
 }
 
 // Where appends a list predicates to the APIKeyUpdate builder.
@@ -1355,6 +1794,16 @@ func (_u *APIKeyUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "APIKey.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.UsagePurpose(); ok {
+		if err := apikey.UsagePurposeValidator(v); err != nil {
+			return &ValidationError{Name: "usage_purpose", err: fmt.Errorf(`ent: validator failed for field "APIKey.usage_purpose": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.BoundTool(); ok {
+		if err := apikey.BoundToolValidator(v); err != nil {
+			return &ValidationError{Name: "bound_tool", err: fmt.Errorf(`ent: validator failed for field "APIKey.bound_tool": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Status(); ok {
 		if err := apikey.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "APIKey.status": %w`, err)}
@@ -1409,6 +1858,12 @@ func (_u *APIKeyUpdateOne) sqlSave(ctx context.Context) (_node *APIKey, err erro
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(apikey.FieldName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.UsagePurpose(); ok {
+		_spec.SetField(apikey.FieldUsagePurpose, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.BoundTool(); ok {
+		_spec.SetField(apikey.FieldBoundTool, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(apikey.FieldStatus, field.TypeString, value)
@@ -1609,6 +2064,137 @@ func (_u *APIKeyUpdateOne) sqlSave(ctx context.Context) (_node *APIKey, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(usagelog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AssignedMemberCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   apikey.AssignedMemberTable,
+			Columns: []string{apikey.AssignedMemberColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprisemember.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AssignedMemberIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   apikey.AssignedMemberTable,
+			Columns: []string{apikey.AssignedMemberColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprisemember.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.KeyGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   apikey.KeyGroupsTable,
+			Columns: apikey.KeyGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt64),
+			},
+		}
+		createE := &APIKeyGroupCreate{config: _u.config, mutation: newAPIKeyGroupMutation(_u.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedKeyGroupsIDs(); len(nodes) > 0 && !_u.mutation.KeyGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   apikey.KeyGroupsTable,
+			Columns: apikey.KeyGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &APIKeyGroupCreate{config: _u.config, mutation: newAPIKeyGroupMutation(_u.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KeyGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   apikey.KeyGroupsTable,
+			Columns: apikey.KeyGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &APIKeyGroupCreate{config: _u.config, mutation: newAPIKeyGroupMutation(_u.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.APIKeyGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   apikey.APIKeyGroupsTable,
+			Columns: []string{apikey.APIKeyGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikeygroup.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAPIKeyGroupsIDs(); len(nodes) > 0 && !_u.mutation.APIKeyGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   apikey.APIKeyGroupsTable,
+			Columns: []string{apikey.APIKeyGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikeygroup.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.APIKeyGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   apikey.APIKeyGroupsTable,
+			Columns: []string{apikey.APIKeyGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikeygroup.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

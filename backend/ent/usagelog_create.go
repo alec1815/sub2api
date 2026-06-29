@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Wei-Shaw/sub2api/ent/account"
 	"github.com/Wei-Shaw/sub2api/ent/apikey"
+	"github.com/Wei-Shaw/sub2api/ent/enterprise"
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/usagelog"
 	"github.com/Wei-Shaw/sub2api/ent/user"
@@ -165,6 +166,34 @@ func (_c *UsageLogCreate) SetSubscriptionID(v int64) *UsageLogCreate {
 func (_c *UsageLogCreate) SetNillableSubscriptionID(v *int64) *UsageLogCreate {
 	if v != nil {
 		_c.SetSubscriptionID(*v)
+	}
+	return _c
+}
+
+// SetEnterpriseID sets the "enterprise_id" field.
+func (_c *UsageLogCreate) SetEnterpriseID(v int64) *UsageLogCreate {
+	_c.mutation.SetEnterpriseID(v)
+	return _c
+}
+
+// SetNillableEnterpriseID sets the "enterprise_id" field if the given value is not nil.
+func (_c *UsageLogCreate) SetNillableEnterpriseID(v *int64) *UsageLogCreate {
+	if v != nil {
+		_c.SetEnterpriseID(*v)
+	}
+	return _c
+}
+
+// SetPoolType sets the "pool_type" field.
+func (_c *UsageLogCreate) SetPoolType(v string) *UsageLogCreate {
+	_c.mutation.SetPoolType(v)
+	return _c
+}
+
+// SetNillablePoolType sets the "pool_type" field if the given value is not nil.
+func (_c *UsageLogCreate) SetNillablePoolType(v *string) *UsageLogCreate {
+	if v != nil {
+		_c.SetPoolType(*v)
 	}
 	return _c
 }
@@ -578,6 +607,11 @@ func (_c *UsageLogCreate) SetSubscription(v *UserSubscription) *UsageLogCreate {
 	return _c.SetSubscriptionID(v.ID)
 }
 
+// SetEnterprise sets the "enterprise" edge to the Enterprise entity.
+func (_c *UsageLogCreate) SetEnterprise(v *Enterprise) *UsageLogCreate {
+	return _c.SetEnterpriseID(v.ID)
+}
+
 // Mutation returns the UsageLogMutation object of the builder.
 func (_c *UsageLogCreate) Mutation() *UsageLogMutation {
 	return _c.mutation
@@ -613,6 +647,10 @@ func (_c *UsageLogCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *UsageLogCreate) defaults() {
+	if _, ok := _c.mutation.PoolType(); !ok {
+		v := usagelog.DefaultPoolType
+		_c.mutation.SetPoolType(v)
+	}
 	if _, ok := _c.mutation.InputTokens(); !ok {
 		v := usagelog.DefaultInputTokens
 		_c.mutation.SetInputTokens(v)
@@ -737,6 +775,14 @@ func (_c *UsageLogCreate) check() error {
 	if v, ok := _c.mutation.BillingMode(); ok {
 		if err := usagelog.BillingModeValidator(v); err != nil {
 			return &ValidationError{Name: "billing_mode", err: fmt.Errorf(`ent: validator failed for field "UsageLog.billing_mode": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.PoolType(); !ok {
+		return &ValidationError{Name: "pool_type", err: errors.New(`ent: missing required field "UsageLog.pool_type"`)}
+	}
+	if v, ok := _c.mutation.PoolType(); ok {
+		if err := usagelog.PoolTypeValidator(v); err != nil {
+			return &ValidationError{Name: "pool_type", err: fmt.Errorf(`ent: validator failed for field "UsageLog.pool_type": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.InputTokens(); !ok {
@@ -890,6 +936,10 @@ func (_c *UsageLogCreate) createSpec() (*UsageLog, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.BillingMode(); ok {
 		_spec.SetField(usagelog.FieldBillingMode, field.TypeString, value)
 		_node.BillingMode = &value
+	}
+	if value, ok := _c.mutation.PoolType(); ok {
+		_spec.SetField(usagelog.FieldPoolType, field.TypeString, value)
+		_node.PoolType = value
 	}
 	if value, ok := _c.mutation.InputTokens(); ok {
 		_spec.SetField(usagelog.FieldInputTokens, field.TypeInt, value)
@@ -1086,6 +1136,23 @@ func (_c *UsageLogCreate) createSpec() (*UsageLog, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.SubscriptionID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.EnterpriseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   usagelog.EnterpriseTable,
+			Columns: []string{usagelog.EnterpriseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprise.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.EnterpriseID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -1347,6 +1414,36 @@ func (u *UsageLogUpsert) UpdateSubscriptionID() *UsageLogUpsert {
 // ClearSubscriptionID clears the value of the "subscription_id" field.
 func (u *UsageLogUpsert) ClearSubscriptionID() *UsageLogUpsert {
 	u.SetNull(usagelog.FieldSubscriptionID)
+	return u
+}
+
+// SetEnterpriseID sets the "enterprise_id" field.
+func (u *UsageLogUpsert) SetEnterpriseID(v int64) *UsageLogUpsert {
+	u.Set(usagelog.FieldEnterpriseID, v)
+	return u
+}
+
+// UpdateEnterpriseID sets the "enterprise_id" field to the value that was provided on create.
+func (u *UsageLogUpsert) UpdateEnterpriseID() *UsageLogUpsert {
+	u.SetExcluded(usagelog.FieldEnterpriseID)
+	return u
+}
+
+// ClearEnterpriseID clears the value of the "enterprise_id" field.
+func (u *UsageLogUpsert) ClearEnterpriseID() *UsageLogUpsert {
+	u.SetNull(usagelog.FieldEnterpriseID)
+	return u
+}
+
+// SetPoolType sets the "pool_type" field.
+func (u *UsageLogUpsert) SetPoolType(v string) *UsageLogUpsert {
+	u.Set(usagelog.FieldPoolType, v)
+	return u
+}
+
+// UpdatePoolType sets the "pool_type" field to the value that was provided on create.
+func (u *UsageLogUpsert) UpdatePoolType() *UsageLogUpsert {
+	u.SetExcluded(usagelog.FieldPoolType)
 	return u
 }
 
@@ -2129,6 +2226,41 @@ func (u *UsageLogUpsertOne) UpdateSubscriptionID() *UsageLogUpsertOne {
 func (u *UsageLogUpsertOne) ClearSubscriptionID() *UsageLogUpsertOne {
 	return u.Update(func(s *UsageLogUpsert) {
 		s.ClearSubscriptionID()
+	})
+}
+
+// SetEnterpriseID sets the "enterprise_id" field.
+func (u *UsageLogUpsertOne) SetEnterpriseID(v int64) *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.SetEnterpriseID(v)
+	})
+}
+
+// UpdateEnterpriseID sets the "enterprise_id" field to the value that was provided on create.
+func (u *UsageLogUpsertOne) UpdateEnterpriseID() *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.UpdateEnterpriseID()
+	})
+}
+
+// ClearEnterpriseID clears the value of the "enterprise_id" field.
+func (u *UsageLogUpsertOne) ClearEnterpriseID() *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.ClearEnterpriseID()
+	})
+}
+
+// SetPoolType sets the "pool_type" field.
+func (u *UsageLogUpsertOne) SetPoolType(v string) *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.SetPoolType(v)
+	})
+}
+
+// UpdatePoolType sets the "pool_type" field to the value that was provided on create.
+func (u *UsageLogUpsertOne) UpdatePoolType() *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.UpdatePoolType()
 	})
 }
 
@@ -3159,6 +3291,41 @@ func (u *UsageLogUpsertBulk) UpdateSubscriptionID() *UsageLogUpsertBulk {
 func (u *UsageLogUpsertBulk) ClearSubscriptionID() *UsageLogUpsertBulk {
 	return u.Update(func(s *UsageLogUpsert) {
 		s.ClearSubscriptionID()
+	})
+}
+
+// SetEnterpriseID sets the "enterprise_id" field.
+func (u *UsageLogUpsertBulk) SetEnterpriseID(v int64) *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.SetEnterpriseID(v)
+	})
+}
+
+// UpdateEnterpriseID sets the "enterprise_id" field to the value that was provided on create.
+func (u *UsageLogUpsertBulk) UpdateEnterpriseID() *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.UpdateEnterpriseID()
+	})
+}
+
+// ClearEnterpriseID clears the value of the "enterprise_id" field.
+func (u *UsageLogUpsertBulk) ClearEnterpriseID() *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.ClearEnterpriseID()
+	})
+}
+
+// SetPoolType sets the "pool_type" field.
+func (u *UsageLogUpsertBulk) SetPoolType(v string) *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.SetPoolType(v)
+	})
+}
+
+// UpdatePoolType sets the "pool_type" field to the value that was provided on create.
+func (u *UsageLogUpsertBulk) UpdatePoolType() *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.UpdatePoolType()
 	})
 }
 

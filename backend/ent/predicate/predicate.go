@@ -9,6 +9,9 @@ import (
 // APIKey is the predicate function for apikey builders.
 type APIKey func(*sql.Selector)
 
+// APIKeyGroup is the predicate function for apikeygroup builders.
+type APIKeyGroup func(*sql.Selector)
+
 // Account is the predicate function for account builders.
 type Account func(*sql.Selector)
 
@@ -38,6 +41,18 @@ type ChannelMonitorHistory func(*sql.Selector)
 
 // ChannelMonitorRequestTemplate is the predicate function for channelmonitorrequesttemplate builders.
 type ChannelMonitorRequestTemplate func(*sql.Selector)
+
+// Department is the predicate function for department builders.
+type Department func(*sql.Selector)
+
+// Enterprise is the predicate function for enterprise builders.
+type Enterprise func(*sql.Selector)
+
+// EnterpriseMember is the predicate function for enterprisemember builders.
+type EnterpriseMember func(*sql.Selector)
+
+// EnterpriseSubscription is the predicate function for enterprisesubscription builders.
+type EnterpriseSubscription func(*sql.Selector)
 
 // ErrorPassthroughRule is the predicate function for errorpassthroughrule builders.
 type ErrorPassthroughRule func(*sql.Selector)

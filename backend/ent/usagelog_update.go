@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Wei-Shaw/sub2api/ent/account"
 	"github.com/Wei-Shaw/sub2api/ent/apikey"
+	"github.com/Wei-Shaw/sub2api/ent/enterprise"
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/predicate"
 	"github.com/Wei-Shaw/sub2api/ent/usagelog"
@@ -266,6 +267,40 @@ func (_u *UsageLogUpdate) SetNillableSubscriptionID(v *int64) *UsageLogUpdate {
 // ClearSubscriptionID clears the value of the "subscription_id" field.
 func (_u *UsageLogUpdate) ClearSubscriptionID() *UsageLogUpdate {
 	_u.mutation.ClearSubscriptionID()
+	return _u
+}
+
+// SetEnterpriseID sets the "enterprise_id" field.
+func (_u *UsageLogUpdate) SetEnterpriseID(v int64) *UsageLogUpdate {
+	_u.mutation.SetEnterpriseID(v)
+	return _u
+}
+
+// SetNillableEnterpriseID sets the "enterprise_id" field if the given value is not nil.
+func (_u *UsageLogUpdate) SetNillableEnterpriseID(v *int64) *UsageLogUpdate {
+	if v != nil {
+		_u.SetEnterpriseID(*v)
+	}
+	return _u
+}
+
+// ClearEnterpriseID clears the value of the "enterprise_id" field.
+func (_u *UsageLogUpdate) ClearEnterpriseID() *UsageLogUpdate {
+	_u.mutation.ClearEnterpriseID()
+	return _u
+}
+
+// SetPoolType sets the "pool_type" field.
+func (_u *UsageLogUpdate) SetPoolType(v string) *UsageLogUpdate {
+	_u.mutation.SetPoolType(v)
+	return _u
+}
+
+// SetNillablePoolType sets the "pool_type" field if the given value is not nil.
+func (_u *UsageLogUpdate) SetNillablePoolType(v *string) *UsageLogUpdate {
+	if v != nil {
+		_u.SetPoolType(*v)
+	}
 	return _u
 }
 
@@ -850,6 +885,11 @@ func (_u *UsageLogUpdate) SetSubscription(v *UserSubscription) *UsageLogUpdate {
 	return _u.SetSubscriptionID(v.ID)
 }
 
+// SetEnterprise sets the "enterprise" edge to the Enterprise entity.
+func (_u *UsageLogUpdate) SetEnterprise(v *Enterprise) *UsageLogUpdate {
+	return _u.SetEnterpriseID(v.ID)
+}
+
 // Mutation returns the UsageLogMutation object of the builder.
 func (_u *UsageLogUpdate) Mutation() *UsageLogMutation {
 	return _u.mutation
@@ -882,6 +922,12 @@ func (_u *UsageLogUpdate) ClearGroup() *UsageLogUpdate {
 // ClearSubscription clears the "subscription" edge to the UserSubscription entity.
 func (_u *UsageLogUpdate) ClearSubscription() *UsageLogUpdate {
 	_u.mutation.ClearSubscription()
+	return _u
+}
+
+// ClearEnterprise clears the "enterprise" edge to the Enterprise entity.
+func (_u *UsageLogUpdate) ClearEnterprise() *UsageLogUpdate {
+	_u.mutation.ClearEnterprise()
 	return _u
 }
 
@@ -947,6 +993,11 @@ func (_u *UsageLogUpdate) check() error {
 	if v, ok := _u.mutation.BillingMode(); ok {
 		if err := usagelog.BillingModeValidator(v); err != nil {
 			return &ValidationError{Name: "billing_mode", err: fmt.Errorf(`ent: validator failed for field "UsageLog.billing_mode": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.PoolType(); ok {
+		if err := usagelog.PoolTypeValidator(v); err != nil {
+			return &ValidationError{Name: "pool_type", err: fmt.Errorf(`ent: validator failed for field "UsageLog.pool_type": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.UserAgent(); ok {
@@ -1047,6 +1098,9 @@ func (_u *UsageLogUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.BillingModeCleared() {
 		_spec.ClearField(usagelog.FieldBillingMode, field.TypeString)
+	}
+	if value, ok := _u.mutation.PoolType(); ok {
+		_spec.SetField(usagelog.FieldPoolType, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InputTokens(); ok {
 		_spec.SetField(usagelog.FieldInputTokens, field.TypeInt, value)
@@ -1358,6 +1412,35 @@ func (_u *UsageLogUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.EnterpriseCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   usagelog.EnterpriseTable,
+			Columns: []string{usagelog.EnterpriseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprise.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EnterpriseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   usagelog.EnterpriseTable,
+			Columns: []string{usagelog.EnterpriseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprise.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{usagelog.Label}
@@ -1612,6 +1695,40 @@ func (_u *UsageLogUpdateOne) SetNillableSubscriptionID(v *int64) *UsageLogUpdate
 // ClearSubscriptionID clears the value of the "subscription_id" field.
 func (_u *UsageLogUpdateOne) ClearSubscriptionID() *UsageLogUpdateOne {
 	_u.mutation.ClearSubscriptionID()
+	return _u
+}
+
+// SetEnterpriseID sets the "enterprise_id" field.
+func (_u *UsageLogUpdateOne) SetEnterpriseID(v int64) *UsageLogUpdateOne {
+	_u.mutation.SetEnterpriseID(v)
+	return _u
+}
+
+// SetNillableEnterpriseID sets the "enterprise_id" field if the given value is not nil.
+func (_u *UsageLogUpdateOne) SetNillableEnterpriseID(v *int64) *UsageLogUpdateOne {
+	if v != nil {
+		_u.SetEnterpriseID(*v)
+	}
+	return _u
+}
+
+// ClearEnterpriseID clears the value of the "enterprise_id" field.
+func (_u *UsageLogUpdateOne) ClearEnterpriseID() *UsageLogUpdateOne {
+	_u.mutation.ClearEnterpriseID()
+	return _u
+}
+
+// SetPoolType sets the "pool_type" field.
+func (_u *UsageLogUpdateOne) SetPoolType(v string) *UsageLogUpdateOne {
+	_u.mutation.SetPoolType(v)
+	return _u
+}
+
+// SetNillablePoolType sets the "pool_type" field if the given value is not nil.
+func (_u *UsageLogUpdateOne) SetNillablePoolType(v *string) *UsageLogUpdateOne {
+	if v != nil {
+		_u.SetPoolType(*v)
+	}
 	return _u
 }
 
@@ -2196,6 +2313,11 @@ func (_u *UsageLogUpdateOne) SetSubscription(v *UserSubscription) *UsageLogUpdat
 	return _u.SetSubscriptionID(v.ID)
 }
 
+// SetEnterprise sets the "enterprise" edge to the Enterprise entity.
+func (_u *UsageLogUpdateOne) SetEnterprise(v *Enterprise) *UsageLogUpdateOne {
+	return _u.SetEnterpriseID(v.ID)
+}
+
 // Mutation returns the UsageLogMutation object of the builder.
 func (_u *UsageLogUpdateOne) Mutation() *UsageLogMutation {
 	return _u.mutation
@@ -2228,6 +2350,12 @@ func (_u *UsageLogUpdateOne) ClearGroup() *UsageLogUpdateOne {
 // ClearSubscription clears the "subscription" edge to the UserSubscription entity.
 func (_u *UsageLogUpdateOne) ClearSubscription() *UsageLogUpdateOne {
 	_u.mutation.ClearSubscription()
+	return _u
+}
+
+// ClearEnterprise clears the "enterprise" edge to the Enterprise entity.
+func (_u *UsageLogUpdateOne) ClearEnterprise() *UsageLogUpdateOne {
+	_u.mutation.ClearEnterprise()
 	return _u
 }
 
@@ -2306,6 +2434,11 @@ func (_u *UsageLogUpdateOne) check() error {
 	if v, ok := _u.mutation.BillingMode(); ok {
 		if err := usagelog.BillingModeValidator(v); err != nil {
 			return &ValidationError{Name: "billing_mode", err: fmt.Errorf(`ent: validator failed for field "UsageLog.billing_mode": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.PoolType(); ok {
+		if err := usagelog.PoolTypeValidator(v); err != nil {
+			return &ValidationError{Name: "pool_type", err: fmt.Errorf(`ent: validator failed for field "UsageLog.pool_type": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.UserAgent(); ok {
@@ -2423,6 +2556,9 @@ func (_u *UsageLogUpdateOne) sqlSave(ctx context.Context) (_node *UsageLog, err 
 	}
 	if _u.mutation.BillingModeCleared() {
 		_spec.ClearField(usagelog.FieldBillingMode, field.TypeString)
+	}
+	if value, ok := _u.mutation.PoolType(); ok {
+		_spec.SetField(usagelog.FieldPoolType, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InputTokens(); ok {
 		_spec.SetField(usagelog.FieldInputTokens, field.TypeInt, value)
@@ -2727,6 +2863,35 @@ func (_u *UsageLogUpdateOne) sqlSave(ctx context.Context) (_node *UsageLog, err 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(usersubscription.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.EnterpriseCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   usagelog.EnterpriseTable,
+			Columns: []string{usagelog.EnterpriseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprise.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EnterpriseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   usagelog.EnterpriseTable,
+			Columns: []string{usagelog.EnterpriseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprise.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

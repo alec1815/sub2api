@@ -29,6 +29,12 @@ const (
 	FieldName = "name"
 	// FieldGroupID holds the string denoting the group_id field in the database.
 	FieldGroupID = "group_id"
+	// FieldAssignedTo holds the string denoting the assigned_to field in the database.
+	FieldAssignedTo = "assigned_to"
+	// FieldUsagePurpose holds the string denoting the usage_purpose field in the database.
+	FieldUsagePurpose = "usage_purpose"
+	// FieldBoundTool holds the string denoting the bound_tool field in the database.
+	FieldBoundTool = "bound_tool"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldLastUsedAt holds the string denoting the last_used_at field in the database.
@@ -67,6 +73,12 @@ const (
 	EdgeGroup = "group"
 	// EdgeUsageLogs holds the string denoting the usage_logs edge name in mutations.
 	EdgeUsageLogs = "usage_logs"
+	// EdgeAssignedMember holds the string denoting the assigned_member edge name in mutations.
+	EdgeAssignedMember = "assigned_member"
+	// EdgeKeyGroups holds the string denoting the key_groups edge name in mutations.
+	EdgeKeyGroups = "key_groups"
+	// EdgeAPIKeyGroups holds the string denoting the api_key_groups edge name in mutations.
+	EdgeAPIKeyGroups = "api_key_groups"
 	// Table holds the table name of the apikey in the database.
 	Table = "api_keys"
 	// UserTable is the table that holds the user relation/edge.
@@ -90,6 +102,25 @@ const (
 	UsageLogsInverseTable = "usage_logs"
 	// UsageLogsColumn is the table column denoting the usage_logs relation/edge.
 	UsageLogsColumn = "api_key_id"
+	// AssignedMemberTable is the table that holds the assigned_member relation/edge.
+	AssignedMemberTable = "api_keys"
+	// AssignedMemberInverseTable is the table name for the EnterpriseMember entity.
+	// It exists in this package in order to avoid circular dependency with the "enterprisemember" package.
+	AssignedMemberInverseTable = "enterprise_members"
+	// AssignedMemberColumn is the table column denoting the assigned_member relation/edge.
+	AssignedMemberColumn = "assigned_to"
+	// KeyGroupsTable is the table that holds the key_groups relation/edge. The primary key declared below.
+	KeyGroupsTable = "api_key_groups"
+	// KeyGroupsInverseTable is the table name for the Group entity.
+	// It exists in this package in order to avoid circular dependency with the "group" package.
+	KeyGroupsInverseTable = "groups"
+	// APIKeyGroupsTable is the table that holds the api_key_groups relation/edge.
+	APIKeyGroupsTable = "api_key_groups"
+	// APIKeyGroupsInverseTable is the table name for the APIKeyGroup entity.
+	// It exists in this package in order to avoid circular dependency with the "apikeygroup" package.
+	APIKeyGroupsInverseTable = "api_key_groups"
+	// APIKeyGroupsColumn is the table column denoting the api_key_groups relation/edge.
+	APIKeyGroupsColumn = "api_key_id"
 )
 
 // Columns holds all SQL columns for apikey fields.
@@ -102,6 +133,9 @@ var Columns = []string{
 	FieldKey,
 	FieldName,
 	FieldGroupID,
+	FieldAssignedTo,
+	FieldUsagePurpose,
+	FieldBoundTool,
 	FieldStatus,
 	FieldLastUsedAt,
 	FieldIPWhitelist,
@@ -119,6 +153,12 @@ var Columns = []string{
 	FieldWindow1dStart,
 	FieldWindow7dStart,
 }
+
+var (
+	// KeyGroupsPrimaryKey and KeyGroupsColumn2 are the table columns denoting the
+	// primary key for the key_groups relation (M2M).
+	KeyGroupsPrimaryKey = []string{"api_key_id", "group_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -148,6 +188,14 @@ var (
 	KeyValidator func(string) error
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// DefaultUsagePurpose holds the default value on creation for the "usage_purpose" field.
+	DefaultUsagePurpose string
+	// UsagePurposeValidator is a validator for the "usage_purpose" field. It is called by the builders before save.
+	UsagePurposeValidator func(string) error
+	// DefaultBoundTool holds the default value on creation for the "bound_tool" field.
+	DefaultBoundTool string
+	// BoundToolValidator is a validator for the "bound_tool" field. It is called by the builders before save.
+	BoundToolValidator func(string) error
 	// DefaultStatus holds the default value on creation for the "status" field.
 	DefaultStatus string
 	// StatusValidator is a validator for the "status" field. It is called by the builders before save.
@@ -211,6 +259,21 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 // ByGroupID orders the results by the group_id field.
 func ByGroupID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldGroupID, opts...).ToFunc()
+}
+
+// ByAssignedTo orders the results by the assigned_to field.
+func ByAssignedTo(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAssignedTo, opts...).ToFunc()
+}
+
+// ByUsagePurpose orders the results by the usage_purpose field.
+func ByUsagePurpose(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUsagePurpose, opts...).ToFunc()
+}
+
+// ByBoundTool orders the results by the bound_tool field.
+func ByBoundTool(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBoundTool, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.
@@ -310,6 +373,41 @@ func ByUsageLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUsageLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByAssignedMemberField orders the results by assigned_member field.
+func ByAssignedMemberField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAssignedMemberStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByKeyGroupsCount orders the results by key_groups count.
+func ByKeyGroupsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newKeyGroupsStep(), opts...)
+	}
+}
+
+// ByKeyGroups orders the results by key_groups terms.
+func ByKeyGroups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newKeyGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByAPIKeyGroupsCount orders the results by api_key_groups count.
+func ByAPIKeyGroupsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAPIKeyGroupsStep(), opts...)
+	}
+}
+
+// ByAPIKeyGroups orders the results by api_key_groups terms.
+func ByAPIKeyGroups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAPIKeyGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newUserStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -329,5 +427,26 @@ func newUsageLogsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UsageLogsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, UsageLogsTable, UsageLogsColumn),
+	)
+}
+func newAssignedMemberStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AssignedMemberInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, AssignedMemberTable, AssignedMemberColumn),
+	)
+}
+func newKeyGroupsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(KeyGroupsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, KeyGroupsTable, KeyGroupsPrimaryKey...),
+	)
+}
+func newAPIKeyGroupsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(APIKeyGroupsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, APIKeyGroupsTable, APIKeyGroupsColumn),
 	)
 }

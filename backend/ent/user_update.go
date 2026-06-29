@@ -14,6 +14,8 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/announcementread"
 	"github.com/Wei-Shaw/sub2api/ent/apikey"
 	"github.com/Wei-Shaw/sub2api/ent/authidentity"
+	"github.com/Wei-Shaw/sub2api/ent/enterprise"
+	"github.com/Wei-Shaw/sub2api/ent/enterprisemember"
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
 	"github.com/Wei-Shaw/sub2api/ent/pendingauthsession"
@@ -606,6 +608,36 @@ func (_u *UserUpdate) AddPlatformQuotas(v ...*UserPlatformQuota) *UserUpdate {
 	return _u.AddPlatformQuotaIDs(ids...)
 }
 
+// AddEnterpriseMemberIDs adds the "enterprise_members" edge to the EnterpriseMember entity by IDs.
+func (_u *UserUpdate) AddEnterpriseMemberIDs(ids ...int64) *UserUpdate {
+	_u.mutation.AddEnterpriseMemberIDs(ids...)
+	return _u
+}
+
+// AddEnterpriseMembers adds the "enterprise_members" edges to the EnterpriseMember entity.
+func (_u *UserUpdate) AddEnterpriseMembers(v ...*EnterpriseMember) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEnterpriseMemberIDs(ids...)
+}
+
+// AddManagedEnterpriseIDs adds the "managed_enterprises" edge to the Enterprise entity by IDs.
+func (_u *UserUpdate) AddManagedEnterpriseIDs(ids ...int64) *UserUpdate {
+	_u.mutation.AddManagedEnterpriseIDs(ids...)
+	return _u
+}
+
+// AddManagedEnterprises adds the "managed_enterprises" edges to the Enterprise entity.
+func (_u *UserUpdate) AddManagedEnterprises(v ...*Enterprise) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddManagedEnterpriseIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
@@ -882,6 +914,48 @@ func (_u *UserUpdate) RemovePlatformQuotas(v ...*UserPlatformQuota) *UserUpdate 
 		ids[i] = v[i].ID
 	}
 	return _u.RemovePlatformQuotaIDs(ids...)
+}
+
+// ClearEnterpriseMembers clears all "enterprise_members" edges to the EnterpriseMember entity.
+func (_u *UserUpdate) ClearEnterpriseMembers() *UserUpdate {
+	_u.mutation.ClearEnterpriseMembers()
+	return _u
+}
+
+// RemoveEnterpriseMemberIDs removes the "enterprise_members" edge to EnterpriseMember entities by IDs.
+func (_u *UserUpdate) RemoveEnterpriseMemberIDs(ids ...int64) *UserUpdate {
+	_u.mutation.RemoveEnterpriseMemberIDs(ids...)
+	return _u
+}
+
+// RemoveEnterpriseMembers removes "enterprise_members" edges to EnterpriseMember entities.
+func (_u *UserUpdate) RemoveEnterpriseMembers(v ...*EnterpriseMember) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEnterpriseMemberIDs(ids...)
+}
+
+// ClearManagedEnterprises clears all "managed_enterprises" edges to the Enterprise entity.
+func (_u *UserUpdate) ClearManagedEnterprises() *UserUpdate {
+	_u.mutation.ClearManagedEnterprises()
+	return _u
+}
+
+// RemoveManagedEnterpriseIDs removes the "managed_enterprises" edge to Enterprise entities by IDs.
+func (_u *UserUpdate) RemoveManagedEnterpriseIDs(ids ...int64) *UserUpdate {
+	_u.mutation.RemoveManagedEnterpriseIDs(ids...)
+	return _u
+}
+
+// RemoveManagedEnterprises removes "managed_enterprises" edges to Enterprise entities.
+func (_u *UserUpdate) RemoveManagedEnterprises(v ...*Enterprise) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveManagedEnterpriseIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1669,6 +1743,96 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.EnterpriseMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.EnterpriseMembersTable,
+			Columns: []string{user.EnterpriseMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprisemember.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEnterpriseMembersIDs(); len(nodes) > 0 && !_u.mutation.EnterpriseMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.EnterpriseMembersTable,
+			Columns: []string{user.EnterpriseMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprisemember.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EnterpriseMembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.EnterpriseMembersTable,
+			Columns: []string{user.EnterpriseMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprisemember.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ManagedEnterprisesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ManagedEnterprisesTable,
+			Columns: []string{user.ManagedEnterprisesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprise.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedManagedEnterprisesIDs(); len(nodes) > 0 && !_u.mutation.ManagedEnterprisesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ManagedEnterprisesTable,
+			Columns: []string{user.ManagedEnterprisesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprise.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ManagedEnterprisesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ManagedEnterprisesTable,
+			Columns: []string{user.ManagedEnterprisesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprise.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -2255,6 +2419,36 @@ func (_u *UserUpdateOne) AddPlatformQuotas(v ...*UserPlatformQuota) *UserUpdateO
 	return _u.AddPlatformQuotaIDs(ids...)
 }
 
+// AddEnterpriseMemberIDs adds the "enterprise_members" edge to the EnterpriseMember entity by IDs.
+func (_u *UserUpdateOne) AddEnterpriseMemberIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.AddEnterpriseMemberIDs(ids...)
+	return _u
+}
+
+// AddEnterpriseMembers adds the "enterprise_members" edges to the EnterpriseMember entity.
+func (_u *UserUpdateOne) AddEnterpriseMembers(v ...*EnterpriseMember) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEnterpriseMemberIDs(ids...)
+}
+
+// AddManagedEnterpriseIDs adds the "managed_enterprises" edge to the Enterprise entity by IDs.
+func (_u *UserUpdateOne) AddManagedEnterpriseIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.AddManagedEnterpriseIDs(ids...)
+	return _u
+}
+
+// AddManagedEnterprises adds the "managed_enterprises" edges to the Enterprise entity.
+func (_u *UserUpdateOne) AddManagedEnterprises(v ...*Enterprise) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddManagedEnterpriseIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
@@ -2531,6 +2725,48 @@ func (_u *UserUpdateOne) RemovePlatformQuotas(v ...*UserPlatformQuota) *UserUpda
 		ids[i] = v[i].ID
 	}
 	return _u.RemovePlatformQuotaIDs(ids...)
+}
+
+// ClearEnterpriseMembers clears all "enterprise_members" edges to the EnterpriseMember entity.
+func (_u *UserUpdateOne) ClearEnterpriseMembers() *UserUpdateOne {
+	_u.mutation.ClearEnterpriseMembers()
+	return _u
+}
+
+// RemoveEnterpriseMemberIDs removes the "enterprise_members" edge to EnterpriseMember entities by IDs.
+func (_u *UserUpdateOne) RemoveEnterpriseMemberIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.RemoveEnterpriseMemberIDs(ids...)
+	return _u
+}
+
+// RemoveEnterpriseMembers removes "enterprise_members" edges to EnterpriseMember entities.
+func (_u *UserUpdateOne) RemoveEnterpriseMembers(v ...*EnterpriseMember) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEnterpriseMemberIDs(ids...)
+}
+
+// ClearManagedEnterprises clears all "managed_enterprises" edges to the Enterprise entity.
+func (_u *UserUpdateOne) ClearManagedEnterprises() *UserUpdateOne {
+	_u.mutation.ClearManagedEnterprises()
+	return _u
+}
+
+// RemoveManagedEnterpriseIDs removes the "managed_enterprises" edge to Enterprise entities by IDs.
+func (_u *UserUpdateOne) RemoveManagedEnterpriseIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.RemoveManagedEnterpriseIDs(ids...)
+	return _u
+}
+
+// RemoveManagedEnterprises removes "managed_enterprises" edges to Enterprise entities.
+func (_u *UserUpdateOne) RemoveManagedEnterprises(v ...*Enterprise) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveManagedEnterpriseIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -3341,6 +3577,96 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(userplatformquota.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.EnterpriseMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.EnterpriseMembersTable,
+			Columns: []string{user.EnterpriseMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprisemember.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEnterpriseMembersIDs(); len(nodes) > 0 && !_u.mutation.EnterpriseMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.EnterpriseMembersTable,
+			Columns: []string{user.EnterpriseMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprisemember.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EnterpriseMembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.EnterpriseMembersTable,
+			Columns: []string{user.EnterpriseMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprisemember.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ManagedEnterprisesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ManagedEnterprisesTable,
+			Columns: []string{user.ManagedEnterprisesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprise.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedManagedEnterprisesIDs(); len(nodes) > 0 && !_u.mutation.ManagedEnterprisesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ManagedEnterprisesTable,
+			Columns: []string{user.ManagedEnterprisesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprise.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ManagedEnterprisesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ManagedEnterprisesTable,
+			Columns: []string{user.ManagedEnterprisesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(enterprise.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
