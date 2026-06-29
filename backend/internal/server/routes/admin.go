@@ -106,6 +106,9 @@ func RegisterAdminRoutes(
 
 		// 邀请返利（专属用户管理）
 		registerAffiliateRoutes(admin, h)
+
+		// P5 企业管理 (admin)
+		registerAdminEnterpriseRoutes(admin, h)
 	}
 }
 
@@ -681,5 +684,33 @@ func registerAffiliateRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 			users.PUT("/:user_id", h.Admin.Affiliate.UpdateUserSettings)
 			users.DELETE("/:user_id", h.Admin.Affiliate.ClearUserSettings)
 		}
+	}
+}
+
+// P5 — 企业管理路由（平台运营方视角）
+func registerAdminEnterpriseRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
+	enterprises := admin.Group("/enterprises")
+	{
+		enterprises.GET("", h.Admin.Enterprise.ListEnterprises)
+		enterprises.POST("", h.Admin.Enterprise.CreateEnterprise)
+		enterprises.GET("/:id", h.Admin.Enterprise.GetEnterprise)
+		enterprises.PUT("/:id", h.Admin.Enterprise.UpdateEnterprise)
+		enterprises.POST("/:id/toggle", h.Admin.Enterprise.ToggleEnterpriseStatus)
+		enterprises.DELETE("/:id", h.Admin.Enterprise.DeleteEnterprise)
+
+		// 企业成员管理
+		enterprises.GET("/:id/members", h.Admin.EnterpriseMember.ListMembers)
+		enterprises.POST("/:id/members", h.Admin.EnterpriseMember.CreateMember)
+		enterprises.PUT("/:id/members/:mid", h.Admin.EnterpriseMember.UpdateMember)
+		enterprises.DELETE("/:id/members/:mid", h.Admin.EnterpriseMember.UnbindMember)
+	}
+
+	// 部门管理
+	departments := admin.Group("/departments")
+	{
+		departments.GET("", h.Admin.EnterpriseDept.ListDepartments)
+		departments.POST("", h.Admin.EnterpriseDept.CreateDepartment)
+		departments.PUT("/:id", h.Admin.EnterpriseDept.UpdateDepartment)
+		departments.DELETE("/:id", h.Admin.EnterpriseDept.DeleteDepartment)
 	}
 }
