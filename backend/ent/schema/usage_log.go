@@ -64,6 +64,16 @@ func (UsageLog) Fields() []ent.Field {
 			Optional().
 			Nillable(),
 
+		// 企业归属字段（企业功能 P1 新增）
+		field.Int64("enterprise_id").
+			Optional().
+			Nillable().
+			Comment("企业消费归属：NULL=个人消费，有值=企业消费"),
+		field.String("pool_type").
+			MaxLen(20).
+			Default("personal").
+			Comment("资金池类型：personal / enterprise，便于审计追溯"),
+
 		// Token 计数字段
 		field.Int("input_tokens").
 			Default(0),
@@ -187,6 +197,11 @@ func (UsageLog) Edges() []ent.Edge {
 			Ref("usage_logs").
 			Field("subscription_id").
 			Unique(),
+		// 企业归属（企业功能 P1 新增）
+		edge.From("enterprise", Enterprise.Type).
+			Ref("usage_logs").
+			Field("enterprise_id").
+			Unique(),
 	}
 }
 
@@ -207,5 +222,8 @@ func (UsageLog) Indexes() []ent.Index {
 		index.Fields("api_key_id", "created_at"),
 		// 分组维度时间范围查询（线上由 SQL 迁移创建 group_id IS NOT NULL 的部分索引）
 		index.Fields("group_id", "created_at"),
+		// 企业维度查询（企业功能 P1 新增）
+		index.Fields("enterprise_id", "created_at"),
+		index.Fields("enterprise_id", "pool_type"),
 	}
 }

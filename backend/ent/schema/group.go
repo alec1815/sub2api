@@ -181,6 +181,15 @@ func (Group) Edges() []ent.Edge {
 			Through("user_allowed_groups", UserAllowedGroup.Type),
 		// 注意：fallback_group_id 直接作为字段使用，不定义 edge
 		// 这样允许多个分组指向同一个降级分组（M2O 关系）
+
+		// 企业功能关联（企业功能 P1 新增，groups 表结构不变）
+		edge.From("enterprise_subscriptions", EnterpriseSubscription.Type).
+			Ref("group").
+			Comment("企业购买的本分组套餐"),
+		edge.From("grouped_keys", APIKey.Type).
+			Ref("key_groups").
+			Through("api_key_groups", APIKeyGroup.Type).
+			Comment("通过 M:N 关联的 Key"),
 	}
 }
 
