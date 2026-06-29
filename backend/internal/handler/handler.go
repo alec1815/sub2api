@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/Wei-Shaw/sub2api/internal/handler/admin"
+	"github.com/Wei-Shaw/sub2api/internal/handler/enterprise"
 )
 
 // AdminHandlers contains all admin-related HTTP handlers
@@ -38,6 +39,20 @@ type AdminHandlers struct {
 	Payment                *admin.PaymentHandler
 	Affiliate              *admin.AffiliateHandler
 	Compliance             *admin.ComplianceHandler
+
+	// Enterprise (P5)
+	Enterprise         *admin.EnterpriseHandler
+	EnterpriseMember   *admin.EnterpriseMemberHandler
+	EnterpriseDept     *admin.EnterpriseDepartmentHandler
+}
+
+// EnterpriseHandlers contains all enterprise admin HTTP handlers (P5)
+type EnterpriseHandlers struct {
+	Member      *enterprise.MemberHandler
+	Key         *enterprise.KeyHandler
+	Department  *enterprise.DepartmentHandler
+	Billing     *enterprise.BillingHandler
+	Profile     *enterprise.ProfileHandler
 }
 
 // Handlers contains all HTTP handlers
@@ -51,6 +66,7 @@ type Handlers struct {
 	Announcement     *AnnouncementHandler
 	ChannelMonitor   *ChannelMonitorUserHandler
 	Admin            *AdminHandlers
+	Enterprise       *EnterpriseHandlers // P5
 	Gateway          *GatewayHandler
 	OpenAIGateway    *OpenAIGatewayHandler
 	Setting          *SettingHandler
