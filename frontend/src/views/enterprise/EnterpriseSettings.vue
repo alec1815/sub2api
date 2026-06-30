@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <AppLayout>
     <div class="mx-auto max-w-3xl space-y-6">
       <!-- Page Header -->
@@ -56,7 +56,7 @@
               </span>
             </div>
             <InfoField :label="t('enterprise.settings.fields.scale')" :value="settings.scale || '-'" />
-            <InfoField :label="t('enterprise.settings.fields.industry')" :value="settings.industry || '-''" />
+            <InfoField :label="t('enterprise.settings.fields.industry')" :value="settings.industry || '-'" />
             <InfoField :label="t('enterprise.settings.fields.notes')" :value="settings.notes" />
           </div>
 
@@ -166,7 +166,7 @@ const InfoField = {
       }, props.label),
       h('p', {
         class: 'mt-1 font-medium text-gray-900 dark:text-white truncate'
-      }, props.value || '-'),
+      }, String(props.value ?? '-')),
     ])
   }
 }
@@ -193,7 +193,7 @@ async function loadData() {
   try {
     settings.value = await enterpriseAdminAPI.getSettings()
   } catch (err: any) {
-    appStore.showToast?.(err?.message ?? t('common.loadError'), 'error')
+    appStore.showToast.(err?.message ?? t('common.loadError'), 'error')
   } finally {
     loading.value = false
   }
@@ -229,9 +229,9 @@ async function saveSettings() {
     })
     settings.value = updated
     editing.value = false
-    appStore.showToast?.(t('enterprise.settings.saved'), 'success')
+    appStore.showToast.(t('enterprise.settings.saved'), 'success')
   } catch (err: any) {
-    appStore.showToast?.(err?.message ?? t('common.saveError'), 'error')
+    appStore.showToast.(err?.message ?? t('common.saveError'), 'error')
   } finally {
     saving.value = false
   }
@@ -242,3 +242,4 @@ onMounted(() => {
   loadData()
 })
 </script>
+

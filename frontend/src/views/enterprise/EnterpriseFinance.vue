@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <AppLayout>
     <div class="mx-auto max-w-5xl space-y-6">
       <!-- Page Header -->
@@ -173,7 +173,7 @@ async function loadData() {
   try {
     finance.value = await enterpriseAdminAPI.getFinance()
   } catch (err: any) {
-    appStore.showToast?.(err?.message ?? t('common.loadError'), 'error')
+    appStore.showToast.(err?.message ?? t('common.loadError'), 'error')
   } finally {
     loading.value = false
   }
@@ -184,3 +184,4 @@ onMounted(() => {
   loadData()
 })
 </script>
+

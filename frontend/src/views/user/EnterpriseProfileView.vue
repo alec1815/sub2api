@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <AppLayout>
     <div data-testid="enterprise-profile-shell" class="mx-auto max-w-[950px] space-y-6">
       <!-- Enterprise Overview Hero -->
@@ -306,7 +306,7 @@ async function loadData() {
   try {
     profile.value = await enterpriseAdminAPI.getProfile()
   } catch (err: any) {
-    appStore.showToast?.(err?.message ?? t('common.loadError'), 'error')
+    appStore.showToast.(err?.message ?? t('common.loadError'), 'error')
   } finally {
     loading.value = false
   }
@@ -317,3 +317,4 @@ onMounted(() => {
   loadData()
 })
 </script>
+
