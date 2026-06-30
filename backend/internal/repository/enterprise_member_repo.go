@@ -48,6 +48,8 @@ func (r *enterpriseMemberRepository) Create(ctx context.Context, m *service.Ente
 func (r *enterpriseMemberRepository) GetByID(ctx context.Context, id int64) (*service.EnterpriseMember, error) {
 	m, err := r.activeQuery().
 		Where(enterprisemember.IDEQ(id)).
+		WithUser().
+		WithDepartment().
 		Only(ctx)
 	if err != nil {
 		return nil, translatePersistenceError(err, service.ErrEnterpriseMemberNotFound, nil)
@@ -61,6 +63,8 @@ func (r *enterpriseMemberRepository) GetByUserID(ctx context.Context, userID int
 			enterprisemember.UserIDEQ(userID),
 			enterprisemember.StatusEQ(domain.StatusActive),
 		).
+		WithUser().
+		WithDepartment().
 		Only(ctx)
 	if err != nil {
 		return nil, translatePersistenceError(err, service.ErrEnterpriseMemberNotFound, nil)
@@ -93,6 +97,8 @@ func (r *enterpriseMemberRepository) ListByEnterprise(
 	}
 
 	items, err := q.
+		WithUser().
+		WithDepartment().
 		Offset(params.Offset()).
 		Limit(params.Limit()).
 		Order(dbent.Desc(enterprisemember.FieldCreatedAt)).
@@ -142,7 +148,7 @@ func enterpriseMemberEntityToService(m *dbent.EnterpriseMember) *service.Enterpr
 	if m == nil {
 		return nil
 	}
-	return &service.EnterpriseMember{
+	s := &service.EnterpriseMember{
 		ID:           m.ID,
 		EnterpriseID: m.EnterpriseID,
 		UserID:       m.UserID,
@@ -157,6 +163,19 @@ func enterpriseMemberEntityToService(m *dbent.EnterpriseMember) *service.Enterpr
 		CreatedAt:    m.CreatedAt,
 		UpdatedAt:    m.UpdatedAt,
 	}
+	// eager-loaded user fields
+	if u := m.Edges.User; u != nil {
+		s.Name = u.Username
+		s.Email = u.Email
+		if u.LastActiveAt != nil {
+			s.LastActiveAt = u.LastActiveAt
+		}
+	}
+	// eager-loaded department field
+	if d := m.Edges.Department; d != nil {
+		s.DepartmentName = d.Name
+	}
+	return s
 }
 
 func enterpriseMemberEntitiesToService(models []*dbent.EnterpriseMember) []service.EnterpriseMember {

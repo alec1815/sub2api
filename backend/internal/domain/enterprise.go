@@ -57,72 +57,78 @@ var (
 
 // Enterprise domain model
 type Enterprise struct {
-	ID              int64
-	Name            string
-	ShortName       string
-	CreditCode      string
-	Address         string
-	Scale           string
-	Industry        string
-	ParentID        int64
-	Status          string
-	ContactName     string
-	ContactPhone    string
-	ContactEmail    string
-	Notes           string
-	Balance         float64
-	TotalRecharged  float64
-	AdminUserID     int64
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	ID              int64      `json:"id"`
+	Name            string     `json:"name"`
+	ShortName       string     `json:"short_name"`
+	CreditCode      string     `json:"credit_code"`
+	Address         string     `json:"address"`
+	Scale           string     `json:"scale"`
+	Industry        string     `json:"industry"`
+	ParentID        int64      `json:"parent_id"`
+	Status          string     `json:"status"`
+	ContactName     string     `json:"contact_name"`
+	ContactPhone    string     `json:"contact_phone"`
+	ContactEmail    string     `json:"contact_email"`
+	Notes           string     `json:"notes"`
+	Balance         float64    `json:"balance"`
+	TotalRecharged  float64    `json:"total_recharged"`
+	AdminUserID     int64      `json:"admin_user_id"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
 }
 
 // EnterpriseMember domain model
 type EnterpriseMember struct {
-	ID           int64
-	EnterpriseID int64
-	UserID       int64
-	Role         string
-	Status       string
-	DepartmentID *int64
-	Concurrency  int
-	RPMLimit     int
-	Notes        string
-	JoinedAt     time.Time
-	UnboundAt    *time.Time
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID             int64      `json:"id"`
+	EnterpriseID   int64      `json:"enterprise_id"`
+	UserID         int64      `json:"user_id"`
+	// from users join
+	Name           string     `json:"name"`
+	Email          string     `json:"email"`
+	LastActiveAt   *time.Time  `json:"last_active_at,omitempty"`
+	Role           string     `json:"role"`
+	Status         string     `json:"status"`
+	DepartmentID   *int64     `json:"department_id"`
+	// from departments join
+	DepartmentName string     `json:"department_name"`
+	Concurrency    int        `json:"concurrency"`
+	RPMLimit       int        `json:"rpm_limit"`
+	Notes          string     `json:"notes"`
+	JoinedAt       time.Time  `json:"joined_at"`
+	UnboundAt      *time.Time `json:"unbound_at,omitempty"`
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
 }
 
 // Department domain model
 type Department struct {
-	ID           int64
-	EnterpriseID int64
-	ParentID     int64
-	Name         string
-	OrderNum     int
-	Leader       string
-	Phone        string
-	Email        string
-	Status       string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID           int64     `json:"id"`
+	EnterpriseID int64     `json:"enterprise_id"`
+	ParentID     int64     `json:"parent_id"`
+	Name         string    `json:"name"`
+	OrderNum     int       `json:"order_num"`
+	Leader       string    `json:"leader"`
+	Phone        string    `json:"phone"`
+	Email        string    `json:"email"`
+	Status       string    `json:"status"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 // EnterpriseSubscription domain model
 type EnterpriseSubscription struct {
-	ID             int64
-	EnterpriseID   int64
-	GroupID        int64
-	PlanID         int64
-	StartsAt       time.Time
-	ExpiresAt      *time.Time
-	Status         string
-	DailyUsageUSD  float64
-	WeeklyUsageUSD float64
-	MonthlyUsageUSD float64
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	ID              int64      `json:"id"`
+	EnterpriseID    int64      `json:"enterprise_id"`
+	GroupID         int64      `json:"group_id"`
+	PlanID          int64      `json:"plan_id"`
+	StartsAt        time.Time  `json:"starts_at"`
+	ExpiresAt       *time.Time `json:"expires_at,omitempty"`
+	Status          string     `json:"status"`
+	DailyUsageUSD   float64    `json:"daily_usage_usd"`
+	WeeklyUsageUSD  float64    `json:"weekly_usage_usd"`
+	MonthlyUsageUSD float64    `json:"monthly_usage_usd"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
 }
 
 // APIKeyGroup domain model (M:N join)
