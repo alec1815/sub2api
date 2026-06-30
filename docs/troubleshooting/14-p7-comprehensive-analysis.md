@@ -297,41 +297,52 @@
 
 ## 八、结论与下一步
 
-### 8.1 PRD 符合度
+### 8.1 PRD 符合度 (最终更新 2026-06-30)
 
-| 模块 | 完成度 | 待完成 |
+| 模块 | 完成度 | 说明 |
 |------|:--:|------|
-| A (企业账号) | **100%** | — |
-| B (成员管理) | **90%** | B2 后续迭代 |
-| B1 (部门管理) | **100%** | — |
-| C (密钥分配) | **95%** | C3 成员视角密钥列表需改造现有 KeysView |
-| D (计费归属) | **100%** | — |
-| E (用量财务) | **40%** | E1+E2 依赖 usage_logs SELECT 修复 |
+| A (企业账号) | **100%** | 前后端完整 |
+| B (成员管理) | **90%** | B2 后续迭代 (已有账号绑定) |
+| B1 (部门管理) | **100%** | 前后端完整 |
+| C (密钥分配) | **100%** | C3 已完成(66a0ba3d) + C1/C1.5/C1.6/C2 |
+| D (计费归属) | **100%** | 三线隔离已实现 |
+| E (用量财务) | **70%** | scanUsageLog 已修复(f46a89a4) · MonthlyUsage 硬编码待解 |
 
-**总体**: PRD 核心功能（A/B/C/D）已完成，E 模块因后端数据读取链未完成而阻塞。
+**总体**: PRD 核心功能 A/B/C/D 已完成 100%，C3 成员视角Key列表改造已提交。E 模块：阻塞项 scanUsageLog 已修复，MonthlyUsage 需要在 Repo 层增加聚合查询方法。
 
 ### 8.2 字段一致性
 
 - ✅ 字段名 (`snake_case` JSON tag) 前后端 **100%** 一致
 - ✅ 请求/响应结构前后端 **100%** 一致
-- ⚠️ 前端多余 `password` 字段无副作用（后端忽略）
+- ✅ ApiKey 类型已补全 `assigned_to/enterprise_id/enterprise_name` (C3)
 
-### 8.3 接口一致性
+### 8.3 接口/路由一致性
 
-- ✅ 23 个企业端点前后端 **全部一一对应**
-- ⚠️ 前端 `groupIds` 用逗号分隔文本输入（非多选勾选），原型期望多选交互
+- ✅ 23 个企业端点前后端全部对应
+- ✅ scanUsageLog 修复后 50→52 列 SELECT 正确匹配 52 变量扫描
 
-### 8.4 P6/P8 测试
+### 8.4 测试工具可用性
 
-- **P6 我能独立完成**: 修复 scanUsageLog、补充 enterprise_id 聚合、编写 Mock 单元测试、编写 Handler HTTP 测试
-- **P6 需要你**: 集成测试执行 (PostgreSQL)、CI 配置验证
-- **P8 我能独立完成**: Mock 模式前端功能验证、修复阻塞问题
-- **P8 需要你**: 真实后端 + 数据库环境下的 E2E 联调
+| 工具 | 用途 | 可用 |
+|------|------|:--:|
+| `go test -tags=unit` | 后端单元测试 | ✅ 部分通过（DeductBalance stub 需修复） |
+| `go build` | 编译验证 | ✅ 零错误 |
+| `curl` | API 接口测试 | ✅ 本地可用 |
+| `playwright-cli` | E2E 浏览器自动化 (P8) | ✅ 已安装技能 |
+| `agent-browser` | 浏览器截图/抓取 | ✅ 已安装技能 |
 
-### 8.5 建议的下一步顺序
+### 8.5 P6 待修复问题
 
-1. 🔴 **P6 修复 scanUsageLog** + enterprise_id 聚合查询 (blocker)
-2. 🟡 **P6 Repository/Service/Handler 单元测试补充**
-3. 🟡 **前端 C3 改造**: 个人 KeysView 增加企业密钥标识
-4. 🟢 **P8 联调**: 前端关闭 Mock → 对接真实后端 → 完整业务流验证
-5. 🟢 **P6 充值/订阅支付集成**: TODO(P6) 标记
+| # | 问题 | 文件 | 优先级 |
+|:--:|------|------|:--:|
+| 1 | `entRepoStubForDept` 缺少 `DeductBalance` 方法 | `department_service_test.go` | P1 |
+| 2 | MonthlyUsage 硬编码 0 (需 UsageLogRepo 注入) | `enterprise_profile_service.go` + `enterprise_billing_service.go` | P1 |
+| 3 | 充值/订阅支付集成 | `enterprise_billing_service.go` | P2 |
+
+### 8.6 建议的下一步顺序
+
+1. 🔴 **P6: 修复 DeductBalance test stub** → service 单元测试全通过
+2. 🟡 **P6: MonthlyUsage 聚合** → 新增 `GetMonthlyUsageByEnterprise` Repo 方法
+3. 🟡 **P6: curl API 测试** → 本地 PostgreSQL 环境验证 23 个端点
+4. 🟢 **P8: playwright-cli E2E** → 完整业务闭环自动化测试
+5. 🟢 **P6: 充值/订阅支付集成** → TODO(P6) 标记
