@@ -61,7 +61,5 @@ func RegisterEnterpriseRoutes(
 	{
 		// Profile (只读)
 		memberGroup.GET("/profile", h.Enterprise.Profile.GetProfile)
-		// 部门列表（只读）
-		memberGroup.GET("/departments", h.Enterprise.Department.ListDepartments)
 	}
 }
