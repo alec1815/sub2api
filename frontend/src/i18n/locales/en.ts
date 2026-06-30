@@ -770,6 +770,12 @@ export default {
     total: 'Last 30d',
     quota: 'Quota',
     lastUsedAt: 'Last Used',
+    source: 'Source',
+    sourcePersonal: 'Personal',
+    sourceEnterprise: '{name}',
+    sourceFilterAll: 'All Sources',
+    sourceFilterPersonal: 'Personal',
+    sourceFilterEnterprise: 'Enterprise Assigned',
     useKey: 'Use Key',
     useKeyModal: {
       title: 'Use API Key',

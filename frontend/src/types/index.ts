@@ -590,6 +590,12 @@ export interface ApiKey {
   reset_5h_at: string | null
   reset_1d_at: string | null
   reset_7d_at: string | null
+  // Enterprise fields (P7)
+  assigned_to?: number | null
+  assigned_member_name?: string
+  assigned_member_email?: string
+  enterprise_id?: number | null
+  enterprise_name?: string
 }
 
 export interface CreateApiKeyRequest {
