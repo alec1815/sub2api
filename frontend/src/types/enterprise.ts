@@ -99,6 +99,8 @@ export interface CreateEnterpriseRequest {
   contact_email?: string
   admin_email: string
   admin_name?: string
+  admin_password?: string
+  admin_password_confirm?: string
   notes?: string
   parent_id?: number
 }

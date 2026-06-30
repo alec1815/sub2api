@@ -9,6 +9,45 @@ import { getLocale } from '@/i18n'
 import { getAPIBaseURL } from './url'
 export { buildApiUrl, buildGatewayUrl } from './url'
 
+// ==================== Idempotency Key Generation ====================
+
+/**
+ * Generate a unique idempotency key for write operations.
+ * Backend requires Idempotency-Key header for all admin POST/PUT/DELETE requests.
+ *
+ * Uses crypto.randomUUID() when available (secure contexts only),
+ * falls back to a polyfill based on crypto.getRandomValues() for HTTP environments.
+ */
+function generateIdempotencyKey(): string {
+  const uuid = generateUUID()
+  return `${Date.now()}-${uuid}`
+}
+
+/**
+ * Generate a UUID v4 string.
+ * crypto.randomUUID() is only available in secure contexts (HTTPS / localhost).
+ * Fall back to crypto.getRandomValues() polyfill for plain HTTP environments.
+ */
+function generateUUID(): string {
+  // Secure context: use native API
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  // Non-secure context: polyfill using crypto.getRandomValues()
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    // UUID v4 pattern: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+    return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c: string) => {
+      const n = Number(c)
+      return (n ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (n >> 1)))).toString(16)
+    })
+  }
+  // Last-resort fallback (should never reach here in modern browsers)
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
+  })
+}
+
 // ==================== Axios Instance Configuration ====================
 
 export const apiClient: AxiosInstance = axios.create({
@@ -64,6 +103,14 @@ apiClient.interceptors.request.use(
     // Attach locale for backend translations
     if (config.headers) {
       config.headers['Accept-Language'] = getLocale()
+    }
+
+    // Auto-generate Idempotency-Key for write operations (backend requirement)
+    const method = (config.method || '').toLowerCase()
+    if (['post', 'put', 'delete', 'patch'].includes(method) && config.headers) {
+      if (!config.headers['Idempotency-Key']) {
+        config.headers['Idempotency-Key'] = generateIdempotencyKey()
+      }
     }
 
     // Attach timezone for all GET requests (backend may use it for default date ranges)
@@ -294,6 +341,8 @@ apiClient.interceptors.response.use(
         metadata: apiData.metadata,
       })
     }
+
+    console.log('error', error)
 
     // Network error
     return Promise.reject({

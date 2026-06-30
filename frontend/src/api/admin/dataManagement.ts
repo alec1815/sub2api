@@ -285,9 +285,10 @@ export async function setActiveS3Profile(profileID: string): Promise<DataManagem
 }
 
 export async function createBackupJob(request: CreateBackupJobRequest): Promise<CreateBackupJobResponse> {
-  const headers = request.idempotency_key
-    ? { 'X-Idempotency-Key': request.idempotency_key }
-    : undefined
+  const headers: Record<string, string> = {}
+  if (request.idempotency_key) {
+    headers['Idempotency-Key'] = request.idempotency_key
+  }
 
   const { data } = await apiClient.post<CreateBackupJobResponse>(
     '/admin/data-management/backups',
