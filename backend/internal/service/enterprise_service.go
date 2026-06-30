@@ -434,3 +434,46 @@ func (s *EnterpriseService) GetEnterpriseBalance(ctx context.Context, id int64) 
 	}
 	return balance, nil
 }
+
+// UpdateBalance 管理员调整企业余额（充值/扣款/设值）
+func (s *EnterpriseService) UpdateBalance(ctx context.Context, id int64, amount float64, operation string, notes string) (*Enterprise, error) {
+	ent, err := s.entRepo.GetByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("get enterprise: %w", err)
+	}
+
+	switch operation {
+	case "set":
+		ent.Balance = amount
+	case "add":
+		ent.Balance += amount
+	case "subtract":
+		if ent.Balance < amount {
+			return nil, infraerrors.BadRequest("ENTERPRISE_INSUFFICIENT_BALANCE", "enterprise balance is insufficient")
+		}
+		ent.Balance -= amount
+	}
+
+	if err := s.entRepo.Update(ctx, ent); err != nil {
+		return nil, fmt.Errorf("update enterprise: %w", err)
+	}
+	return ent, nil
+}
+
+// EnterpriseBalanceHistoryItem 企业余额变更历史项
+type EnterpriseBalanceHistoryItem struct {
+	ID        int64     `json:"id"`
+	Amount    float64   `json:"amount"`
+	Operation string    `json:"operation"`
+	Notes     string    `json:"notes"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// GetBalanceHistory 获取企业余额变更历史（暂返回空列表，后续可扩展）
+func (s *EnterpriseService) GetBalanceHistory(ctx context.Context, id int64, page, pageSize int) ([]EnterpriseBalanceHistoryItem, int64, error) {
+	// TODO: 后续可扩增基于 enterprise_balance_audit 表的实现
+	_ = id
+	_ = page
+	_ = pageSize
+	return []EnterpriseBalanceHistoryItem{}, 0, nil
+}

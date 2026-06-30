@@ -95,6 +95,43 @@ export async function deleteEnterprise(id: number): Promise<DeleteEnterpriseResp
   return data
 }
 
+/**
+ * Update enterprise balance (add / subtract / set)
+ */
+export async function updateBalance(
+  id: number,
+  balance: number,
+  operation: 'set' | 'add' | 'subtract' = 'add',
+  notes?: string
+): Promise<Enterprise> {
+  const { data } = await apiClient.post<Enterprise>(`/admin/enterprises/${id}/balance`, {
+    balance,
+    operation,
+    notes: notes || ''
+  })
+  return data
+}
+
+/**
+ * Get enterprise balance history
+ */
+export async function getBalanceHistory(
+  id: number,
+  page: number = 1,
+  pageSize: number = 20
+): Promise<BasePaginationResponse<{
+  id: number
+  amount: number
+  operation: string
+  notes: string
+  created_at: string
+}>> {
+  const { data } = await apiClient.get(`/admin/enterprises/${id}/balance-history`, {
+    params: { page, page_size: pageSize }
+  })
+  return data
+}
+
 const enterprisesAPI = {
   list,
   getById,
@@ -102,6 +139,8 @@ const enterprisesAPI = {
   update,
   toggleStatus,
   delete: deleteEnterprise,
+  updateBalance,
+  getBalanceHistory,
 }
 
 export default enterprisesAPI

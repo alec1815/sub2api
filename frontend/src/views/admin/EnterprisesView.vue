@@ -113,8 +113,11 @@
             <span class="text-sm text-gray-700 dark:text-gray-300">{{ value ?? 0 }}</span>
           </template>
           <!-- Balance -->
-          <template #cell-balance="{ value }">
-            <span class="font-medium text-gray-900 dark:text-white">${{ parseFloat(value ?? '0').toFixed(2) }}</span>
+          <template #cell-balance="{ value, row }">
+            <div class="flex items-center gap-2">
+              <span class="font-medium text-gray-900 dark:text-white">${{ parseFloat(value ?? '0').toFixed(2) }}</span>
+              <button @click.stop="handleDeposit(row)" class="rounded px-1.5 py-0.5 text-xs text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20" :title="t('admin.enterprises.deposit')">{{ t('admin.enterprises.deposit') }}</button>
+            </div>
           </template>
           <!-- Concurrency -->
           <template #cell-concurrency="{ value }">
@@ -409,6 +412,9 @@
 
     <!-- Delete Confirm -->
     <ConfirmDialog :show="showDeleteDialog" :title="t('admin.enterprises.deleteEnterprise')" :message="t('admin.enterprises.deleteConfirm', { name: deletingEnterprise?.name })" :danger="true" @confirm="confirmDelete" @cancel="showDeleteDialog = false" />
+
+    <!-- Balance Modal -->
+    <EnterpriseBalanceModal :show="showBalanceModal" :enterprise="balanceEnterprise" :operation="balanceOperation" @close="showBalanceModal = false" @success="loadEnterprises" />
   </AppLayout>
 </template>
 
@@ -426,6 +432,7 @@ import Pagination from '@/components/common/Pagination.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import Select from '@/components/common/Select.vue'
+import EnterpriseBalanceModal from '@/components/admin/enterprise/EnterpriseBalanceModal.vue'
 import { adminAPI } from '@/api/admin'
 import type { Enterprise, EnterpriseStatus, EnterpriseScale, EnterpriseIndustry } from '@/types/enterprise'
 import type { Column } from '@/components/common/types'
@@ -791,5 +798,22 @@ async function confirmDelete() {
 // ---- View Members ----
 function handleViewMembers(enterprise: Enterprise) {
   router.push({ name: 'AdminEnterpriseMembers', params: { enterpriseId: enterprise.id }, query: { enterpriseName: enterprise.name } })
+}
+
+// ---- Balance Modal ----
+const showBalanceModal = ref(false)
+const balanceEnterprise = ref<Enterprise | null>(null)
+const balanceOperation = ref<'add' | 'subtract'>('add')
+
+function handleDeposit(enterprise: Enterprise) {
+  balanceEnterprise.value = enterprise
+  balanceOperation.value = 'add'
+  showBalanceModal.value = true
+}
+
+function handleWithdraw(enterprise: Enterprise) {
+  balanceEnterprise.value = enterprise
+  balanceOperation.value = 'subtract'
+  showBalanceModal.value = true
 }
 </script>

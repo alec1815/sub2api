@@ -124,3 +124,51 @@ func (h *EnterpriseHandler) DeleteEnterprise(c *gin.Context) {
 			return nil, h.enterpriseService.DeleteEnterprise(ctx, id)
 		})
 }
+
+// ==================== 企业余额管理 ====================
+
+// UpdateEnterpriseBalanceRequest 企业余额变更请求
+type UpdateEnterpriseBalanceRequest struct {
+	Balance   float64 `json:"balance" binding:"required,gt=0"`
+	Operation string  `json:"operation" binding:"required,oneof=set add subtract"`
+	Notes     string  `json:"notes"`
+}
+
+// UpdateBalance POST /api/admin/enterprises/:id/balance
+func (h *EnterpriseHandler) UpdateBalance(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid enterprise ID")
+		return
+	}
+
+	var req UpdateEnterpriseBalanceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+
+	ent, err := h.enterpriseService.UpdateBalance(c.Request.Context(), id, req.Balance, req.Operation, req.Notes)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, ent)
+}
+
+// BalanceHistory POST /api/admin/enterprises/:id/balance-history
+func (h *EnterpriseHandler) GetBalanceHistory(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid enterprise ID")
+		return
+	}
+
+	page, pageSize := response.ParsePagination(c)
+	items, total, err := h.enterpriseService.GetBalanceHistory(c.Request.Context(), id, page, pageSize)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Paginated(c, items, total, page, pageSize)
+}

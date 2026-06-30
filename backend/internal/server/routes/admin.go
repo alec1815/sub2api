@@ -703,6 +703,10 @@ func registerAdminEnterpriseRoutes(admin *gin.RouterGroup, h *handler.Handlers) 
 		enterprises.POST("/:id/members", h.Admin.EnterpriseMember.CreateMember)
 		enterprises.PUT("/:id/members/:mid", h.Admin.EnterpriseMember.UpdateMember)
 		enterprises.DELETE("/:id/members/:mid", h.Admin.EnterpriseMember.UnbindMember)
+
+		// 企业余额管理（管理员操作）
+		enterprises.POST("/:id/balance", h.Admin.Enterprise.UpdateBalance)
+		enterprises.GET("/:id/balance-history", h.Admin.Enterprise.GetBalanceHistory)
 	}
 
 	// 部门管理
