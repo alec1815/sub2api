@@ -4,7 +4,7 @@
  * Base path: /api/enterprise
  */
 
-import { apiClient } from '../client'
+import { apiClient } from './client'
 import type { BasePaginationResponse } from '@/types'
 import type {
   EnterpriseMember,
