@@ -4,31 +4,44 @@
       <!-- Filters -->
       <template #filters>
         <div class="flex flex-wrap items-center gap-3">
-          <div class="relative flex-1 min-w-[200px] max-w-sm">
-            <Icon name="search" size="sm" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <!-- Left: Search + Filters -->
+          <div class="flex-1 sm:max-w-64">
             <input
               v-model="searchQuery"
               type="text"
               :placeholder="t('enterprise.members.searchPlaceholder')"
-              class="input w-full pl-9"
+              class="input"
               @input="onSearchInput"
             />
           </div>
-          <select v-model="statusFilter" class="input w-auto min-w-[120px]" @change="loadData">
-            <option value="">{{ t('enterprise.members.allStatus') }}</option>
-            <option value="active">{{ t('enterprise.members.statusActive') }}</option>
-            <option value="pending">{{ t('enterprise.members.statusPending') }}</option>
-            <option value="unbound">{{ t('enterprise.members.statusUnbound') }}</option>
-          </select>
-          <select v-model="roleFilter" class="input w-auto min-w-[120px]" @change="loadData">
-            <option value="">{{ t('enterprise.members.allRoles') }}</option>
-            <option value="enterprise_admin">{{ t('enterprise.members.roleAdmin') }}</option>
-            <option value="enterprise_member">{{ t('enterprise.members.roleMember') }}</option>
-          </select>
-          <button class="btn btn-primary btn-sm" @click="openCreateModal">
-            <Icon name="plus" size="sm" class="mr-1" />
-            {{ t('enterprise.members.addMember') }}
-          </button>
+          <Select
+            v-model="statusFilter"
+            :options="filterStatusOptions"
+            class="w-32"
+            @change="loadData"
+          />
+          <Select
+            v-model="roleFilter"
+            :options="filterRoleOptions"
+            class="w-32"
+            @change="loadData"
+          />
+
+          <!-- Right: Action buttons -->
+          <div class="flex flex-1 flex-wrap items-center justify-end gap-2">
+            <button
+              @click="loadData"
+              :disabled="loading"
+              class="btn btn-secondary"
+              :title="t('common.refresh')"
+            >
+              <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
+            </button>
+            <button class="btn btn-primary" @click="openCreateModal">
+              <Icon name="plus" size="md" class="mr-1" />
+              {{ t('enterprise.members.addMember') }}
+            </button>
+          </div>
         </div>
       </template>
 
@@ -218,8 +231,9 @@ import TablePageLayout from '@/components/layout/TablePageLayout.vue'
 import DataTable from '@/components/common/DataTable.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import Select from '@/components/common/Select.vue'
 import enterpriseAdminAPI from '@/api/enterprise'
-import type { EnterpriseMember, EnterpriseMemberRole } from '@/types/enterprise'
+import type { EnterpriseMember } from '@/types/enterprise'
 import type { Column } from '@/components/common/types'
 
 const { t } = useI18n()
@@ -234,6 +248,20 @@ const statusFilter = ref('')
 const roleFilter = ref('')
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 const pagination = reactive({ page: 1, page_size: 20, total: 0 })
+
+// ---- Options ----
+const filterStatusOptions = computed(() => [
+  { value: '', label: t('enterprise.members.allStatus') },
+  { value: 'active', label: t('enterprise.members.statusActive') },
+  { value: 'pending', label: t('enterprise.members.statusPending') },
+  { value: 'unbound', label: t('enterprise.members.statusUnbound') },
+])
+
+const filterRoleOptions = computed(() => [
+  { value: '', label: t('enterprise.members.allRoles') },
+  { value: 'enterprise_admin', label: t('enterprise.members.roleAdmin') },
+  { value: 'enterprise_member', label: t('enterprise.members.roleMember') },
+])
 
 // ---- Columns ----
 const columns = computed<Column[]>(() => [

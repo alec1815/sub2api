@@ -13,21 +13,28 @@
           <!-- Enterprise selector -->
           <div class="w-full sm:w-64">
             <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('admin.departments.selectEnterprise') }}</label>
-            <select v-model="selectedEnterpriseId" class="input w-full" @change="handleEnterpriseChange">
-              <option :value="0" disabled>{{ t('admin.departments.selectEnterprisePlaceholder') }}</option>
-              <option v-for="e in enterpriseOptions" :key="e.id" :value="e.id">{{ e.name }}</option>
-            </select>
+            <Select
+              v-model="selectedEnterpriseId"
+              :options="enterpriseSelectOptions"
+              :placeholder="t('admin.departments.selectEnterprisePlaceholder')"
+              @change="handleEnterpriseChange"
+            />
           </div>
           <!-- Add Root Department -->
-          <button v-if="selectedEnterpriseId > 0" class="btn-primary inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold mt-5" @click="openCreateModal(null)">
-            <Icon name="plus" size="sm" />
-            {{ t('admin.departments.addDepartment') }}
-          </button>
-          <!-- Refresh -->
-          <button v-if="selectedEnterpriseId > 0" class="btn-secondary inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm mt-5" @click="loadTree">
-            <Icon name="refresh" size="sm" />
-            {{ t('admin.departments.refresh') }}
-          </button>
+          <div v-if="selectedEnterpriseId > 0" class="flex items-center gap-2 mt-5">
+            <button class="btn btn-primary" @click="openCreateModal(null)">
+              <Icon name="plus" size="md" class="mr-1" />
+              {{ t('admin.departments.addDepartment') }}
+            </button>
+            <button
+              @click="loadTree"
+              :disabled="treeLoading"
+              class="btn btn-secondary"
+              :title="t('common.refresh')"
+            >
+              <Icon name="refresh" size="md" :class="treeLoading ? 'animate-spin' : ''" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -113,6 +120,7 @@ import { useAppStore } from '@/stores/app'
 import Icon from '@/components/icons/Icon.vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import Select from '@/components/common/Select.vue'
 import { adminAPI } from '@/api/admin'
 import type { Department } from '@/types/enterprise'
 import type { Enterprise } from '@/types/enterprise'
@@ -123,6 +131,11 @@ const appStore = useAppStore()
 // ---- Enterprise selector ----
 const selectedEnterpriseId = ref(0)
 const enterpriseOptions = ref<Enterprise[]>([])
+
+const enterpriseSelectOptions = computed(() => [
+  { value: 0, label: t('admin.departments.selectEnterprisePlaceholder'), disabled: true },
+  ...enterpriseOptions.value.map(e => ({ value: e.id, label: e.name })),
+])
 
 async function loadEnterprises() {
   try {

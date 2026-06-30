@@ -4,26 +4,80 @@
       <!-- Filters Row: Search, Status Filter, and Actions -->
       <template #filters>
         <div class="flex flex-wrap items-center gap-3">
-          <div class="flex flex-1 flex-wrap items-center gap-3">
-            <!-- Search Box -->
-            <div class="relative w-full md:w-64">
-              <Icon name="search" size="md" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input v-model="searchQuery" type="text" :placeholder="t('admin.enterprises.searchPlaceholder')" class="input pl-10" @input="onSearchInput" />
-            </div>
-            <!-- Status Filter -->
-            <div class="w-full sm:w-32">
-              <select v-model="statusFilter" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-dark-600 dark:bg-dark-700 dark:text-gray-300" @change="loadEnterprises">
-                <option value="">{{ t('admin.enterprises.allStatus') }}</option>
-                <option value="active">{{ t('admin.enterprises.status.active') }}</option>
-                <option value="disabled">{{ t('admin.enterprises.status.disabled') }}</option>
-              </select>
-            </div>
+          <!-- Left: Search + Filters -->
+          <div class="flex-1 sm:max-w-64">
+            <input
+              v-model="searchQuery"
+              type="text"
+              :placeholder="t('admin.enterprises.searchPlaceholder')"
+              class="input"
+              @input="onSearchInput"
+            />
           </div>
-          <!-- Right: Create Button -->
-          <button class="btn-primary inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold" @click="openCreateModal">
-            <Icon name="plus" size="sm" />
-            {{ t('admin.enterprises.createEnterprise') }}
-          </button>
+          <Select
+            v-model="statusFilter"
+            :options="filterStatusOptions"
+            class="w-36"
+            @change="loadEnterprises"
+          />
+
+          <!-- Right: Action buttons -->
+          <div class="flex flex-1 flex-wrap items-center justify-end gap-2">
+            <!-- Column Settings Dropdown -->
+            <div class="relative" ref="columnDropdownRef">
+              <button
+                @click="showColumnDropdown = !showColumnDropdown"
+                class="btn btn-secondary px-2 md:px-3"
+                :title="t('admin.enterprises.columnSettings')"
+              >
+                <svg class="h-4 w-4 md:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" />
+                </svg>
+                <span class="hidden md:inline">{{ t('admin.enterprises.columnSettings') }}</span>
+              </button>
+              <!-- Dropdown menu -->
+              <div
+                v-if="showColumnDropdown"
+                class="absolute right-0 top-full z-50 mt-1 max-h-80 w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-dark-600 dark:bg-dark-800"
+              >
+                <button
+                  v-for="col in toggleableColumns"
+                  :key="col.key"
+                  :disabled="isForcedVisibleColumn(col.key)"
+                  @click="toggleColumn(col.key)"
+                  :class="[
+                    'flex w-full items-center justify-between px-4 py-2 text-left text-sm',
+                    isForcedVisibleColumn(col.key)
+                      ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
+                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700'
+                  ]"
+                  :title="isForcedVisibleColumn(col.key) ? t('admin.enterprises.columnAlwaysVisible') : ''"
+                >
+                  <span>{{ col.label }}</span>
+                  <Icon
+                    v-if="isColumnVisible(col.key)"
+                    name="check"
+                    size="sm"
+                    :class="isForcedVisibleColumn(col.key) ? 'text-gray-400 dark:text-gray-500' : 'text-primary-500'"
+                    :stroke-width="2"
+                  />
+                </button>
+              </div>
+            </div>
+
+            <button
+              @click="loadEnterprises"
+              :disabled="loading"
+              class="btn btn-secondary"
+              :title="t('common.refresh')"
+            >
+              <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
+            </button>
+            <button class="btn btn-primary" @click="openCreateModal">
+              <Icon name="plus" size="md" class="mr-1" />
+              {{ t('admin.enterprises.createEnterprise') }}
+            </button>
+          </div>
         </div>
       </template>
 
@@ -104,7 +158,7 @@
 
       <!-- Pagination -->
       <template #pagination>
-        <Pagination v-if="pagination.total > 0" :page="pagination.page" :page-size="pagination.page_size" :total="pagination.total" @page-change="handlePageChange" @page-size-change="handlePageSizeChange" />
+        <Pagination v-if="pagination.total > 0" :page="pagination.page" :page-size="pagination.page_size" :total="pagination.total" @update:page="handlePageChange" @update:page-size="handlePageSizeChange" />
       </template>
     </TablePageLayout>
 
@@ -132,7 +186,7 @@
     <!-- Create Modal -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4" @click.self="closeCreateModal">
+        <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4">
           <div class="my-8 w-full max-w-lg rounded-2xl bg-white shadow-2xl dark:bg-dark-800">
             <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-dark-700">
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.enterprises.createEnterprise') }}</h2>
@@ -236,25 +290,11 @@
                 <div class="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('admin.enterprises.form.scale') }}</label>
-                    <select v-model="createForm.scale" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-dark-600 dark:bg-dark-700 dark:text-white" :disabled="submitting">
-                      <option value="">{{ t('admin.enterprises.form.scalePlaceholder') }}</option>
-                      <option value="micro">{{ t('admin.enterprises.scaleOptions.micro') }}</option>
-                      <option value="small">{{ t('admin.enterprises.scaleOptions.small') }}</option>
-                      <option value="medium">{{ t('admin.enterprises.scaleOptions.medium') }}</option>
-                      <option value="large">{{ t('admin.enterprises.scaleOptions.large') }}</option>
-                    </select>
+                    <Select v-model="createForm.scale" :options="scaleOptions" :disabled="submitting" />
                   </div>
                   <div>
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('admin.enterprises.form.industry') }}</label>
-                    <select v-model="createForm.industry" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-dark-600 dark:bg-dark-700 dark:text-white" :disabled="submitting">
-                      <option value="">{{ t('admin.enterprises.form.industryPlaceholder') }}</option>
-                      <option value="internet">{{ t('admin.enterprises.industryOptions.internet') }}</option>
-                      <option value="finance">{{ t('admin.enterprises.industryOptions.finance') }}</option>
-                      <option value="education">{{ t('admin.enterprises.industryOptions.education') }}</option>
-                      <option value="healthcare">{{ t('admin.enterprises.industryOptions.healthcare') }}</option>
-                      <option value="manufacturing">{{ t('admin.enterprises.industryOptions.manufacturing') }}</option>
-                      <option value="other">{{ t('admin.enterprises.industryOptions.other') }}</option>
-                    </select>
+                    <Select v-model="createForm.industry" :options="industryOptions" :disabled="submitting" />
                   </div>
                 </div>
               </div>
@@ -287,7 +327,7 @@
     <!-- Edit Modal -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="showEditModal" class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4" @click.self="closeEditModal">
+        <div v-if="showEditModal" class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4">
           <div class="my-8 w-full max-w-lg rounded-2xl bg-white shadow-2xl dark:bg-dark-800">
             <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-dark-700">
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.enterprises.editEnterprise') }}</h2>
@@ -318,25 +358,11 @@
               <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('admin.enterprises.form.scale') }}</label>
-                  <select v-model="editForm.scale" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-dark-600 dark:bg-dark-700 dark:text-white" :disabled="submitting">
-                    <option value="">{{ t('admin.enterprises.form.scalePlaceholder') }}</option>
-                    <option value="micro">{{ t('admin.enterprises.scaleOptions.micro') }}</option>
-                    <option value="small">{{ t('admin.enterprises.scaleOptions.small') }}</option>
-                    <option value="medium">{{ t('admin.enterprises.scaleOptions.medium') }}</option>
-                    <option value="large">{{ t('admin.enterprises.scaleOptions.large') }}</option>
-                  </select>
+                  <Select v-model="editForm.scale" :options="scaleOptions" :disabled="submitting" />
                 </div>
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('admin.enterprises.form.industry') }}</label>
-                  <select v-model="editForm.industry" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-dark-600 dark:bg-dark-700 dark:text-white" :disabled="submitting">
-                    <option value="">{{ t('admin.enterprises.form.industryPlaceholder') }}</option>
-                    <option value="internet">{{ t('admin.enterprises.industryOptions.internet') }}</option>
-                    <option value="finance">{{ t('admin.enterprises.industryOptions.finance') }}</option>
-                    <option value="education">{{ t('admin.enterprises.industryOptions.education') }}</option>
-                    <option value="healthcare">{{ t('admin.enterprises.industryOptions.healthcare') }}</option>
-                    <option value="manufacturing">{{ t('admin.enterprises.industryOptions.manufacturing') }}</option>
-                    <option value="other">{{ t('admin.enterprises.industryOptions.other') }}</option>
-                  </select>
+                  <Select v-model="editForm.industry" :options="industryOptions" :disabled="submitting" />
                 </div>
               </div>
               <hr class="border-gray-100 dark:border-dark-700" />
@@ -395,6 +421,7 @@ import DataTable from '@/components/common/DataTable.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
+import Select from '@/components/common/Select.vue'
 import { adminAPI } from '@/api/admin'
 import type { Enterprise, EnterpriseStatus, EnterpriseScale, EnterpriseIndustry } from '@/types/enterprise'
 import type { Column } from '@/components/common/types'
@@ -427,7 +454,79 @@ const allColumns = computed<Column[]>(() => [
   { key: 'actions', label: t('admin.enterprises.columns.actions'), sortable: false },
 ])
 
-const columns = computed<Column[]>(() => allColumns.value.filter(col => col.key !== 'contact_phone'))
+// Column Settings
+const hiddenColumns = reactive<Set<string>>(new Set())
+const DEFAULT_HIDDEN_COLUMNS = ['contact_phone']
+const HIDDEN_COLUMNS_KEY = 'enterprise-hidden-columns'
+const FORCED_VISIBLE_COLUMNS = new Set(['name', 'actions'])
+
+const toggleableColumns = computed(() =>
+  allColumns.value.filter(col => !FORCED_VISIBLE_COLUMNS.has(col.key))
+)
+
+function loadSavedColumns() {
+  try {
+    const saved = localStorage.getItem(HIDDEN_COLUMNS_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      hiddenColumns.clear()
+      ;(parsed as string[]).forEach(key => hiddenColumns.add(key))
+      return
+    }
+  } catch { /* ignore */ }
+  DEFAULT_HIDDEN_COLUMNS.forEach(key => hiddenColumns.add(key))
+}
+
+function saveColumnsToStorage() {
+  localStorage.setItem(HIDDEN_COLUMNS_KEY, JSON.stringify([...hiddenColumns]))
+}
+
+function toggleColumn(key: string) {
+  if (FORCED_VISIBLE_COLUMNS.has(key)) return
+  if (hiddenColumns.has(key)) {
+    hiddenColumns.delete(key)
+  } else {
+    hiddenColumns.add(key)
+  }
+  saveColumnsToStorage()
+}
+
+const isColumnVisible = (key: string) => !hiddenColumns.has(key)
+const isForcedVisibleColumn = (key: string) => FORCED_VISIBLE_COLUMNS.has(key)
+
+const columns = computed<Column[]>(() =>
+  allColumns.value.filter(col =>
+    FORCED_VISIBLE_COLUMNS.has(col.key) || !hiddenColumns.has(col.key)
+  )
+)
+
+// Load saved column visibility
+loadSavedColumns()
+
+// ---- Options ----
+const filterStatusOptions = computed(() => [
+  { value: '', label: t('admin.enterprises.allStatus') },
+  { value: 'active', label: t('admin.enterprises.status.active') },
+  { value: 'disabled', label: t('admin.enterprises.status.disabled') },
+])
+
+const scaleOptions = computed(() => [
+  { value: '', label: t('admin.enterprises.form.scalePlaceholder') },
+  { value: 'micro', label: t('admin.enterprises.scales.micro') },
+  { value: 'small', label: t('admin.enterprises.scales.small') },
+  { value: 'medium', label: t('admin.enterprises.scales.medium') },
+  { value: 'large', label: t('admin.enterprises.scales.large') },
+])
+
+const industryOptions = computed(() => [
+  { value: '', label: t('admin.enterprises.form.industryPlaceholder') },
+  { value: 'internet', label: t('admin.enterprises.industries.internet') },
+  { value: 'finance', label: t('admin.enterprises.industries.finance') },
+  { value: 'education', label: t('admin.enterprises.industries.education') },
+  { value: 'healthcare', label: t('admin.enterprises.industries.healthcare') },
+  { value: 'manufacturing', label: t('admin.enterprises.industries.manufacturing') },
+  { value: 'other', label: t('admin.enterprises.industries.other') },
+])
 
 // ---- Action Menu ----
 const activeMenuId = ref<number | null>(null)
@@ -456,6 +555,7 @@ function handleClickOutside(e: MouseEvent) {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  loadSavedColumns()
   loadEnterprises()
 })
 
@@ -473,8 +573,9 @@ async function loadEnterprises() {
     const result = await adminAPI.enterprises.list(pagination.page, pagination.page_size, filters)
     enterprises.value = result.items
     pagination.total = result.total
-  } catch {
-    appStore.showError(t('admin.enterprises.failedToLoad'))
+  } catch (error: any) {
+    console.error('Failed to load enterprises:', error)
+    appStore.showError(error.response?.data?.detail || t('admin.enterprises.failedToLoad'))
   } finally {
     loading.value = false
   }
@@ -556,13 +657,16 @@ async function submitCreateForm() {
       contact_email: createForm.value.contact_email.trim(),
       admin_email: createForm.value.admin_email.trim(),
       admin_name: createForm.value.admin_name.trim() || undefined,
+      admin_password: createForm.value.password,
+      admin_password_confirm: createForm.value.confirmPassword,
       notes: createForm.value.notes.trim() || undefined,
     })
     appStore.showSuccess(t('admin.enterprises.createSuccess'))
     closeCreateModal()
     await loadEnterprises()
-  } catch {
-    appStore.showError(t('admin.enterprises.errors.createFailed'))
+  } catch (error: any) {
+    console.error('Failed to create enterprise:', error)
+    appStore.showError(error.response?.data?.detail || t('admin.enterprises.errors.createFailed'))
   } finally {
     submitting.value = false
   }
@@ -608,8 +712,9 @@ async function submitEditForm() {
     appStore.showSuccess(t('admin.enterprises.updateSuccess'))
     closeEditModal()
     await loadEnterprises()
-  } catch {
-    appStore.showError(t('admin.enterprises.errors.createFailed'))
+  } catch (error: any) {
+    console.error('Failed to update enterprise:', error)
+    appStore.showError(error.response?.data?.detail || t('admin.enterprises.errors.createFailed'))
   } finally {
     submitting.value = false
   }
@@ -635,7 +740,10 @@ async function handleDisable() {
     appStore.showSuccess(t('admin.enterprises.disableSuccess'))
     showDisableModal.value = false; targetEnterprise.value = null
     await loadEnterprises()
-  } catch { appStore.showError(t('admin.enterprises.errors.operationFailed')) }
+  } catch (error: any) { 
+    console.error('Failed to disable enterprise:', error)
+    appStore.showError(error.response?.data?.detail || t('admin.enterprises.errors.operationFailed'))
+  }
   finally { submitting.value = false }
 }
 
@@ -647,7 +755,10 @@ async function handleActivate() {
     appStore.showSuccess(t('admin.enterprises.activateSuccess'))
     showActivateModal.value = false; targetEnterprise.value = null
     await loadEnterprises()
-  } catch { appStore.showError(t('admin.enterprises.errors.operationFailed')) }
+  } catch (error: any) { 
+    console.error('Failed to activate enterprise:', error)
+    appStore.showError(error.response?.data?.detail || t('admin.enterprises.errors.operationFailed'))
+  }
   finally { submitting.value = false }
 }
 
@@ -665,7 +776,10 @@ async function confirmDelete() {
     appStore.showSuccess(t('common.success'))
     showDeleteDialog.value = false; deletingEnterprise.value = null
     await loadEnterprises()
-  } catch { appStore.showError(t('admin.enterprises.errors.operationFailed')) }
+  } catch (error: any) { 
+    console.error('Failed to delete enterprise:', error)
+    appStore.showError(error.response?.data?.detail || t('admin.enterprises.errors.operationFailed'))
+  }
   finally { submitting.value = false }
 }
 

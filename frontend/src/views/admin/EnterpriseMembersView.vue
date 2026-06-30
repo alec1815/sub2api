@@ -25,16 +25,31 @@
       <!-- Search & Filter -->
       <div class="card">
         <div class="flex flex-wrap items-center gap-3">
-          <div class="relative w-full md:w-64">
-            <Icon name="search" size="md" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input v-model="searchQuery" type="text" class="input pl-10" :placeholder="t('admin.enterpriseMembers.searchPlaceholder')" @input="onSearchInput" />
+          <div class="flex-1 sm:max-w-64">
+            <input
+              v-model="searchQuery"
+              type="text"
+              :placeholder="t('admin.enterpriseMembers.searchPlaceholder')"
+              class="input"
+              @input="onSearchInput"
+            />
           </div>
-          <select v-model="statusFilter" class="w-full sm:w-32 input" @change="loadMembers">
-            <option value="">{{ t('admin.enterpriseMembers.filterAllStatus') }}</option>
-            <option value="active">{{ t('admin.enterpriseMembers.status.active') }}</option>
-            <option value="pending">{{ t('admin.enterpriseMembers.status.pending') }}</option>
-            <option value="unbound">{{ t('admin.enterpriseMembers.status.unbound') }}</option>
-          </select>
+          <Select
+            v-model="statusFilter"
+            :options="filterStatusOptions"
+            class="w-36"
+            @change="loadMembers"
+          />
+          <div class="flex flex-1 items-center justify-end gap-2">
+            <button
+              @click="loadMembers"
+              :disabled="loading"
+              class="btn btn-secondary"
+              :title="t('common.refresh')"
+            >
+              <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -98,7 +113,7 @@
       <!-- Pagination -->
       <div v-if="pagination.total > 0" class="flex items-center justify-between">
         <span class="text-sm text-gray-500 dark:text-gray-400">{{ t('common.total', { total: pagination.total }) }}</span>
-        <Pagination :page="pagination.page" :page-size="pagination.page_size" :total="pagination.total" @page-change="handlePageChange" @page-size-change="handlePageSizeChange" />
+        <Pagination :page="pagination.page" :page-size="pagination.page_size" :total="pagination.total" @update:page="handlePageChange" @update:page-size="handlePageSizeChange" />
       </div>
     </div>
 
@@ -186,7 +201,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
@@ -195,8 +210,9 @@ import Icon from '@/components/icons/Icon.vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import Select from '@/components/common/Select.vue'
 import { adminAPI } from '@/api/admin'
-import type { EnterpriseMember, EnterpriseMemberStatus } from '@/types/enterprise'
+import type { EnterpriseMember } from '@/types/enterprise'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -214,7 +230,22 @@ const statusFilter = ref('')
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 const pagination = reactive({ page: 1, page_size: 20, total: 0 })
 
-onMounted(() => { loadMembers() })
+// Options
+const filterStatusOptions = computed(() => [
+  { value: '', label: t('admin.enterpriseMembers.filterAllStatus') },
+  { value: 'active', label: t('admin.enterpriseMembers.status.active') },
+  { value: 'pending', label: t('admin.enterpriseMembers.status.pending') },
+  { value: 'unbound', label: t('admin.enterpriseMembers.status.unbound') },
+])
+
+onMounted(() => {
+  if (!enterpriseId || enterpriseId <= 0) {
+    appStore.showError(t('admin.enterpriseMembers.invalidEnterprise'))
+    router.replace({ name: 'AdminEnterprises' })
+    return
+  }
+  loadMembers()
+})
 
 async function loadMembers() {
   loading.value = true
