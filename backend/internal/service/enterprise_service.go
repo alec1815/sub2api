@@ -2,13 +2,29 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
+	"os"
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/domain"
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
 )
+
+// debugLog 将企业创建过程写入调试日志文件，便于排查问题。
+// 日志文件路径: D:/temp/ent_debug.log
+func debugLog(format string, args ...interface{}) {
+	f, err := os.OpenFile("D:/temp/ent_debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Printf("[ent_debug] open log file failed: %v", err)
+		return
+	}
+	defer f.Close()
+	msg := fmt.Sprintf(format, args...)
+	f.WriteString(time.Now().Format("15:04:05.000") + " " + msg + "\n")
+}
 
 // Enterprise constants aliases
 const (
@@ -51,6 +67,7 @@ var (
 	ErrEnterpriseInsufficientBalance = infraerrors.BadRequest("ENTERPRISE_INSUFFICIENT_BALANCE", "enterprise balance is insufficient")
 	ErrMemberAlreadyInDept           = infraerrors.Conflict("MEMBER_ALREADY_IN_DEPT", "member already belongs to another department")
 	ErrMemberInvalidRole             = infraerrors.BadRequest("MEMBER_ROLE_INVALID", "member role is invalid")
+	ErrAdminPasswordMismatch   = infraerrors.BadRequest("ADMIN_PASSWORD_MISMATCH", "admin password and confirm password do not match")
 	ErrDepartmentNameRequired  = infraerrors.BadRequest("DEPARTMENT_NAME_REQUIRED", "department name is required")
 )
 
@@ -112,19 +129,21 @@ type APIKeyGroupRepository interface {
 
 // CreateEnterpriseRequest 创建企业请求
 type CreateEnterpriseRequest struct {
-	Name         string `json:"name"`
-	ShortName    string `json:"short_name"`
-	CreditCode   string `json:"credit_code"`
-	Address      string `json:"address"`
-	Scale        string `json:"scale"`
-	Industry     string `json:"industry"`
-	ContactName  string `json:"contact_name"`
-	ContactPhone string `json:"contact_phone"`
-	ContactEmail string `json:"contact_email"`
-	AdminEmail   string `json:"admin_email"`
-	AdminName    string `json:"admin_name"`
-	Notes        string `json:"notes"`
-	ParentID     int64  `json:"parent_id"`
+	Name              string `json:"name"`
+	ShortName         string `json:"short_name"`
+	CreditCode        string `json:"credit_code"`
+	Address           string `json:"address"`
+	Scale             string `json:"scale"`
+	Industry          string `json:"industry"`
+	ContactName       string `json:"contact_name"`
+	ContactPhone      string `json:"contact_phone"`
+	ContactEmail      string `json:"contact_email"`
+	AdminEmail        string `json:"admin_email"`
+	AdminName         string `json:"admin_name"`
+	AdminPassword     string `json:"admin_password"`
+	AdminPasswordConfirm string `json:"admin_password_confirm"`
+	Notes             string `json:"notes"`
+	ParentID          int64  `json:"parent_id"`
 }
 
 // UpdateEnterpriseRequest 更新企业请求（全部指针=可选）
@@ -175,14 +194,19 @@ func (s *EnterpriseService) CreateEnterprise(ctx context.Context, req CreateEnte
 	if req.AdminEmail == "" {
 		return nil, ErrEnterpriseAdminRequired
 	}
+	// 后端二次校验：密码与确认密码一致性
+	if req.AdminPassword != req.AdminPasswordConfirm {
+		return nil, ErrAdminPasswordMismatch
+	}
 
 	// 1. 查找或创建管理员 users
 	admin, err := s.userRepo.GetByEmail(ctx, req.AdminEmail)
-	if err != nil {
+	if err != nil && !errors.Is(err, ErrUserNotFound) {
 		return nil, fmt.Errorf("lookup admin user: %w", err)
 	}
 	if admin == nil {
-		// 自动注册管理员用户
+		debugLog("CreateEnterprise: admin not found [%s], auto-creating", req.AdminEmail)
+		// ErrUserNotFound — 自动注册管理员用户
 		adminName := req.AdminName
 		if adminName == "" {
 			adminName = req.AdminEmail
@@ -190,17 +214,40 @@ func (s *EnterpriseService) CreateEnterprise(ctx context.Context, req CreateEnte
 		admin = &User{
 			Email:    req.AdminEmail,
 			Username: adminName,
-			Role:     RoleUser, // platform role = user, enterprise role = enterprise_admin
+			Role:     RoleUser,
 			Status:   StatusActive,
 		}
+		// 优先使用调用方传入的密码，否则生成随机密码
+		password := req.AdminPassword
+		if password == "" {
+			password, err = randomHexString(32)
+			if err != nil {
+				return nil, fmt.Errorf("generate random password: %w", err)
+			}
+		}
+		if err := admin.SetPassword(password); err != nil {
+			return nil, fmt.Errorf("set admin password: %w", err)
+		}
 		if err := s.userRepo.Create(ctx, admin); err != nil {
+			debugLog("CreateEnterprise: userRepo.Create FAILED: %v", err)
 			return nil, fmt.Errorf("create admin user: %w", err)
+		}
+		debugLog("CreateEnterprise: user created, ID=%d", admin.ID)
+	} else if req.AdminPassword != "" {
+		// admin 已存在且请求中带了新密码，重置密码
+		if err := admin.SetPassword(req.AdminPassword); err != nil {
+			return nil, fmt.Errorf("set admin password: %w", err)
+		}
+		if err := s.userRepo.Update(ctx, admin); err != nil {
+			return nil, fmt.Errorf("update admin user: %w", err)
 		}
 	}
 
 	// 2. 校验管理员未被其他企业绑定为管理员
+	debugLog("CreateEnterprise: checking existing member, userID=%d", admin.ID)
 	existing, err := s.memberRepo.GetByUserID(ctx, admin.ID)
-	if err != nil && err != ErrEnterpriseMemberNotFound {
+	if err != nil && !errors.Is(err, ErrEnterpriseMemberNotFound) {
+		debugLog("CreateEnterprise: GetByUserID unexpected error: %v", err)
 		return nil, fmt.Errorf("check existing member: %w", err)
 	}
 	if existing != nil && (existing.Role == EnterpriseRoleAdmin || existing.Status == StatusActive) {
@@ -226,8 +273,10 @@ func (s *EnterpriseService) CreateEnterprise(ctx context.Context, req CreateEnte
 		AdminUserID:  admin.ID,
 	}
 	if err := s.entRepo.Create(ctx, ent); err != nil {
+		debugLog("CreateEnterprise: entRepo.Create FAILED: %v", err)
 		return nil, fmt.Errorf("create enterprise: %w", err)
 	}
+	debugLog("CreateEnterprise: enterprise created, ID=%d", ent.ID)
 
 	// 4. 创建 enterprise_members 记录
 	member := &EnterpriseMember{
@@ -238,8 +287,10 @@ func (s *EnterpriseService) CreateEnterprise(ctx context.Context, req CreateEnte
 		JoinedAt:     time.Now(),
 	}
 	if err := s.memberRepo.Create(ctx, member); err != nil {
+		debugLog("CreateEnterprise: memberRepo.Create FAILED: %v", err)
 		return nil, fmt.Errorf("create admin member: %w", err)
 	}
+	debugLog("CreateEnterprise: SUCCESS — ent=%d, admin=%d, member=%d", ent.ID, admin.ID, member.ID)
 
 	return ent, nil
 }

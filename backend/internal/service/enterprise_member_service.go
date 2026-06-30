@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -84,7 +85,7 @@ func (s *EnterpriseMemberService) CreateMember(ctx context.Context, enterpriseID
 	if existingUser != nil {
 		// 检查是否已是某企业成员
 		existingMember, memberErr := s.memberRepo.GetByUserID(ctx, existingUser.ID)
-		if memberErr != nil && memberErr != ErrEnterpriseMemberNotFound {
+		if memberErr != nil && !errors.Is(memberErr, ErrEnterpriseMemberNotFound) {
 			return nil, fmt.Errorf("check existing member: %w", memberErr)
 		}
 		if existingMember != nil && existingMember.Status == StatusActive {
