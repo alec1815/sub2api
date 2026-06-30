@@ -96,10 +96,10 @@
       <template #pagination>
         <Pagination
           v-if="pagination.total > 0"
-          v-model:current="pagination.page"
+          v-model:page="pagination.page"
           :total="pagination.total"
-          :page-size="pagination.page_size"
-          @change="onPageChange"
+          :pageSize="pagination.page_size"
+          @update:page="onPageChange"
         />
       </template>
     </TablePageLayout>
@@ -219,7 +219,7 @@ import DataTable from '@/components/common/DataTable.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import enterpriseAdminAPI from '@/api/enterprise'
-import type { EnterpriseMember, EnterpriseMemberRole, EnterpriseMemberStatus } from '@/types/enterprise'
+import type { EnterpriseMember, EnterpriseMemberRole } from '@/types/enterprise'
 import type { Column } from '@/components/common/types'
 
 const { t } = useI18n()
@@ -274,10 +274,10 @@ async function loadData() {
     if (roleFilter.value) filters.role = roleFilter.value
 
     const res = await enterpriseAdminAPI.listMembers(pagination.page, pagination.page_size, filters)
-    members.value = res.data ?? []
+    members.value = res.items ?? []
     pagination.total = res.total ?? 0
   } catch (err: any) {
-    appStore.showToast(err?.message ?? t('common.loadError'), 'error')
+    appStore.showToast('error', err?.message ?? t('common.loadError'))
   } finally {
     loading.value = false
   }
@@ -333,10 +333,10 @@ async function submitForm() {
         rpm_limit: form.rpm_limit,
         notes: form.notes || undefined,
       })
-      appStore.showToast(t('enterprise.members.updated'), 'success')
+      appStore.showToast('success', t('enterprise.members.updated'))
     } else {
       if (!form.email.trim()) {
-        appStore.showToast(t('enterprise.members.emailRequired'), 'error')
+        appStore.showToast('error', t('enterprise.members.emailRequired'))
         submitting.value = false
         return
       }
@@ -348,12 +348,12 @@ async function submitForm() {
         concurrency: form.concurrency,
         rpm_limit: form.rpm_limit,
       })
-      appStore.showToast(t('enterprise.members.created'), 'success')
+      appStore.showToast('success', t('enterprise.members.created'))
     }
     closeFormModal()
     await loadData()
   } catch (err: any) {
-    appStore.showToast(err?.message ?? t('common.saveError'), 'error')
+    appStore.showToast('error', err?.message ?? t('common.saveError'))
   } finally {
     submitting.value = false
   }
@@ -369,11 +369,11 @@ async function executeUnbind() {
   if (!unbindTarget.value) return
   try {
     await enterpriseAdminAPI.unbindMember(unbindTarget.value.id)
-    appStore.showToast(t('enterprise.members.unbound'), 'success')
+    appStore.showToast('success', t('enterprise.members.unbound'))
     showUnbindConfirm.value = false
     await loadData()
   } catch (err: any) {
-    appStore.showToast(err?.message ?? t('common.error'), 'error')
+    appStore.showToast('error', err?.message ?? t('common.error'))
   }
 }
 
@@ -382,5 +382,8 @@ onMounted(() => {
   loadData()
 })
 </script>
+
+
+
 
 

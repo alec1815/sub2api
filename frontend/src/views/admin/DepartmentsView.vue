@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <AppLayout>
     <div class="space-y-6">
       <!-- Page Header -->
@@ -264,3 +264,4 @@ async function handleDelete() {
 
 onMounted(() => { loadEnterprises() })
 </script>
+

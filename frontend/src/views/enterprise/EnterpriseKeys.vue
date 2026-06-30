@@ -93,10 +93,10 @@
       <template #pagination>
         <Pagination
           v-if="pagination.total > 0"
-          v-model:current="pagination.page"
+          v-model:page="pagination.page"
           :total="pagination.total"
-          :page-size="pagination.page_size"
-          @change="onPageChange"
+          :pageSize="pagination.page_size"
+          @update:page="onPageChange"
         />
       </template>
     </TablePageLayout>
@@ -293,10 +293,10 @@ async function loadData() {
   loading.value = true
   try {
     const res = await enterpriseAdminAPI.listKeys(pagination.page, pagination.page_size)
-    keys.value = res.data ?? []
+    keys.value = res.items ?? []
     pagination.total = res.total ?? 0
   } catch (err: any) {
-    appStore.showToast(err?.message ?? t('common.loadError'), 'error')
+    appStore.showToast('error', err?.message ?? t('common.loadError'))
   } finally {
     loading.value = false
   }
@@ -331,7 +331,7 @@ async function submitCreate() {
   submitting.value = true
   try {
     if (!createForm.name.trim()) {
-      appStore.showToast(t('enterprise.keys.nameRequired'), 'error')
+      appStore.showToast('error', t('enterprise.keys.nameRequired'))
       submitting.value = false
       return
     }
@@ -348,9 +348,9 @@ async function submitCreate() {
       quota: createForm.quota,
     })
     createdKey.value = res
-    appStore.showToast(t('enterprise.keys.created'), 'success')
+    appStore.showToast('success', t('enterprise.keys.created'))
   } catch (err: any) {
-    appStore.showToast(err?.message ?? t('common.saveError'), 'error')
+    appStore.showToast('error', err?.message ?? t('common.saveError'))
   } finally {
     submitting.value = false
   }
@@ -366,11 +366,11 @@ async function executeToggle() {
   if (!toggleTarget.value) return
   try {
     await enterpriseAdminAPI.toggleKey(toggleTarget.value.id)
-    appStore.showToast(t('enterprise.keys.toggled'), 'success')
+    appStore.showToast('success', t('enterprise.keys.toggled'))
     showToggleConfirm.value = false
     await loadData()
   } catch (err: any) {
-    appStore.showToast(err?.message ?? t('common.error'), 'error')
+    appStore.showToast('error', err?.message ?? t('common.error'))
   }
 }
 
@@ -384,11 +384,11 @@ async function executeDelete() {
   if (!deleteTarget.value) return
   try {
     await enterpriseAdminAPI.deleteKey(deleteTarget.value.id)
-    appStore.showToast(t('enterprise.keys.deleted'), 'success')
+    appStore.showToast('success', t('enterprise.keys.deleted'))
     showDeleteConfirm.value = false
     await loadData()
   } catch (err: any) {
-    appStore.showToast(err?.message ?? t('common.error'), 'error')
+    appStore.showToast('error', err?.message ?? t('common.error'))
   }
 }
 
@@ -397,5 +397,8 @@ onMounted(() => {
   loadData()
 })
 </script>
+
+
+
 
 

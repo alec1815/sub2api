@@ -173,7 +173,7 @@ async function loadData() {
   try {
     finance.value = await enterpriseAdminAPI.getFinance()
   } catch (err: any) {
-    appStore.showToast(err?.message ?? t('common.loadError'), 'error')
+    appStore.showToast('error', err?.message ?? t('common.loadError'))
   } finally {
     loading.value = false
   }
@@ -184,5 +184,6 @@ onMounted(() => {
   loadData()
 })
 </script>
+
 
 

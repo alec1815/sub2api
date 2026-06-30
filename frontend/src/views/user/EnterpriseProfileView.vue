@@ -306,7 +306,7 @@ async function loadData() {
   try {
     profile.value = await enterpriseAdminAPI.getProfile()
   } catch (err: any) {
-    appStore.showToast(err?.message ?? t('common.loadError'), 'error')
+    appStore.showToast('error', err?.message ?? t('common.loadError'))
   } finally {
     loading.value = false
   }
@@ -317,5 +317,6 @@ onMounted(() => {
   loadData()
 })
 </script>
+
 
 

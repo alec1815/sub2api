@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <!-- Node Row -->
     <div
@@ -40,7 +40,7 @@
       <!-- Actions -->
       <div class="flex items-center gap-0.5 ml-2">
         <button
-          @click="$emit('add-child', node)"
+          @click="$emit('addChild', node)"
           class="rounded-lg p-1.5 text-gray-400 hover:text-primary-600 hover:bg-gray-100 dark:hover:bg-dark-700 dark:hover:text-primary-400"
           :title="t('admin.departments.addChild')"
         >
@@ -72,7 +72,7 @@
         :depth="depth + 1"
         :expanded-ids="expandedIds"
         @edit="(n) => $emit('edit', n)"
-        @add-child="(n) => $emit('add-child', n)"
+        @add-child="(n) => $emit('addChild', n)"
         @delete="(n) => $emit('delete', n)"
         @toggle="(id) => $emit('toggle', id)"
       />
@@ -104,3 +104,4 @@ const { t } = useI18n()
 const hasChildren = computed(() => props.node.children && props.node.children.length > 0)
 const isExpanded = computed(() => props.expandedIds?.has(props.node.id) ?? false)
 </script>
+

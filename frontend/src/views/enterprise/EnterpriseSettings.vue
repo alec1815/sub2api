@@ -202,7 +202,7 @@ async function loadData() {
   try {
     settings.value = await enterpriseAdminAPI.getSettings()
   } catch (err: any) {
-    appStore.showToast(err?.message ?? t('common.loadError'), 'error')
+    appStore.showToast('error', err?.message ?? t('common.loadError'))
   } finally {
     loading.value = false
   }
@@ -238,9 +238,9 @@ async function saveSettings() {
     })
     settings.value = updated
     editing.value = false
-    appStore.showToast(t('enterprise.settings.saved'), 'success')
+    appStore.showToast('success', t('enterprise.settings.saved'))
   } catch (err: any) {
-    appStore.showToast(err?.message ?? t('common.saveError'), 'error')
+    appStore.showToast('error', err?.message ?? t('common.saveError'))
   } finally {
     saving.value = false
   }
@@ -251,5 +251,6 @@ onMounted(() => {
   loadData()
 })
 </script>
+
 
 
