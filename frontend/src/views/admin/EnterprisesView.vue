@@ -116,6 +116,10 @@
           <template #cell-balance="{ value }">
             <span class="font-medium text-gray-900 dark:text-white">${{ parseFloat(value ?? '0').toFixed(2) }}</span>
           </template>
+          <!-- Concurrency -->
+          <template #cell-concurrency="{ value }">
+            <span class="text-sm text-gray-700 dark:text-gray-300">{{ value ?? 0 }}</span>
+          </template>
           <!-- Status -->
           <template #cell-status="{ value }">
             <div class="flex items-center gap-1.5">
@@ -449,6 +453,7 @@ const allColumns = computed<Column[]>(() => [
   { key: 'contact_phone', label: t('admin.enterprises.columns.contactPhone'), sortable: false },
   { key: 'member_count', label: t('admin.enterprises.columns.memberCount'), sortable: true },
   { key: 'balance', label: t('admin.enterprises.columns.balance'), sortable: true },
+  { key: 'concurrency', label: t('admin.enterprises.columns.concurrency'), sortable: true },
   { key: 'status', label: t('admin.enterprises.columns.status'), sortable: true },
   { key: 'created_at', label: t('admin.enterprises.columns.createdAt'), sortable: true },
   { key: 'actions', label: t('admin.enterprises.columns.actions'), sortable: false },

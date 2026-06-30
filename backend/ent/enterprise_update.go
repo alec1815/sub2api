@@ -276,6 +276,27 @@ func (_u *EnterpriseUpdate) AddTotalRecharged(v float64) *EnterpriseUpdate {
 	return _u
 }
 
+// SetConcurrency sets the "concurrency" field.
+func (_u *EnterpriseUpdate) SetConcurrency(v int) *EnterpriseUpdate {
+	_u.mutation.ResetConcurrency()
+	_u.mutation.SetConcurrency(v)
+	return _u
+}
+
+// SetNillableConcurrency sets the "concurrency" field if the given value is not nil.
+func (_u *EnterpriseUpdate) SetNillableConcurrency(v *int) *EnterpriseUpdate {
+	if v != nil {
+		_u.SetConcurrency(*v)
+	}
+	return _u
+}
+
+// AddConcurrency adds value to the "concurrency" field.
+func (_u *EnterpriseUpdate) AddConcurrency(v int) *EnterpriseUpdate {
+	_u.mutation.AddConcurrency(v)
+	return _u
+}
+
 // SetAdminUserID sets the "admin_user_id" field.
 func (_u *EnterpriseUpdate) SetAdminUserID(v int64) *EnterpriseUpdate {
 	_u.mutation.SetAdminUserID(v)
@@ -627,6 +648,12 @@ func (_u *EnterpriseUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if value, ok := _u.mutation.AddedTotalRecharged(); ok {
 		_spec.AddField(enterprise.FieldTotalRecharged, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.Concurrency(); ok {
+		_spec.SetField(enterprise.FieldConcurrency, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedConcurrency(); ok {
+		_spec.AddField(enterprise.FieldConcurrency, field.TypeInt, value)
 	}
 	if _u.mutation.AdminCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1100,6 +1127,27 @@ func (_u *EnterpriseUpdateOne) AddTotalRecharged(v float64) *EnterpriseUpdateOne
 	return _u
 }
 
+// SetConcurrency sets the "concurrency" field.
+func (_u *EnterpriseUpdateOne) SetConcurrency(v int) *EnterpriseUpdateOne {
+	_u.mutation.ResetConcurrency()
+	_u.mutation.SetConcurrency(v)
+	return _u
+}
+
+// SetNillableConcurrency sets the "concurrency" field if the given value is not nil.
+func (_u *EnterpriseUpdateOne) SetNillableConcurrency(v *int) *EnterpriseUpdateOne {
+	if v != nil {
+		_u.SetConcurrency(*v)
+	}
+	return _u
+}
+
+// AddConcurrency adds value to the "concurrency" field.
+func (_u *EnterpriseUpdateOne) AddConcurrency(v int) *EnterpriseUpdateOne {
+	_u.mutation.AddConcurrency(v)
+	return _u
+}
+
 // SetAdminUserID sets the "admin_user_id" field.
 func (_u *EnterpriseUpdateOne) SetAdminUserID(v int64) *EnterpriseUpdateOne {
 	_u.mutation.SetAdminUserID(v)
@@ -1481,6 +1529,12 @@ func (_u *EnterpriseUpdateOne) sqlSave(ctx context.Context) (_node *Enterprise, 
 	}
 	if value, ok := _u.mutation.AddedTotalRecharged(); ok {
 		_spec.AddField(enterprise.FieldTotalRecharged, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.Concurrency(); ok {
+		_spec.SetField(enterprise.FieldConcurrency, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedConcurrency(); ok {
+		_spec.AddField(enterprise.FieldConcurrency, field.TypeInt, value)
 	}
 	if _u.mutation.AdminCleared() {
 		edge := &sqlgraph.EdgeSpec{

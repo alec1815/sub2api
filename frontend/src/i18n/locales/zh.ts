@@ -6906,6 +6906,7 @@ export default {
         contactPhone: '电话',
         memberCount: '成员数',
         balance: '余额',
+        concurrency: '并发数',
         status: '状态',
         createdAt: '创建时间',
         actions: '操作',

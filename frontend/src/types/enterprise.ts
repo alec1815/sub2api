@@ -59,6 +59,7 @@ export interface Enterprise {
   notes: string
   balance: string          // decimal(20,8) as string
   total_recharged: string
+  concurrency: number
   admin_user_id: number
   admin_email: string
   member_count: number

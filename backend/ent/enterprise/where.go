@@ -140,6 +140,11 @@ func TotalRecharged(v float64) predicate.Enterprise {
 	return predicate.Enterprise(sql.FieldEQ(FieldTotalRecharged, v))
 }
 
+// Concurrency applies equality check predicate on the "concurrency" field. It's identical to ConcurrencyEQ.
+func Concurrency(v int) predicate.Enterprise {
+	return predicate.Enterprise(sql.FieldEQ(FieldConcurrency, v))
+}
+
 // AdminUserID applies equality check predicate on the "admin_user_id" field. It's identical to AdminUserIDEQ.
 func AdminUserID(v int64) predicate.Enterprise {
 	return predicate.Enterprise(sql.FieldEQ(FieldAdminUserID, v))
@@ -1108,6 +1113,46 @@ func TotalRechargedLT(v float64) predicate.Enterprise {
 // TotalRechargedLTE applies the LTE predicate on the "total_recharged" field.
 func TotalRechargedLTE(v float64) predicate.Enterprise {
 	return predicate.Enterprise(sql.FieldLTE(FieldTotalRecharged, v))
+}
+
+// ConcurrencyEQ applies the EQ predicate on the "concurrency" field.
+func ConcurrencyEQ(v int) predicate.Enterprise {
+	return predicate.Enterprise(sql.FieldEQ(FieldConcurrency, v))
+}
+
+// ConcurrencyNEQ applies the NEQ predicate on the "concurrency" field.
+func ConcurrencyNEQ(v int) predicate.Enterprise {
+	return predicate.Enterprise(sql.FieldNEQ(FieldConcurrency, v))
+}
+
+// ConcurrencyIn applies the In predicate on the "concurrency" field.
+func ConcurrencyIn(vs ...int) predicate.Enterprise {
+	return predicate.Enterprise(sql.FieldIn(FieldConcurrency, vs...))
+}
+
+// ConcurrencyNotIn applies the NotIn predicate on the "concurrency" field.
+func ConcurrencyNotIn(vs ...int) predicate.Enterprise {
+	return predicate.Enterprise(sql.FieldNotIn(FieldConcurrency, vs...))
+}
+
+// ConcurrencyGT applies the GT predicate on the "concurrency" field.
+func ConcurrencyGT(v int) predicate.Enterprise {
+	return predicate.Enterprise(sql.FieldGT(FieldConcurrency, v))
+}
+
+// ConcurrencyGTE applies the GTE predicate on the "concurrency" field.
+func ConcurrencyGTE(v int) predicate.Enterprise {
+	return predicate.Enterprise(sql.FieldGTE(FieldConcurrency, v))
+}
+
+// ConcurrencyLT applies the LT predicate on the "concurrency" field.
+func ConcurrencyLT(v int) predicate.Enterprise {
+	return predicate.Enterprise(sql.FieldLT(FieldConcurrency, v))
+}
+
+// ConcurrencyLTE applies the LTE predicate on the "concurrency" field.
+func ConcurrencyLTE(v int) predicate.Enterprise {
+	return predicate.Enterprise(sql.FieldLTE(FieldConcurrency, v))
 }
 
 // AdminUserIDEQ applies the EQ predicate on the "admin_user_id" field.

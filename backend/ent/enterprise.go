@@ -52,6 +52,8 @@ type Enterprise struct {
 	Balance float64 `json:"balance,omitempty"`
 	// 企业累计充值金额
 	TotalRecharged float64 `json:"total_recharged,omitempty"`
+	// 企业级并发上限，0=不限制
+	Concurrency int `json:"concurrency,omitempty"`
 	// 企业管理员对应的 users.id
 	AdminUserID int64 `json:"admin_user_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -131,7 +133,7 @@ func (*Enterprise) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case enterprise.FieldBalance, enterprise.FieldTotalRecharged:
 			values[i] = new(sql.NullFloat64)
-		case enterprise.FieldID, enterprise.FieldParentID, enterprise.FieldAdminUserID:
+		case enterprise.FieldID, enterprise.FieldParentID, enterprise.FieldConcurrency, enterprise.FieldAdminUserID:
 			values[i] = new(sql.NullInt64)
 		case enterprise.FieldName, enterprise.FieldShortName, enterprise.FieldCreditCode, enterprise.FieldAddress, enterprise.FieldScale, enterprise.FieldIndustry, enterprise.FieldStatus, enterprise.FieldContactName, enterprise.FieldContactPhone, enterprise.FieldContactEmail, enterprise.FieldNotes:
 			values[i] = new(sql.NullString)
@@ -261,6 +263,12 @@ func (_m *Enterprise) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TotalRecharged = value.Float64
 			}
+		case enterprise.FieldConcurrency:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field concurrency", values[i])
+			} else if value.Valid {
+				_m.Concurrency = int(value.Int64)
+			}
 		case enterprise.FieldAdminUserID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field admin_user_id", values[i])
@@ -380,6 +388,9 @@ func (_m *Enterprise) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("total_recharged=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TotalRecharged))
+	builder.WriteString(", ")
+	builder.WriteString("concurrency=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Concurrency))
 	builder.WriteString(", ")
 	builder.WriteString("admin_user_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AdminUserID))

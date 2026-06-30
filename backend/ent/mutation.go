@@ -15798,6 +15798,8 @@ type EnterpriseMutation struct {
 	addbalance           *float64
 	total_recharged      *float64
 	addtotal_recharged   *float64
+	concurrency          *int
+	addconcurrency       *int
 	clearedFields        map[string]struct{}
 	admin                *int64
 	clearedadmin         bool
@@ -16601,6 +16603,62 @@ func (m *EnterpriseMutation) ResetTotalRecharged() {
 	m.addtotal_recharged = nil
 }
 
+// SetConcurrency sets the "concurrency" field.
+func (m *EnterpriseMutation) SetConcurrency(i int) {
+	m.concurrency = &i
+	m.addconcurrency = nil
+}
+
+// Concurrency returns the value of the "concurrency" field in the mutation.
+func (m *EnterpriseMutation) Concurrency() (r int, exists bool) {
+	v := m.concurrency
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConcurrency returns the old "concurrency" field's value of the Enterprise entity.
+// If the Enterprise object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EnterpriseMutation) OldConcurrency(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConcurrency is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConcurrency requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConcurrency: %w", err)
+	}
+	return oldValue.Concurrency, nil
+}
+
+// AddConcurrency adds i to the "concurrency" field.
+func (m *EnterpriseMutation) AddConcurrency(i int) {
+	if m.addconcurrency != nil {
+		*m.addconcurrency += i
+	} else {
+		m.addconcurrency = &i
+	}
+}
+
+// AddedConcurrency returns the value that was added to the "concurrency" field in this mutation.
+func (m *EnterpriseMutation) AddedConcurrency() (r int, exists bool) {
+	v := m.addconcurrency
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetConcurrency resets all changes to the "concurrency" field.
+func (m *EnterpriseMutation) ResetConcurrency() {
+	m.concurrency = nil
+	m.addconcurrency = nil
+}
+
 // SetAdminUserID sets the "admin_user_id" field.
 func (m *EnterpriseMutation) SetAdminUserID(i int64) {
 	m.admin = &i
@@ -16927,7 +16985,7 @@ func (m *EnterpriseMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EnterpriseMutation) Fields() []string {
-	fields := make([]string, 0, 18)
+	fields := make([]string, 0, 19)
 	if m.created_at != nil {
 		fields = append(fields, enterprise.FieldCreatedAt)
 	}
@@ -16979,6 +17037,9 @@ func (m *EnterpriseMutation) Fields() []string {
 	if m.total_recharged != nil {
 		fields = append(fields, enterprise.FieldTotalRecharged)
 	}
+	if m.concurrency != nil {
+		fields = append(fields, enterprise.FieldConcurrency)
+	}
 	if m.admin != nil {
 		fields = append(fields, enterprise.FieldAdminUserID)
 	}
@@ -17024,6 +17085,8 @@ func (m *EnterpriseMutation) Field(name string) (ent.Value, bool) {
 		return m.Balance()
 	case enterprise.FieldTotalRecharged:
 		return m.TotalRecharged()
+	case enterprise.FieldConcurrency:
+		return m.Concurrency()
 	case enterprise.FieldAdminUserID:
 		return m.AdminUserID()
 	}
@@ -17069,6 +17132,8 @@ func (m *EnterpriseMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldBalance(ctx)
 	case enterprise.FieldTotalRecharged:
 		return m.OldTotalRecharged(ctx)
+	case enterprise.FieldConcurrency:
+		return m.OldConcurrency(ctx)
 	case enterprise.FieldAdminUserID:
 		return m.OldAdminUserID(ctx)
 	}
@@ -17199,6 +17264,13 @@ func (m *EnterpriseMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTotalRecharged(v)
 		return nil
+	case enterprise.FieldConcurrency:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConcurrency(v)
+		return nil
 	case enterprise.FieldAdminUserID:
 		v, ok := value.(int64)
 		if !ok {
@@ -17223,6 +17295,9 @@ func (m *EnterpriseMutation) AddedFields() []string {
 	if m.addtotal_recharged != nil {
 		fields = append(fields, enterprise.FieldTotalRecharged)
 	}
+	if m.addconcurrency != nil {
+		fields = append(fields, enterprise.FieldConcurrency)
+	}
 	return fields
 }
 
@@ -17237,6 +17312,8 @@ func (m *EnterpriseMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedBalance()
 	case enterprise.FieldTotalRecharged:
 		return m.AddedTotalRecharged()
+	case enterprise.FieldConcurrency:
+		return m.AddedConcurrency()
 	}
 	return nil, false
 }
@@ -17266,6 +17343,13 @@ func (m *EnterpriseMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddTotalRecharged(v)
+		return nil
+	case enterprise.FieldConcurrency:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddConcurrency(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Enterprise numeric field %s", name)
@@ -17353,6 +17437,9 @@ func (m *EnterpriseMutation) ResetField(name string) error {
 		return nil
 	case enterprise.FieldTotalRecharged:
 		m.ResetTotalRecharged()
+		return nil
+	case enterprise.FieldConcurrency:
+		m.ResetConcurrency()
 		return nil
 	case enterprise.FieldAdminUserID:
 		m.ResetAdminUserID()

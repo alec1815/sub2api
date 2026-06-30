@@ -6751,6 +6751,7 @@ export default {
         contactPhone: 'Phone',
         memberCount: 'Members',
         balance: 'Balance',
+        concurrency: 'Concurrency',
         status: 'Status',
         createdAt: 'Created',
         actions: 'Actions',

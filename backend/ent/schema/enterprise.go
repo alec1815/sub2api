@@ -102,6 +102,11 @@ func (Enterprise) Fields() []ent.Field {
 			Default(0).
 			Comment("企业累计充值金额"),
 
+		// 企业级并发数
+		field.Int("concurrency").
+			Default(0).
+			Comment("企业级并发上限，0=不限制"),
+
 		// 关联字段
 		field.Int64("admin_user_id").
 			Comment("企业管理员对应的 users.id"),

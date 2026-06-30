@@ -49,6 +49,8 @@ const (
 	FieldBalance = "balance"
 	// FieldTotalRecharged holds the string denoting the total_recharged field in the database.
 	FieldTotalRecharged = "total_recharged"
+	// FieldConcurrency holds the string denoting the concurrency field in the database.
+	FieldConcurrency = "concurrency"
 	// FieldAdminUserID holds the string denoting the admin_user_id field in the database.
 	FieldAdminUserID = "admin_user_id"
 	// EdgeAdmin holds the string denoting the admin edge name in mutations.
@@ -120,6 +122,7 @@ var Columns = []string{
 	FieldNotes,
 	FieldBalance,
 	FieldTotalRecharged,
+	FieldConcurrency,
 	FieldAdminUserID,
 }
 
@@ -193,6 +196,8 @@ var (
 	DefaultBalance float64
 	// DefaultTotalRecharged holds the default value on creation for the "total_recharged" field.
 	DefaultTotalRecharged float64
+	// DefaultConcurrency holds the default value on creation for the "concurrency" field.
+	DefaultConcurrency int
 )
 
 // OrderOption defines the ordering options for the Enterprise queries.
@@ -286,6 +291,11 @@ func ByBalance(opts ...sql.OrderTermOption) OrderOption {
 // ByTotalRecharged orders the results by the total_recharged field.
 func ByTotalRecharged(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTotalRecharged, opts...).ToFunc()
+}
+
+// ByConcurrency orders the results by the concurrency field.
+func ByConcurrency(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConcurrency, opts...).ToFunc()
 }
 
 // ByAdminUserID orders the results by the admin_user_id field.

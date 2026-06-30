@@ -125,6 +125,16 @@ func enterpriseListOrder(params pagination.PaginationParams) enterprise.OrderOpt
 			return enterprise.ByID(sql.OrderDesc())
 		}
 		return enterprise.ByID(sql.OrderAsc())
+	case "balance":
+		if isDesc {
+			return enterprise.ByBalance(sql.OrderDesc())
+		}
+		return enterprise.ByBalance(sql.OrderAsc())
+	case "concurrency":
+		if isDesc {
+			return enterprise.ByConcurrency(sql.OrderDesc())
+		}
+		return enterprise.ByConcurrency(sql.OrderAsc())
 	case "", "created_at":
 		fallthrough
 	default:
@@ -221,6 +231,7 @@ func enterpriseEntityToService(m *dbent.Enterprise) *service.Enterprise {
 		Notes:          m.Notes,
 		Balance:        m.Balance,
 		TotalRecharged: m.TotalRecharged,
+		Concurrency:    m.Concurrency,
 		AdminUserID:    m.AdminUserID,
 		CreatedAt:      m.CreatedAt,
 		UpdatedAt:      m.UpdatedAt,

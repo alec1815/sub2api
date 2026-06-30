@@ -257,6 +257,20 @@ func (_c *EnterpriseCreate) SetNillableTotalRecharged(v *float64) *EnterpriseCre
 	return _c
 }
 
+// SetConcurrency sets the "concurrency" field.
+func (_c *EnterpriseCreate) SetConcurrency(v int) *EnterpriseCreate {
+	_c.mutation.SetConcurrency(v)
+	return _c
+}
+
+// SetNillableConcurrency sets the "concurrency" field if the given value is not nil.
+func (_c *EnterpriseCreate) SetNillableConcurrency(v *int) *EnterpriseCreate {
+	if v != nil {
+		_c.SetConcurrency(*v)
+	}
+	return _c
+}
+
 // SetAdminUserID sets the "admin_user_id" field.
 func (_c *EnterpriseCreate) SetAdminUserID(v int64) *EnterpriseCreate {
 	_c.mutation.SetAdminUserID(v)
@@ -437,6 +451,10 @@ func (_c *EnterpriseCreate) defaults() error {
 		v := enterprise.DefaultTotalRecharged
 		_c.mutation.SetTotalRecharged(v)
 	}
+	if _, ok := _c.mutation.Concurrency(); !ok {
+		v := enterprise.DefaultConcurrency
+		_c.mutation.SetConcurrency(v)
+	}
 	return nil
 }
 
@@ -540,6 +558,9 @@ func (_c *EnterpriseCreate) check() error {
 	if _, ok := _c.mutation.TotalRecharged(); !ok {
 		return &ValidationError{Name: "total_recharged", err: errors.New(`ent: missing required field "Enterprise.total_recharged"`)}
 	}
+	if _, ok := _c.mutation.Concurrency(); !ok {
+		return &ValidationError{Name: "concurrency", err: errors.New(`ent: missing required field "Enterprise.concurrency"`)}
+	}
 	if _, ok := _c.mutation.AdminUserID(); !ok {
 		return &ValidationError{Name: "admin_user_id", err: errors.New(`ent: missing required field "Enterprise.admin_user_id"`)}
 	}
@@ -640,6 +661,10 @@ func (_c *EnterpriseCreate) createSpec() (*Enterprise, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.TotalRecharged(); ok {
 		_spec.SetField(enterprise.FieldTotalRecharged, field.TypeFloat64, value)
 		_node.TotalRecharged = value
+	}
+	if value, ok := _c.mutation.Concurrency(); ok {
+		_spec.SetField(enterprise.FieldConcurrency, field.TypeInt, value)
+		_node.Concurrency = value
 	}
 	if nodes := _c.mutation.AdminIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -990,6 +1015,24 @@ func (u *EnterpriseUpsert) AddTotalRecharged(v float64) *EnterpriseUpsert {
 	return u
 }
 
+// SetConcurrency sets the "concurrency" field.
+func (u *EnterpriseUpsert) SetConcurrency(v int) *EnterpriseUpsert {
+	u.Set(enterprise.FieldConcurrency, v)
+	return u
+}
+
+// UpdateConcurrency sets the "concurrency" field to the value that was provided on create.
+func (u *EnterpriseUpsert) UpdateConcurrency() *EnterpriseUpsert {
+	u.SetExcluded(enterprise.FieldConcurrency)
+	return u
+}
+
+// AddConcurrency adds v to the "concurrency" field.
+func (u *EnterpriseUpsert) AddConcurrency(v int) *EnterpriseUpsert {
+	u.Add(enterprise.FieldConcurrency, v)
+	return u
+}
+
 // SetAdminUserID sets the "admin_user_id" field.
 func (u *EnterpriseUpsert) SetAdminUserID(v int64) *EnterpriseUpsert {
 	u.Set(enterprise.FieldAdminUserID, v)
@@ -1296,6 +1339,27 @@ func (u *EnterpriseUpsertOne) AddTotalRecharged(v float64) *EnterpriseUpsertOne 
 func (u *EnterpriseUpsertOne) UpdateTotalRecharged() *EnterpriseUpsertOne {
 	return u.Update(func(s *EnterpriseUpsert) {
 		s.UpdateTotalRecharged()
+	})
+}
+
+// SetConcurrency sets the "concurrency" field.
+func (u *EnterpriseUpsertOne) SetConcurrency(v int) *EnterpriseUpsertOne {
+	return u.Update(func(s *EnterpriseUpsert) {
+		s.SetConcurrency(v)
+	})
+}
+
+// AddConcurrency adds v to the "concurrency" field.
+func (u *EnterpriseUpsertOne) AddConcurrency(v int) *EnterpriseUpsertOne {
+	return u.Update(func(s *EnterpriseUpsert) {
+		s.AddConcurrency(v)
+	})
+}
+
+// UpdateConcurrency sets the "concurrency" field to the value that was provided on create.
+func (u *EnterpriseUpsertOne) UpdateConcurrency() *EnterpriseUpsertOne {
+	return u.Update(func(s *EnterpriseUpsert) {
+		s.UpdateConcurrency()
 	})
 }
 
@@ -1773,6 +1837,27 @@ func (u *EnterpriseUpsertBulk) AddTotalRecharged(v float64) *EnterpriseUpsertBul
 func (u *EnterpriseUpsertBulk) UpdateTotalRecharged() *EnterpriseUpsertBulk {
 	return u.Update(func(s *EnterpriseUpsert) {
 		s.UpdateTotalRecharged()
+	})
+}
+
+// SetConcurrency sets the "concurrency" field.
+func (u *EnterpriseUpsertBulk) SetConcurrency(v int) *EnterpriseUpsertBulk {
+	return u.Update(func(s *EnterpriseUpsert) {
+		s.SetConcurrency(v)
+	})
+}
+
+// AddConcurrency adds v to the "concurrency" field.
+func (u *EnterpriseUpsertBulk) AddConcurrency(v int) *EnterpriseUpsertBulk {
+	return u.Update(func(s *EnterpriseUpsert) {
+		s.AddConcurrency(v)
+	})
+}
+
+// UpdateConcurrency sets the "concurrency" field to the value that was provided on create.
+func (u *EnterpriseUpsertBulk) UpdateConcurrency() *EnterpriseUpsertBulk {
+	return u.Update(func(s *EnterpriseUpsert) {
+		s.UpdateConcurrency()
 	})
 }
 

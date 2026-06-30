@@ -722,6 +722,7 @@ var (
 		{Name: "notes", Type: field.TypeString, Default: "", SchemaType: map[string]string{"postgres": "text"}},
 		{Name: "balance", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
 		{Name: "total_recharged", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
+		{Name: "concurrency", Type: field.TypeInt, Default: 0},
 		{Name: "admin_user_id", Type: field.TypeInt64},
 	}
 	// EnterprisesTable holds the schema information for the "enterprises" table.
@@ -732,7 +733,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "enterprises_users_managed_enterprises",
-				Columns:    []*schema.Column{EnterprisesColumns[18]},
+				Columns:    []*schema.Column{EnterprisesColumns[19]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -756,7 +757,7 @@ var (
 			{
 				Name:    "enterprise_admin_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{EnterprisesColumns[18]},
+				Columns: []*schema.Column{EnterprisesColumns[19]},
 			},
 			{
 				Name:    "enterprise_deleted_at",

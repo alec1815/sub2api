@@ -895,6 +895,10 @@ func init() {
 	enterpriseDescTotalRecharged := enterpriseFields[13].Descriptor()
 	// enterprise.DefaultTotalRecharged holds the default value on creation for the total_recharged field.
 	enterprise.DefaultTotalRecharged = enterpriseDescTotalRecharged.Default.(float64)
+	// enterpriseDescConcurrency is the schema descriptor for concurrency field.
+	enterpriseDescConcurrency := enterpriseFields[14].Descriptor()
+	// enterprise.DefaultConcurrency holds the default value on creation for the concurrency field.
+	enterprise.DefaultConcurrency = enterpriseDescConcurrency.Default.(int)
 	enterprisememberMixin := schema.EnterpriseMember{}.Mixin()
 	enterprisememberMixinHooks1 := enterprisememberMixin[1].Hooks()
 	enterprisemember.Hooks[0] = enterprisememberMixinHooks1[0]

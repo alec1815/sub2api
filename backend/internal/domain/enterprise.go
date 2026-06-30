@@ -72,6 +72,7 @@ type Enterprise struct {
 	Notes           string     `json:"notes"`
 	Balance         float64    `json:"balance"`
 	TotalRecharged  float64    `json:"total_recharged"`
+	Concurrency     int        `json:"concurrency"`
 	AdminUserID     int64      `json:"admin_user_id"`
 	CreatedAt       time.Time  `json:"created_at"`
 	UpdatedAt       time.Time  `json:"updated_at"`
