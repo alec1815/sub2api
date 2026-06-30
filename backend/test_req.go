@@ -1,9 +1,5 @@
 // +build ignore
 
-// 企业创建接口测试工具
-// 用法: cd backend && go run test_req.go
-// 默认使用 127.0.0.1:8080，可通过环境变量修改
-
 package main
 
 import (
@@ -23,28 +19,44 @@ func main() {
 	}
 	token = "Bearer " + token
 
-	host := os.Getenv("TEST_HOST")
-	if host == "" {
-		host = "http://127.0.0.1:8080"
-	}
-
 	client := &http.Client{}
-	ts := time.Now().UnixNano()
-	newEmail := fmt.Sprintf("test%d@local.dev", ts%100000)
 
-	body := fmt.Sprintf(`{"name":"test-%d","contact_name":"c","contact_phone":"13800000001","contact_email":"c@qq.com","admin_email":"%s","admin_password":"admin123","admin_password_confirm":"admin123"}`, ts%1000, newEmail)
-
-	req, _ := http.NewRequest("POST", host+"/api/v1/admin/enterprises", bytes.NewBufferString(body))
-	req.Header.Set("Content-Type", "application/json")
+	// 1. 企业列表获取第一个企业 ID
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8080/api/v1/admin/enterprises?page_size=1", nil)
 	req.Header.Set("Authorization", token)
-
-	fmt.Printf("Request: %s\n", body)
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Printf("ERROR: %v\n", err)
-		os.Exit(1)
-	}
-	respBody, _ := io.ReadAll(resp.Body)
+	resp, _ := client.Do(req)
+	body, _ := io.ReadAll(resp.Body)
 	resp.Body.Close()
-	fmt.Printf("HTTP %d: %s\n", resp.StatusCode, string(respBody))
+	fmt.Printf("List => HTTP %d: %s\n", resp.StatusCode, string(body[:min(300, len(body))]))
+
+	// 2. 测试充值
+	ts := time.Now().UnixNano()
+	balanceBody := fmt.Sprintf(`{"balance":100,"operation":"add","notes":"test deposit %d"}`, ts%100000)
+	req2, _ := http.NewRequest("POST", "http://127.0.0.1:8080/api/v1/admin/enterprises/1/balance", bytes.NewBufferString(balanceBody))
+	req2.Header.Set("Content-Type", "application/json")
+	req2.Header.Set("Authorization", token)
+	resp2, _ := client.Do(req2)
+	body2, _ := io.ReadAll(resp2.Body)
+	resp2.Body.Close()
+	fmt.Printf("Deposit(EID=1) => HTTP %d: %s\n", resp2.StatusCode, string(body2[:min(200, len(body2))]))
+
+	// 3. 测试扣款
+	withdrawBody := `{"balance":10,"operation":"subtract","notes":"test withdrawal"}`
+	req3, _ := http.NewRequest("POST", "http://127.0.0.1:8080/api/v1/admin/enterprises/1/balance", bytes.NewBufferString(withdrawBody))
+	req3.Header.Set("Content-Type", "application/json")
+	req3.Header.Set("Authorization", token)
+	resp3, _ := client.Do(req3)
+	body3, _ := io.ReadAll(resp3.Body)
+	resp3.Body.Close()
+	fmt.Printf("Withdraw(EID=1) => HTTP %d: %s\n", resp3.StatusCode, string(body3[:min(200, len(body3))]))
+
+	// 4. 测试 balance-history
+	req4, _ := http.NewRequest("GET", "http://127.0.0.1:8080/api/v1/admin/enterprises/1/balance-history?page=1&page_size=5", nil)
+	req4.Header.Set("Authorization", token)
+	resp4, _ := client.Do(req4)
+	body4, _ := io.ReadAll(resp4.Body)
+	resp4.Body.Close()
+	fmt.Printf("History(EID=1) => HTTP %d: %s\n", resp4.StatusCode, string(body4[:min(200, len(body4))]))
 }
+
+func min(a, b int) int { if a < b { return a }; return b }

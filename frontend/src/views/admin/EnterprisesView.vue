@@ -180,6 +180,15 @@
                 {{ t('admin.enterprises.viewMembers') }}
               </button>
               <div class="my-1 border-t border-gray-100 dark:border-dark-700" />
+              <button @click="handleDeposit(enterprise); closeActionMenu()" class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700">
+                <Icon name="plus" size="sm" class="text-emerald-500" :stroke-width="2" />
+                {{ t('admin.enterprises.deposit') }}
+              </button>
+              <button @click="handleWithdraw(enterprise); closeActionMenu()" class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700">
+                <Icon name="dollar" size="sm" class="text-red-500" :stroke-width="2" />
+                {{ t('admin.enterprises.withdraw') }}
+              </button>
+              <div class="my-1 border-t border-gray-100 dark:border-dark-700" />
               <button @click="handleDelete(enterprise); closeActionMenu()" class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20">
                 <Icon name="trash" size="sm" :stroke-width="2" />
                 {{ t('common.delete') }}
