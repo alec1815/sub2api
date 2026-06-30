@@ -4606,6 +4606,14 @@ func nullFloat64Ptr(v sql.NullFloat64) *float64 {
 	return &out
 }
 
+func nullInt64Ptr(v sql.NullInt64) *int64 {
+	if !v.Valid {
+		return nil
+	}
+	out := v.Int64
+	return &out
+}
+
 func nullString(v *string) sql.NullString {
 	if v == nil || *v == "" {
 		return sql.NullString{}
