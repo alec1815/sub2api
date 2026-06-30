@@ -22,6 +22,12 @@
               :options="statusFilterOptions"
               @update:model-value="onStatusFilterChange"
             />
+            <Select
+              :model-value="filterSource"
+              class="w-36"
+              :options="sourceFilterOptions"
+              @update:model-value="onSourceFilterChange"
+            />
           </div>
           <EndpointPopover
             v-if="publicSettings?.api_base_url || (publicSettings?.custom_endpoints?.length ?? 0) > 0"
@@ -83,7 +89,7 @@
       <template #table>
         <DataTable
           :columns="columns"
-          :data="apiKeys"
+          :data="filteredApiKeys"
           :loading="loading"
           :server-side-sort="true"
           default-sort-key="created_at"
@@ -114,6 +120,20 @@
                 <Icon v-else name="clipboard" size="sm" />
               </button>
             </div>
+          </template>
+
+          <template #cell-source="{ row }">
+            <span
+              v-if="row.enterprise_name"
+              class="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-primary-200 bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-700 dark:border-primary-800 dark:bg-primary-900/30 dark:text-primary-400"
+              :title="row.assigned_member_name || row.assigned_member_email"
+            >
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+              </svg>
+              {{ t('keys.sourceEnterprise', { name: row.enterprise_name }) }}
+            </span>
+            <span v-else class="text-xs text-gray-400 dark:text-gray-500">{{ t('keys.sourcePersonal') }}</span>
           </template>
 
           <template #cell-name="{ value, row }">
@@ -1134,6 +1154,7 @@ const { copyToClipboard: clipboardCopy } = useClipboard()
 const allColumns = computed<Column[]>(() => [
   { key: 'name', label: t('common.name'), sortable: true },
   { key: 'key', label: t('keys.apiKey'), sortable: false },
+  { key: 'source', label: t('keys.source'), sortable: false },
   { key: 'group', label: t('keys.group'), sortable: false },
   { key: 'usage', label: t('keys.usage'), sortable: false },
   { key: 'rate_limit', label: t('keys.rateLimitColumn'), sortable: false },
@@ -1229,6 +1250,7 @@ const sortState = ref({
 const filterSearch = ref('')
 const filterStatus = ref('')
 const filterGroupId = ref<string | number>('')
+const filterSource = ref('all') // 'all' | 'personal' | 'enterprise'
 
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
@@ -1342,6 +1364,25 @@ const onStatusFilterChange = (value: string | number | boolean | null) => {
   filterStatus.value = value as string
   onFilterChange()
 }
+
+const sourceFilterOptions = computed(() => [
+  { value: 'all', label: t('keys.sourceFilterAll') },
+  { value: 'personal', label: t('keys.sourceFilterPersonal') },
+  { value: 'enterprise', label: t('keys.sourceFilterEnterprise') },
+])
+
+const onSourceFilterChange = (value: string | number | boolean | null) => {
+  filterSource.value = (value as string) || 'all'
+  onFilterChange()
+}
+
+// Client-side source filtering
+const filteredApiKeys = computed(() => {
+  if (filterSource.value === 'all') return apiKeys.value
+  if (filterSource.value === 'personal') return apiKeys.value.filter(k => !k.enterprise_id)
+  if (filterSource.value === 'enterprise') return apiKeys.value.filter(k => !!k.enterprise_id)
+  return apiKeys.value
+})
 
 // Convert groups to Select options format with rate multiplier and subscription type
 const groupOptions = computed(() =>

@@ -769,6 +769,12 @@ export default {
     total: '近30天',
     quota: '额度',
     lastUsedAt: '上次使用时间',
+    source: '来源',
+    sourcePersonal: '个人',
+    sourceEnterprise: '{name}',
+    sourceFilterAll: '全部来源',
+    sourceFilterPersonal: '个人密钥',
+    sourceFilterEnterprise: '企业分配',
     useKey: '使用密钥',
     useKeyModal: {
       title: '使用 API 密钥',
