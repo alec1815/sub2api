@@ -787,8 +787,16 @@ const adminNavItems = computed((): NavItem[] => {
       expandOnly: true,
       children: [
         { path: '/admin/enterprises', label: t('nav.enterprises'), icon: BuildingOfficeIcon },
-        { path: '/admin/departments', label: t('nav.enterpriseDepartments'), icon: FolderIcon },
-        { path: '/admin/enterprises/0/members', label: t('nav.enterpriseMembers'), icon: UsersIcon },
+        {
+          path: '/admin/org-structure',
+          label: t('nav.organizationStructure'),
+          icon: FolderIcon,
+          expandOnly: true,
+          children: [
+            { path: '/admin/departments', label: t('nav.enterpriseDepartments'), icon: FolderIcon },
+            { path: '/admin/enterprises/0/members', label: t('nav.enterpriseMembers'), icon: UsersIcon },
+          ],
+        },
       ],
     },
     { path: '/admin/usage', label: t('nav.usage'), icon: ChartIcon }
