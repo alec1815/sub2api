@@ -40,24 +40,50 @@
 
           <!-- Display Mode -->
           <div v-if="!editing" class="grid gap-4 sm:grid-cols-2">
-            <InfoField :label="t('enterprise.settings.fields.name')" :value="settings.name" />
-            <InfoField :label="t('enterprise.settings.fields.shortName')" :value="settings.short_name" />
-            <InfoField :label="t('enterprise.settings.fields.creditCode')" :value="settings.credit_code" />
-            <InfoField :label="t('enterprise.settings.fields.address')" :value="settings.address" />
-            <InfoField :label="t('enterprise.settings.fields.contactName')" :value="settings.contact_name" />
-            <InfoField :label="t('enterprise.settings.fields.contactPhone')" :value="settings.contact_phone" />
-            <InfoField :label="t('enterprise.settings.fields.contactEmail')" :value="settings.contact_email" />
             <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-dark-700 dark:bg-dark-900/30">
-              <p class="text-xs font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
-                {{ t('enterprise.settings.fields.status') }}
-              </p>
-              <span :class="['badge mt-1', settings.status === 'active' ? 'badge-success' : 'badge-danger']">
-                {{ settings.status === 'active' ? t('common.active') : t('common.disabled') }}
-              </span>
+              <p class="text-xs font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">{{ t('enterprise.settings.fields.name') }}</p>
+              <p class="mt-1 font-medium text-gray-900 dark:text-white truncate">{{ settings.name || '-' }}</p>
             </div>
-            <InfoField :label="t('enterprise.settings.fields.scale')" :value="settings.scale || '-'" />
-            <InfoField :label="t('enterprise.settings.fields.industry')" :value="settings.industry || '-'" />
-            <InfoField :label="t('enterprise.settings.fields.notes')" :value="settings.notes" />
+            <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-dark-700 dark:bg-dark-900/30">
+              <p class="text-xs font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">{{ t('enterprise.settings.fields.shortName') }}</p>
+              <p class="mt-1 font-medium text-gray-900 dark:text-white truncate">{{ settings.short_name || '-' }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-dark-700 dark:bg-dark-900/30">
+              <p class="text-xs font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">{{ t('enterprise.settings.fields.creditCode') }}</p>
+              <p class="mt-1 font-medium text-gray-900 dark:text-white truncate">{{ settings.credit_code || '-' }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-dark-700 dark:bg-dark-900/30">
+              <p class="text-xs font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">{{ t('enterprise.settings.fields.address') }}</p>
+              <p class="mt-1 font-medium text-gray-900 dark:text-white truncate">{{ settings.address || '-' }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-dark-700 dark:bg-dark-900/30">
+              <p class="text-xs font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">{{ t('enterprise.settings.fields.contactName') }}</p>
+              <p class="mt-1 font-medium text-gray-900 dark:text-white truncate">{{ settings.contact_name || '-' }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-dark-700 dark:bg-dark-900/30">
+              <p class="text-xs font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">{{ t('enterprise.settings.fields.contactPhone') }}</p>
+              <p class="mt-1 font-medium text-gray-900 dark:text-white truncate">{{ settings.contact_phone || '-' }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-dark-700 dark:bg-dark-900/30">
+              <p class="text-xs font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">{{ t('enterprise.settings.fields.contactEmail') }}</p>
+              <p class="mt-1 font-medium text-gray-900 dark:text-white truncate">{{ settings.contact_email || '-' }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-dark-700 dark:bg-dark-900/30">
+              <p class="text-xs font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">{{ t('enterprise.settings.fields.status') }}</p>
+              <span :class="['badge mt-1', settings.status === 'active' ? 'badge-success' : 'badge-danger']">{{ settings.status === 'active' ? t('common.active') : t('common.disabled') }}</span>
+            </div>
+            <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-dark-700 dark:bg-dark-900/30">
+              <p class="text-xs font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">{{ t('enterprise.settings.fields.scale') }}</p>
+              <p class="mt-1 font-medium text-gray-900 dark:text-white truncate">{{ settings.scale || '-' }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-dark-700 dark:bg-dark-900/30">
+              <p class="text-xs font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">{{ t('enterprise.settings.fields.industry') }}</p>
+              <p class="mt-1 font-medium text-gray-900 dark:text-white truncate">{{ settings.industry || '-' }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-dark-700 dark:bg-dark-900/30">
+              <p class="text-xs font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">{{ t('enterprise.settings.fields.notes') }}</p>
+              <p class="mt-1 font-medium text-gray-900 dark:text-white truncate">{{ settings.notes || '-' }}</p>
+            </div>
           </div>
 
           <!-- Edit Mode -->
@@ -154,23 +180,6 @@ import type { EnterpriseSettings as EnterpriseSettingsType } from '@/types/enter
 const { t } = useI18n()
 const appStore = useAppStore()
 
-// ---- InfoField component (inline) ----
-const InfoField = {
-  props: { label: String, value: [String, Number] },
-  setup(props: { label: string; value?: string | number }) {
-    return () => h('div', {
-      class: 'rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-dark-700 dark:bg-dark-900/30'
-    }, [
-      h('p', {
-        class: 'text-xs font-medium uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500'
-      }, props.label),
-      h('p', {
-        class: 'mt-1 font-medium text-gray-900 dark:text-white truncate'
-      }, String(props.value ?? '-')),
-    ])
-  }
-}
-
 // ---- State ----
 const loading = ref(false)
 const saving = ref(false)
@@ -193,7 +202,7 @@ async function loadData() {
   try {
     settings.value = await enterpriseAdminAPI.getSettings()
   } catch (err: any) {
-    appStore.showToast.(err?.message ?? t('common.loadError'), 'error')
+    appStore.showToast(err?.message ?? t('common.loadError'), 'error')
   } finally {
     loading.value = false
   }
@@ -229,9 +238,9 @@ async function saveSettings() {
     })
     settings.value = updated
     editing.value = false
-    appStore.showToast.(t('enterprise.settings.saved'), 'success')
+    appStore.showToast(t('enterprise.settings.saved'), 'success')
   } catch (err: any) {
-    appStore.showToast.(err?.message ?? t('common.saveError'), 'error')
+    appStore.showToast(err?.message ?? t('common.saveError'), 'error')
   } finally {
     saving.value = false
   }
@@ -242,4 +251,5 @@ onMounted(() => {
   loadData()
 })
 </script>
+
 

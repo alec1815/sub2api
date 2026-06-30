@@ -296,7 +296,7 @@ async function loadData() {
     keys.value = res.data ?? []
     pagination.total = res.total ?? 0
   } catch (err: any) {
-    appStore.showToast.(err?.message ?? t('common.loadError'), 'error')
+    appStore.showToast(err?.message ?? t('common.loadError'), 'error')
   } finally {
     loading.value = false
   }
@@ -331,7 +331,7 @@ async function submitCreate() {
   submitting.value = true
   try {
     if (!createForm.name.trim()) {
-      appStore.showToast.(t('enterprise.keys.nameRequired'), 'error')
+      appStore.showToast(t('enterprise.keys.nameRequired'), 'error')
       submitting.value = false
       return
     }
@@ -348,9 +348,9 @@ async function submitCreate() {
       quota: createForm.quota,
     })
     createdKey.value = res
-    appStore.showToast.(t('enterprise.keys.created'), 'success')
+    appStore.showToast(t('enterprise.keys.created'), 'success')
   } catch (err: any) {
-    appStore.showToast.(err?.message ?? t('common.saveError'), 'error')
+    appStore.showToast(err?.message ?? t('common.saveError'), 'error')
   } finally {
     submitting.value = false
   }
@@ -366,11 +366,11 @@ async function executeToggle() {
   if (!toggleTarget.value) return
   try {
     await enterpriseAdminAPI.toggleKey(toggleTarget.value.id)
-    appStore.showToast.(t('enterprise.keys.toggled'), 'success')
+    appStore.showToast(t('enterprise.keys.toggled'), 'success')
     showToggleConfirm.value = false
     await loadData()
   } catch (err: any) {
-    appStore.showToast.(err?.message ?? t('common.error'), 'error')
+    appStore.showToast(err?.message ?? t('common.error'), 'error')
   }
 }
 
@@ -384,11 +384,11 @@ async function executeDelete() {
   if (!deleteTarget.value) return
   try {
     await enterpriseAdminAPI.deleteKey(deleteTarget.value.id)
-    appStore.showToast.(t('enterprise.keys.deleted'), 'success')
+    appStore.showToast(t('enterprise.keys.deleted'), 'success')
     showDeleteConfirm.value = false
     await loadData()
   } catch (err: any) {
-    appStore.showToast.(err?.message ?? t('common.error'), 'error')
+    appStore.showToast(err?.message ?? t('common.error'), 'error')
   }
 }
 
@@ -397,4 +397,5 @@ onMounted(() => {
   loadData()
 })
 </script>
+
 
