@@ -249,7 +249,7 @@ func initializeApplication(buildInfo handler.BuildInfo) (*Application, error) {
 	paymentHandler := admin.NewPaymentHandler(paymentService, paymentConfigService)
 	affiliateHandler := admin.NewAffiliateHandler(affiliateService, adminService)
 	complianceHandler := admin.NewComplianceHandler(settingService)
-	enterpriseRepository := repository.NewEnterpriseRepository(client)
+	enterpriseRepository := repository.NewEnterpriseRepository(client, db)
 	enterpriseMemberRepository := repository.NewEnterpriseMemberRepository(client)
 	enterpriseSubscriptionRepository := repository.NewEnterpriseSubscriptionRepository(client)
 	departmentRepository := repository.NewDepartmentRepository(client)

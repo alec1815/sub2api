@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+	dbsql "database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 
@@ -15,10 +17,11 @@ import (
 
 type enterpriseRepository struct {
 	client *dbent.Client
+	sqlDB  *dbsql.DB
 }
 
-func NewEnterpriseRepository(client *dbent.Client) service.EnterpriseRepository {
-	return &enterpriseRepository{client: client}
+func NewEnterpriseRepository(client *dbent.Client, sqlDB *dbsql.DB) service.EnterpriseRepository {
+	return &enterpriseRepository{client: client, sqlDB: sqlDB}
 }
 
 // activeQuery returns the base query with soft-delete filter.
@@ -249,4 +252,49 @@ func enterpriseEntitiesToService(models []*dbent.Enterprise) []service.Enterpris
 		}
 	}
 	return out
+}
+
+// CreateBalanceLog 写入企业余额变更审计日志
+func (r *enterpriseRepository) CreateBalanceLog(ctx context.Context, enterpriseID int64, amount float64, operation string, notes string) error {
+	_, err := r.sqlDB.ExecContext(ctx,
+		`INSERT INTO enterprise_balance_logs (enterprise_id, amount, operation, notes, created_at)
+		 VALUES ($1, $2, $3, $4, $5)`,
+		enterpriseID, amount, operation, notes, time.Now())
+	return err
+}
+
+// GetBalanceLogs 查询企业余额变更历史（分页，按时间倒序）
+func (r *enterpriseRepository) GetBalanceLogs(ctx context.Context, enterpriseID int64, page, pageSize int) ([]service.EnterpriseBalanceHistoryItem, int64, error) {
+	// 总数
+	var total int64
+	if err := r.sqlDB.QueryRowContext(ctx,
+		`SELECT COUNT(*) FROM enterprise_balance_logs WHERE enterprise_id = $1`, enterpriseID,
+	).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * pageSize
+	rows, err := r.sqlDB.QueryContext(ctx,
+		`SELECT id, amount, operation, notes, created_at
+		 FROM enterprise_balance_logs WHERE enterprise_id = $1
+		 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+		enterpriseID, pageSize, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var items []service.EnterpriseBalanceHistoryItem
+	for rows.Next() {
+		var item service.EnterpriseBalanceHistoryItem
+		var note dbsql.NullString
+		if err := rows.Scan(&item.ID, &item.Amount, &item.Operation, &note, &item.CreatedAt); err != nil {
+			return nil, 0, err
+		}
+		if note.Valid {
+			item.Notes = note.String
+		}
+		items = append(items, item)
+	}
+	return items, total, rows.Err()
 }

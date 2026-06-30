@@ -87,6 +87,9 @@ type EnterpriseRepository interface {
 	GetBalance(ctx context.Context, id int64) (float64, error)
 	// DeductBalance 扣减企业余额，返回 newBalance
 	DeductBalance(ctx context.Context, id int64, amount float64) (float64, error)
+	// 审计日志
+	CreateBalanceLog(ctx context.Context, enterpriseID int64, amount float64, operation string, notes string) error
+	GetBalanceLogs(ctx context.Context, enterpriseID int64, page, pageSize int) ([]EnterpriseBalanceHistoryItem, int64, error)
 }
 
 // EnterpriseMemberListFilters defines list query filters for enterprise members.
@@ -457,6 +460,12 @@ func (s *EnterpriseService) UpdateBalance(ctx context.Context, id int64, amount 
 	if err := s.entRepo.Update(ctx, ent); err != nil {
 		return nil, fmt.Errorf("update enterprise: %w", err)
 	}
+
+	// 写入审计日志
+	if err := s.entRepo.CreateBalanceLog(ctx, id, amount, operation, notes); err != nil {
+		// 非致命错误，仅记录日志
+		debugLog("CreateBalanceLog failed: %v", err)
+	}
 	return ent, nil
 }
 
@@ -469,11 +478,7 @@ type EnterpriseBalanceHistoryItem struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// GetBalanceHistory 获取企业余额变更历史（暂返回空列表，后续可扩展）
+// GetBalanceHistory 获取企业余额变更历史
 func (s *EnterpriseService) GetBalanceHistory(ctx context.Context, id int64, page, pageSize int) ([]EnterpriseBalanceHistoryItem, int64, error) {
-	// TODO: 后续可扩增基于 enterprise_balance_audit 表的实现
-	_ = id
-	_ = page
-	_ = pageSize
-	return []EnterpriseBalanceHistoryItem{}, 0, nil
+	return s.entRepo.GetBalanceLogs(ctx, id, page, pageSize)
 }
