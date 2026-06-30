@@ -6,6 +6,16 @@
         <div class="flex-1"><p class="font-medium text-gray-900">{{ enterprise.name }}</p><p class="text-sm text-gray-500">{{ t('admin.enterprises.currentBalance') }}: ${{ parseFloat(enterprise.balance ?? '0').toFixed(2) }}</p></div>
       </div>
 
+      <!-- Action buttons -->
+      <div v-if="!hideActions" class="flex items-center gap-3">
+        <button @click="$emit('deposit')" class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-dark-600 dark:bg-dark-800 dark:text-gray-300 dark:hover:bg-dark-700">
+          <Icon name="plus" size="sm" class="text-emerald-500" :stroke-width="2" />{{ t('admin.enterprises.deposit') }}
+        </button>
+        <button @click="$emit('withdraw')" class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-dark-600 dark:bg-dark-800 dark:text-gray-300 dark:hover:bg-dark-700">
+          <svg class="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>{{ t('admin.enterprises.withdraw') }}
+        </button>
+      </div>
+
       <div v-if="loading" class="flex justify-center py-8"><svg class="h-8 w-8 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg></div>
 
       <div v-else-if="history.length === 0" class="py-8 text-center"><p class="text-sm text-gray-500">{{ t('admin.enterprises.noBalanceHistory') }}</p></div>
@@ -44,8 +54,8 @@ import type { Enterprise } from '@/types/enterprise'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import Icon from '@/components/icons/Icon.vue'
 
-const props = defineProps<{ show: boolean; enterprise: Enterprise | null }>()
-defineEmits(['close'])
+const props = defineProps<{ show: boolean; enterprise: Enterprise | null; hideActions?: boolean }>()
+defineEmits(['close', 'deposit', 'withdraw'])
 const { t } = useI18n()
 
 interface HistoryItem { id: number; amount: number; operation: string; notes: string; created_at: string }
