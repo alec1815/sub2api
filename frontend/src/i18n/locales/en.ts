@@ -6770,6 +6770,7 @@ export default {
       amountRequired: 'Please enter a valid amount',
       insufficientBalance: 'Insufficient balance',
       newBalance: 'New Balance',
+      notes: 'Notes',
       toggleEnterprise: 'Toggle Status',
       deleteEnterprise: 'Delete Enterprise',
       disable: 'Disable',

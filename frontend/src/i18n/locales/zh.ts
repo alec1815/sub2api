@@ -6925,6 +6925,7 @@ export default {
       amountRequired: '请输入有效金额',
       insufficientBalance: '余额不足',
       newBalance: '新余额',
+      notes: '备注',
       toggleEnterprise: '启停企业',
       deleteEnterprise: '删除企业',
       deleteConfirmTitle: '删除企业',
