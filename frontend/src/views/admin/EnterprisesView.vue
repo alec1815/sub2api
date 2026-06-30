@@ -430,7 +430,7 @@
     <EnterpriseBalanceModal :show="showBalanceModal" :enterprise="balanceEnterprise" :operation="balanceOperation" @close="showBalanceModal = false" @success="loadEnterprises" />
 
     <!-- Balance History Modal -->
-    <EnterpriseBalanceHistoryModal :show="showBalanceHistoryModal" :enterprise="balanceHistoryEnterprise" @close="showBalanceHistoryModal = false" @deposit="(showBalanceHistoryModal = false); handleDeposit(balanceHistoryEnterprise!)" @withdraw="(showBalanceHistoryModal = false); handleWithdraw(balanceHistoryEnterprise!)" />
+    <EnterpriseBalanceHistoryModal :show="showBalanceHistoryModal" :enterprise="balanceHistoryEnterprise" @close="showBalanceHistoryModal = false" @deposit="handleDeposit(balanceHistoryEnterprise!)" @withdraw="handleWithdraw(balanceHistoryEnterprise!)" />
   </AppLayout>
 </template>
 
