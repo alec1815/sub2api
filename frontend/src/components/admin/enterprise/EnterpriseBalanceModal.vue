@@ -1,5 +1,5 @@
 <template>
-  <BaseDialog :show="show" :title="operation === 'add' ? t('admin.enterprises.deposit') : t('admin.enterprises.withdraw')" width="narrow" @close="$emit('close')">
+  <BaseDialog :show="show" :title="operation === 'add' ? t('admin.enterprises.deposit') : t('admin.enterprises.withdraw')" width="narrow" :z-index="55" @close="$emit('close')">
     <form v-if="enterprise" id="enterprise-balance-form" @submit.prevent="handleBalanceSubmit" class="space-y-5">
       <div class="flex items-center gap-3 rounded-xl bg-gray-50 p-4 dark:bg-dark-700">
         <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100"><span class="text-lg font-medium text-primary-700">{{ enterprise.name.charAt(0).toUpperCase() }}</span></div>
