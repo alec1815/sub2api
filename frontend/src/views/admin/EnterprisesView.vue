@@ -115,7 +115,7 @@
           <!-- Balance -->
           <template #cell-balance="{ value, row }">
             <div class="flex items-center gap-2">
-              <span class="font-medium text-gray-900 dark:text-white">${{ parseFloat(value ?? '0').toFixed(2) }}</span>
+              <span class="cursor-pointer font-medium text-gray-900 hover:text-primary-600 dark:text-white dark:hover:text-primary-400" @click="handleBalanceHistory(row)" :title="t('admin.enterprises.balanceHistoryTitle')">${{ parseFloat(value ?? '0').toFixed(2) }}</span>
               <button @click.stop="handleDeposit(row)" class="rounded px-1.5 py-0.5 text-xs text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20" :title="t('admin.enterprises.deposit')">{{ t('admin.enterprises.deposit') }}</button>
             </div>
           </template>
@@ -187,6 +187,10 @@
               <button @click="handleWithdraw(enterprise); closeActionMenu()" class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700">
                 <Icon name="dollar" size="sm" class="text-red-500" :stroke-width="2" />
                 {{ t('admin.enterprises.withdraw') }}
+              </button>
+              <button @click="handleBalanceHistory(enterprise); closeActionMenu()" class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700">
+                <Icon name="chart" size="sm" class="text-blue-500" :stroke-width="2" />
+                {{ t('admin.enterprises.balanceHistoryTitle') }}
               </button>
               <div class="my-1 border-t border-gray-100 dark:border-dark-700" />
               <button @click="handleDelete(enterprise); closeActionMenu()" class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20">
@@ -424,6 +428,9 @@
 
     <!-- Balance Modal -->
     <EnterpriseBalanceModal :show="showBalanceModal" :enterprise="balanceEnterprise" :operation="balanceOperation" @close="showBalanceModal = false" @success="loadEnterprises" />
+
+    <!-- Balance History Modal -->
+    <EnterpriseBalanceHistoryModal :show="showBalanceHistoryModal" :enterprise="balanceHistoryEnterprise" @close="showBalanceHistoryModal = false" />
   </AppLayout>
 </template>
 
@@ -442,6 +449,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import Select from '@/components/common/Select.vue'
 import EnterpriseBalanceModal from '@/components/admin/enterprise/EnterpriseBalanceModal.vue'
+import EnterpriseBalanceHistoryModal from '@/components/admin/enterprise/EnterpriseBalanceHistoryModal.vue'
 import { adminAPI } from '@/api/admin'
 import type { Enterprise, EnterpriseStatus, EnterpriseScale, EnterpriseIndustry } from '@/types/enterprise'
 import type { Column } from '@/components/common/types'
@@ -813,6 +821,8 @@ function handleViewMembers(enterprise: Enterprise) {
 const showBalanceModal = ref(false)
 const balanceEnterprise = ref<Enterprise | null>(null)
 const balanceOperation = ref<'add' | 'subtract'>('add')
+const showBalanceHistoryModal = ref(false)
+const balanceHistoryEnterprise = ref<Enterprise | null>(null)
 
 function handleDeposit(enterprise: Enterprise) {
   balanceEnterprise.value = enterprise
@@ -824,5 +834,10 @@ function handleWithdraw(enterprise: Enterprise) {
   balanceEnterprise.value = enterprise
   balanceOperation.value = 'subtract'
   showBalanceModal.value = true
+}
+
+function handleBalanceHistory(enterprise: Enterprise) {
+  balanceHistoryEnterprise.value = enterprise
+  showBalanceHistoryModal.value = true
 }
 </script>

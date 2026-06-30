@@ -6925,6 +6925,8 @@ export default {
       amountRequired: '请输入有效金额',
       insufficientBalance: '余额不足',
       newBalance: '新余额',
+      balanceHistoryTitle: '余额变更记录',
+      noBalanceHistory: '暂无余额变更记录',
       notes: '备注',
       toggleEnterprise: '启停企业',
       deleteEnterprise: '删除企业',

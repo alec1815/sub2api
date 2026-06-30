@@ -6771,6 +6771,8 @@ export default {
       insufficientBalance: 'Insufficient balance',
       newBalance: 'New Balance',
       notes: 'Notes',
+      balanceHistoryTitle: 'Balance History',
+      noBalanceHistory: 'No balance history',
       toggleEnterprise: 'Toggle Status',
       deleteEnterprise: 'Delete Enterprise',
       disable: 'Disable',
