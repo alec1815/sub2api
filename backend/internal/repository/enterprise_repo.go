@@ -160,6 +160,9 @@ func (r *enterpriseRepository) Update(ctx context.Context, e *service.Enterprise
 		SetContactPhone(e.ContactPhone).
 		SetContactEmail(e.ContactEmail).
 		SetNotes(e.Notes).
+		SetBalance(e.Balance).
+		SetTotalRecharged(e.TotalRecharged).
+		SetConcurrency(e.Concurrency).
 		Save(ctx)
 	if err != nil {
 		return translatePersistenceError(err, service.ErrEnterpriseNotFound, service.ErrEnterpriseNameConflict)
