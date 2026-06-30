@@ -7061,6 +7061,9 @@ export default {
     enterpriseMembers: {
       title: '企业成员管理',
       description: '管理该企业的成员',
+      allMembersTitle: '企业成员列表',
+      allMembersHint: '请先在企业管理中选择对应企业，然后进入其成员管理页面',
+      goToEnterprises: '前往企业管理',
       searchPlaceholder: '搜索姓名或邮箱...',
       allStatus: '全部状态',
       filterAllStatus: '筛选状态',

@@ -6903,6 +6903,9 @@ export default {
     enterpriseMembers: {
       title: 'Enterprise Member Management',
       description: 'Manage members of this enterprise',
+      allMembersTitle: 'Enterprise Members',
+      allMembersHint: 'Select an enterprise in Enterprise Management to view its members',
+      goToEnterprises: 'Go to Enterprise Management',
       searchPlaceholder: 'Search name or email...',
       allStatus: 'All Status',
       filterAllStatus: 'Filter Status',
