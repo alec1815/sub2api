@@ -6,7 +6,7 @@
       <template v-else-if="profile">
         <!-- Stats Cards -->
         <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <div class="card p-4"><div class="flex items-center gap-3"><div class="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30"><Icon name="dollar" size="md" class="text-emerald-600" /></div><div><p class="text-xs text-gray-500">{{ t('enterprise.dashboard.balance') }}</p><p class="text-xl font-bold text-emerald-600">${{ formatBalance(Number(profile.enterprise?.balance ?? 0)) }}</p></div></div></div>
+          <div class="card p-4"><div class="flex items-center gap-3"><div class="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30"><Icon name="dollar" size="md" class="text-emerald-600" /></div><div><p class="text-xs text-gray-500">{{ t('enterprise.dashboard.balance') }}</p><p class="text-xl font-bold text-emerald-600">${{ Number(profile.enterprise?.balance ?? 0).toFixed(2) }}</p></div></div></div>
           <div class="card p-4"><div class="flex items-center gap-3"><div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30"><Icon name="key" size="md" class="text-blue-600" /></div><div><p class="text-xs text-gray-500">{{ t('enterprise.dashboard.keys') }}</p><p class="text-xl font-bold text-gray-900 dark:text-white">{{ keyCount }}</p></div></div></div>
           <div class="card p-4"><div class="flex items-center gap-3"><div class="rounded-lg bg-green-100 p-2 dark:bg-green-900/30"><Icon name="users" size="md" class="text-green-600" /></div><div><p class="text-xs text-gray-500">{{ t('enterprise.dashboard.members') }}</p><p class="text-xl font-bold text-gray-900 dark:text-white">{{ memberCount }}</p></div></div></div>
           <div class="card p-4"><div class="flex items-center gap-3"><div class="rounded-lg bg-amber-100 p-2 dark:bg-amber-900/30"><Icon name="chart" size="md" class="text-amber-600" /></div><div><p class="text-xs text-gray-500">{{ t('enterprise.dashboard.usage') }}</p><p class="text-xl font-bold text-gray-900 dark:text-white">${{ Number(monthlyCost).toFixed(2) }}</p></div></div></div>
@@ -73,13 +73,6 @@ const chartGranularityOptions = computed(() => [
 const formatLD = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
 const startDate = ref(formatLD(new Date(Date.now() - 24*3600000)))
 const endDate = ref(formatLD(new Date()))
-
-const formatBalance = (v: number) => {
-  if (v === 0) return '0.00'
-  const s = v.toFixed(8).replace(/\.?0+$/, '')
-  const parts = s.split('.'); if (parts.length === 1) return s + '.00'; if (parts[1].length === 1) return s + '0'
-  return s
-}
 
 async function loadCharts() {
   chartsLoading.value = true

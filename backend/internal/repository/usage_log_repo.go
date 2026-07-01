@@ -2329,7 +2329,7 @@ func (r *usageLogRepository) GetUserUsageTrend(ctx context.Context, startTime, e
 		startIdx = 5
 		endIdx = 6
 	}
-	args = append(args, limit)
+	args = append(args, limit) // $3 or $4
 
 	query := fmt.Sprintf(`
 		WITH top_users AS (
