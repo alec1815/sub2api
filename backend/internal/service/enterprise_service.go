@@ -90,6 +90,27 @@ type EnterpriseRepository interface {
 	// 审计日志
 	CreateBalanceLog(ctx context.Context, enterpriseID int64, amount float64, operation string, notes string) error
 	GetBalanceLogs(ctx context.Context, enterpriseID int64, page, pageSize int) ([]EnterpriseBalanceHistoryItem, int64, error)
+	// 平台限额
+	GetPlatformQuotas(ctx context.Context, enterpriseID int64) ([]EnterprisePlatformQuota, error)
+	UpsertPlatformQuotas(ctx context.Context, enterpriseID int64, quotas []EnterprisePlatformQuotaInput) error
+}
+
+// EnterprisePlatformQuota 企业平台限额项
+type EnterprisePlatformQuota struct {
+	ID           int64    `json:"id"`
+	EnterpriseID int64    `json:"enterprise_id"`
+	Platform     string   `json:"platform"`
+	DailyLimit   *float64 `json:"daily_limit_usd"`
+	WeeklyLimit  *float64 `json:"weekly_limit_usd"`
+	MonthlyLimit *float64 `json:"monthly_limit_usd"`
+}
+
+// EnterprisePlatformQuotaInput 企业平台限额输入
+type EnterprisePlatformQuotaInput struct {
+	Platform      string   `json:"platform"`
+	DailyLimitUSD   *float64 `json:"daily_limit_usd"`
+	WeeklyLimitUSD  *float64 `json:"weekly_limit_usd"`
+	MonthlyLimitUSD *float64 `json:"monthly_limit_usd"`
 }
 
 // EnterpriseMemberListFilters defines list query filters for enterprise members.
@@ -481,4 +502,14 @@ type EnterpriseBalanceHistoryItem struct {
 // GetBalanceHistory 获取企业余额变更历史
 func (s *EnterpriseService) GetBalanceHistory(ctx context.Context, id int64, page, pageSize int) ([]EnterpriseBalanceHistoryItem, int64, error) {
 	return s.entRepo.GetBalanceLogs(ctx, id, page, pageSize)
+}
+
+// GetPlatformQuotas 获取企业平台限额
+func (s *EnterpriseService) GetPlatformQuotas(ctx context.Context, id int64) ([]EnterprisePlatformQuota, error) {
+	return s.entRepo.GetPlatformQuotas(ctx, id)
+}
+
+// UpdatePlatformQuotas 更新企业平台限额
+func (s *EnterpriseService) UpdatePlatformQuotas(ctx context.Context, id int64, quotas []EnterprisePlatformQuotaInput) error {
+	return s.entRepo.UpsertPlatformQuotas(ctx, id, quotas)
 }

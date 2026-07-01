@@ -18,45 +18,61 @@ func main() {
 		os.Exit(1)
 	}
 	token = "Bearer " + token
-
 	client := &http.Client{}
-
-	// 1. 企业列表获取第一个企业 ID
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8080/api/v1/admin/enterprises?page_size=1", nil)
-	req.Header.Set("Authorization", token)
-	resp, _ := client.Do(req)
-	body, _ := io.ReadAll(resp.Body)
-	resp.Body.Close()
-	fmt.Printf("List => HTTP %d: %s\n", resp.StatusCode, string(body[:min(300, len(body))]))
-
-	// 2. 测试充值
 	ts := time.Now().UnixNano()
-	balanceBody := fmt.Sprintf(`{"balance":100,"operation":"add","notes":"test deposit %d"}`, ts%100000)
-	req2, _ := http.NewRequest("POST", "http://127.0.0.1:8080/api/v1/admin/enterprises/1/balance", bytes.NewBufferString(balanceBody))
-	req2.Header.Set("Content-Type", "application/json")
-	req2.Header.Set("Authorization", token)
-	resp2, _ := client.Do(req2)
-	body2, _ := io.ReadAll(resp2.Body)
-	resp2.Body.Close()
-	fmt.Printf("Deposit(EID=1) => HTTP %d: %s\n", resp2.StatusCode, string(body2[:min(200, len(body2))]))
 
-	// 3. 测试扣款
-	withdrawBody := `{"balance":10,"operation":"subtract","notes":"test withdrawal"}`
-	req3, _ := http.NewRequest("POST", "http://127.0.0.1:8080/api/v1/admin/enterprises/1/balance", bytes.NewBufferString(withdrawBody))
-	req3.Header.Set("Content-Type", "application/json")
-	req3.Header.Set("Authorization", token)
-	resp3, _ := client.Do(req3)
-	body3, _ := io.ReadAll(resp3.Body)
-	resp3.Body.Close()
-	fmt.Printf("Withdraw(EID=1) => HTTP %d: %s\n", resp3.StatusCode, string(body3[:min(200, len(body3))]))
+	do := func(method, path, body string) (int, string) {
+		var r io.Reader
+		if body != "" {
+			r = bytes.NewBufferString(body)
+		}
+		req, _ := http.NewRequest(method, "http://127.0.0.1:8080"+path, r)
+		req.Header.Set("Authorization", token)
+		if body != "" {
+			req.Header.Set("Content-Type", "application/json")
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			return 0, err.Error()
+		}
+		b, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		s := string(b)
+		if len(s) > 200 {
+			s = s[:200] + "..."
+		}
+		return resp.StatusCode, s
+	}
 
-	// 4. 测试 balance-history
-	req4, _ := http.NewRequest("GET", "http://127.0.0.1:8080/api/v1/admin/enterprises/1/balance-history?page=1&page_size=5", nil)
-	req4.Header.Set("Authorization", token)
-	resp4, _ := client.Do(req4)
-	body4, _ := io.ReadAll(resp4.Body)
-	resp4.Body.Close()
-	fmt.Printf("History(EID=1) => HTTP %d: %s\n", resp4.StatusCode, string(body4[:min(200, len(body4))]))
+	fmt.Println("=== 1. 列表 ===")
+	code, body := do("GET", "/api/v1/admin/enterprises?page_size=1", "")
+	fmt.Printf("List => HTTP %d: %s\n", code, body)
+
+	fmt.Println("\n=== 2. 充值 ===")
+	code, body = do("POST", "/api/v1/admin/enterprises/1/balance", fmt.Sprintf(`{"balance":50,"operation":"add","notes":"dep-%d"}`, ts%1000))
+	fmt.Printf("Deposit => HTTP %d: %s\n", code, body)
+
+	fmt.Println("\n=== 3. 扣款 ===")
+	code, body = do("POST", "/api/v1/admin/enterprises/1/balance", `{"balance":5,"operation":"subtract","notes":"withdrawal"}`)
+	fmt.Printf("Withdraw => HTTP %d: %s\n", code, body)
+
+	fmt.Println("\n=== 4. 充值记录 ===")
+	code, body = do("GET", "/api/v1/admin/enterprises/1/balance-history?page_size=2", "")
+	fmt.Printf("History => HTTP %d: %s\n", code, body)
+
+	fmt.Println("\n=== 5. API密钥 ===")
+	code, body = do("GET", "/api/v1/admin/enterprises/1/api-keys?page_size=2", "")
+	fmt.Printf("APIKeys => HTTP %d: %s\n", code, body)
+
+	fmt.Println("\n=== 6. 平台限额 (GET) ===")
+	code, body = do("GET", "/api/v1/admin/enterprises/1/platform-quotas", "")
+	fmt.Printf("Quotas(GET) => HTTP %d: %s\n", code, body)
+
+	fmt.Println("\n=== 7. 平台限额 (PUT) ===")
+	code, body = do("PUT", "/api/v1/admin/enterprises/1/platform-quotas", `{"quotas":[{"platform":"openai","daily_limit_usd":100}]}`)
+	fmt.Printf("Quotas(PUT) => HTTP %d: %s\n", code, body)
+
+	fmt.Println("\n=== 8. 验证限额已设置 ===")
+	code, body = do("GET", "/api/v1/admin/enterprises/1/platform-quotas", "")
+	fmt.Printf("Quotas(GET2) => HTTP %d: %s\n", code, body)
 }
-
-func min(a, b int) int { if a < b { return a }; return b }

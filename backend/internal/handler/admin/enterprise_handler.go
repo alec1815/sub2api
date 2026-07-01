@@ -200,3 +200,44 @@ func (h *EnterpriseHandler) GetEnterpriseKeys(c *gin.Context) {
 	}
 	response.Paginated(c, keys, result.Total, page, pageSize)
 }
+
+// ==================== 企业平台限额 ====================
+
+// GetPlatformQuotas GET /api/admin/enterprises/:id/platform-quotas
+func (h *EnterpriseHandler) GetPlatformQuotas(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid enterprise ID")
+		return
+	}
+	quotas, err := h.enterpriseService.GetPlatformQuotas(c.Request.Context(), id)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, quotas)
+}
+
+// UpdatePlatformQuotasRequest 平台限额更新请求
+type UpdatePlatformQuotasRequest struct {
+	Quotas []service.EnterprisePlatformQuotaInput `json:"quotas" binding:"required"`
+}
+
+// UpdatePlatformQuotas PUT /api/admin/enterprises/:id/platform-quotas
+func (h *EnterpriseHandler) UpdatePlatformQuotas(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid enterprise ID")
+		return
+	}
+	var req UpdatePlatformQuotasRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	if err := h.enterpriseService.UpdatePlatformQuotas(c.Request.Context(), id, req.Quotas); err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, nil)
+}

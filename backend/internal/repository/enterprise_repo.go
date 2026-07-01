@@ -298,3 +298,43 @@ func (r *enterpriseRepository) GetBalanceLogs(ctx context.Context, enterpriseID 
 	}
 	return items, total, rows.Err()
 }
+
+// GetPlatformQuotas 获取企业平台限额列表
+func (r *enterpriseRepository) GetPlatformQuotas(ctx context.Context, enterpriseID int64) ([]service.EnterprisePlatformQuota, error) {
+	rows, err := r.sqlDB.QueryContext(ctx,
+		`SELECT id, enterprise_id, platform, daily_limit_usd, weekly_limit_usd, monthly_limit_usd
+		 FROM enterprise_platform_quotas WHERE enterprise_id = $1 ORDER BY platform`, enterpriseID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []service.EnterprisePlatformQuota
+	for rows.Next() {
+		var q service.EnterprisePlatformQuota
+		if err := rows.Scan(&q.ID, &q.EnterpriseID, &q.Platform, &q.DailyLimit, &q.WeeklyLimit, &q.MonthlyLimit); err != nil {
+			return nil, err
+		}
+		items = append(items, q)
+	}
+	return items, rows.Err()
+}
+
+// UpsertPlatformQuotas 全量更新企业平台限额
+func (r *enterpriseRepository) UpsertPlatformQuotas(ctx context.Context, enterpriseID int64, quotas []service.EnterprisePlatformQuotaInput) error {
+	for _, q := range quotas {
+		_, err := r.sqlDB.ExecContext(ctx,
+			`INSERT INTO enterprise_platform_quotas (enterprise_id, platform, daily_limit_usd, weekly_limit_usd, monthly_limit_usd, updated_at)
+			 VALUES ($1, $2, $3, $4, $5, $6)
+			 ON CONFLICT (enterprise_id, platform) DO UPDATE SET
+			   daily_limit_usd = EXCLUDED.daily_limit_usd,
+			   weekly_limit_usd = EXCLUDED.weekly_limit_usd,
+			   monthly_limit_usd = EXCLUDED.monthly_limit_usd,
+			   updated_at = EXCLUDED.updated_at`,
+			enterpriseID, q.Platform, q.DailyLimitUSD, q.WeeklyLimitUSD, q.MonthlyLimitUSD, time.Now())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

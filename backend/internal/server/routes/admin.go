@@ -708,6 +708,10 @@ func registerAdminEnterpriseRoutes(admin *gin.RouterGroup, h *handler.Handlers) 
 		enterprises.POST("/:id/balance", h.Admin.Enterprise.UpdateBalance)
 		enterprises.GET("/:id/balance-history", h.Admin.Enterprise.GetBalanceHistory)
 		enterprises.GET("/:id/api-keys", h.Admin.Enterprise.GetEnterpriseKeys)
+
+		// 企业平台限额
+		enterprises.GET("/:id/platform-quotas", h.Admin.Enterprise.GetPlatformQuotas)
+		enterprises.PUT("/:id/platform-quotas", h.Admin.Enterprise.UpdatePlatformQuotas)
 	}
 
 	// 部门管理
