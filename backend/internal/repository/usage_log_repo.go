@@ -2320,16 +2320,16 @@ func (r *usageLogRepository) GetUserUsageTrend(ctx context.Context, startTime, e
 	args := []any{startTime, endTime}
 	extraWhere := ""
 	limitIdx := 3
-	startIdx := 4
-	endIdx := 5
+	outerStartIdx := 4
+	outerEndIdx := 5
 	if enterpriseID > 0 {
 		extraWhere = fmt.Sprintf(" AND enterprise_id = $%d", limitIdx)
 		args = append(args, enterpriseID)
 		limitIdx = 4
-		startIdx = 5
-		endIdx = 6
+		outerStartIdx = 5
+		outerEndIdx = 6
 	}
-	args = append(args, limit) // $3 or $4
+	args = append(args, limit)
 
 	query := fmt.Sprintf(`
 		WITH top_users AS (
@@ -2355,7 +2355,7 @@ func (r *usageLogRepository) GetUserUsageTrend(ctx context.Context, startTime, e
 		  AND u.created_at >= $%d AND u.created_at < $%d
 		GROUP BY date, u.user_id, us.email, us.username
 		ORDER BY date ASC, tokens DESC
-	`, extraWhere, limitIdx, dateFormat, startIdx, endIdx)
+	`, extraWhere, limitIdx, dateFormat, outerStartIdx, outerEndIdx)
 
 	rows, err := r.sql.QueryContext(ctx, query, startTime, endTime, limit, startTime, endTime)
 	if err != nil {
