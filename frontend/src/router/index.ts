@@ -668,6 +668,17 @@ const routes: RouteRecordRaw[] = [
 
   // ==================== Enterprise Self-Admin Routes ====================
   {
+    path: '/enterprise/dashboard',
+    name: 'EnterpriseDashboard',
+    component: () => import('@/views/enterprise/EnterpriseDashboard.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Enterprise Dashboard',
+      titleKey: 'enterprise.dashboard.title',
+    }
+  },
+  {
     path: '/enterprise/members',
     name: 'EnterpriseMemberManagement',
     component: () => import('@/views/enterprise/MemberManagement.vue'),

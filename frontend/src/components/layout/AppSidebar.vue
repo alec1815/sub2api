@@ -738,7 +738,8 @@ const personalNavItems = computed((): NavItem[] => finalizeNav(buildSelfNavItems
 
 // Enterprise admin navigation items (for enterprise admins)
 const enterpriseAdminNavItems = computed((): NavItem[] => [
-  { path: '/enterprise/keys', label: t('nav.enterpriseKeys'), icon: KeyIcon },
+  { path: '/enterprise/dashboard', label: t('nav.dashboard'), icon: DashboardIcon },
+  { path: '/enterprise/keys', label: t('nav.enterpriseKeyManagement'), icon: KeyIcon },
   { path: '/enterprise/finance', label: t('nav.enterpriseFinance'), icon: CreditCardIcon },
   { path: '/enterprise/members', label: t('nav.enterpriseMemberManagement'), icon: UsersIcon },
   { path: '/enterprise/departments', label: t('nav.enterpriseDepartments'), icon: FolderIcon },

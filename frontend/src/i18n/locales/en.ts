@@ -423,7 +423,8 @@ export default {
     enterpriseDepartments: 'Departments',
     enterpriseProfile: 'Enterprise Profile',
     enterpriseMemberManagement: 'Members',
-    enterpriseKeys: 'API Keys',
+    enterpriseKeys: 'Enterprise Keys',
+    enterpriseKeyManagement: 'Enterprise Keys',
     enterpriseFinance: 'Finance',
     enterpriseSettings: 'Settings',
   },
@@ -7680,6 +7681,16 @@ export default {
 
   // Enterprise Self-Admin
   enterprise: {
+    dashboard: {
+      title: 'Enterprise Dashboard',
+      balance: 'Balance',
+      members: 'Members',
+      keys: 'Keys',
+      usage: 'Monthly Usage',
+      enterpriseInfo: 'Enterprise Info',
+      totalRecharged: 'Total Recharged',
+      myRole: 'My Role',
+    },
     // Members
     members: {
       title: 'Enterprise Members',

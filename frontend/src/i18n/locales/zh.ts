@@ -427,7 +427,8 @@ export default {
     enterpriseDepartments: '部门管理',
     enterpriseProfile: '企业资料',
     enterpriseMemberManagement: '成员管理',
-    enterpriseKeys: 'API 密钥',
+    enterpriseKeys: '企业密钥管理',
+    enterpriseKeyManagement: '企业密钥管理',
     enterpriseFinance: '财务管理',
     enterpriseSettings: '企业设置',
   },
@@ -7862,6 +7863,16 @@ export default {
 
   // Enterprise Self-Admin
   enterprise: {
+    dashboard: {
+      title: '企业仪表盘',
+      balance: '企业余额',
+      members: '成员数',
+      keys: '密钥数',
+      usage: '本月用量',
+      enterpriseInfo: '企业信息',
+      totalRecharged: '累计充值',
+      myRole: '我的角色',
+    },
     // Members
     members: {
       title: '企业成员',
