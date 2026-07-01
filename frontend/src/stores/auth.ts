@@ -97,7 +97,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchEnterpriseRole() {
     if (isAdmin.value) return // admin doesn't need enterprise role
     try {
-      const { enterpriseAPI } = await import('@/api/enterprise')
+      const enterpriseAPI = (await import('@/api/enterprise')).default
       const profile = await enterpriseAPI.getProfile()
       enterpriseRole.value = profile.my_role || null
     } catch {
