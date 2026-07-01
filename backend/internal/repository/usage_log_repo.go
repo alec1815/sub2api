@@ -2357,13 +2357,11 @@ func (r *usageLogRepository) GetUserUsageTrend(ctx context.Context, startTime, e
 		ORDER BY date ASC, tokens DESC
 	`, extraWhere, limitIdx, dateFormat, outerStartIdx, outerEndIdx)
 
-	rows, err := r.sql.QueryContext(ctx, query, startTime, endTime, limit, startTime, endTime)
+	rows, err := r.sql.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer func() {
-		// 保持主错误优先；仅在无错误时回传 Close 失败。
-		// 同时清空返回值，避免误用不完整结果。
 		if closeErr := rows.Close(); closeErr != nil && err == nil {
 			err = closeErr
 			results = nil
