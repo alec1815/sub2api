@@ -206,6 +206,17 @@ export async function getProfile(): Promise<EnterpriseProfile> {
   return data
 }
 
+// 企业仪表盘 API
+export async function getEnterpriseModelStats(start: string, end: string) {
+  const { data } = await apiClient.get('/enterprise/usage/models', { params: { start_date: start, end_date: end } })
+  return data as any[]
+}
+
+export async function getEnterpriseUsageTrend(start: string, end: string, granularity: string = 'hour', limit: number = 12) {
+  const { data } = await apiClient.get('/enterprise/usage/trend', { params: { start_date: start, end_date: end, granularity, limit } })
+  return data
+}
+
 const enterpriseAdminAPI = {
   // Members
   listMembers,
@@ -233,6 +244,9 @@ const enterpriseAdminAPI = {
   updateSettings,
   // Profile
   getProfile,
+  // Dashboard
+  getEnterpriseModelStats,
+  getEnterpriseUsageTrend,
 }
 
 export default enterpriseAdminAPI
