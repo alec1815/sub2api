@@ -2319,17 +2319,19 @@ func (r *usageLogRepository) GetUserUsageTrend(ctx context.Context, startTime, e
 
 	args := []any{startTime, endTime}
 	extraWhere := ""
-	limitIdx := 3
-	outerStartIdx := 4
-	outerEndIdx := 5
+	limitPlaceholder := "$3"
+	outerStartPlaceholder := "$3"
+	outerEndPlaceholder := "$4"
 	if enterpriseID > 0 {
-		extraWhere = fmt.Sprintf(" AND enterprise_id = $%d", limitIdx)
+		extraWhere = " AND enterprise_id = $3"
 		args = append(args, enterpriseID)
-		limitIdx = 4
-		outerStartIdx = 5
-		outerEndIdx = 6
+		limitPlaceholder = "$4"
+		outerStartPlaceholder = "$5"
+		outerEndPlaceholder = "$6"
 	}
 	args = append(args, limit)
+	// 重新调整外层参数索引：start/end 需要再次出现在 args 中
+	args = append(args, startTime, endTime)
 
 	query := fmt.Sprintf(`
 		WITH top_users AS (
@@ -2338,7 +2340,7 @@ func (r *usageLogRepository) GetUserUsageTrend(ctx context.Context, startTime, e
 			WHERE created_at >= $1 AND created_at < $2%s
 			GROUP BY user_id
 			ORDER BY SUM(input_tokens + output_tokens + cache_creation_tokens + cache_read_tokens) DESC
-			LIMIT $%d
+			LIMIT %s
 		)
 		SELECT
 			TO_CHAR(u.created_at, '%s') as date,
@@ -2352,10 +2354,10 @@ func (r *usageLogRepository) GetUserUsageTrend(ctx context.Context, startTime, e
 		FROM usage_logs u
 		LEFT JOIN users us ON u.user_id = us.id
 		WHERE u.user_id IN (SELECT user_id FROM top_users)
-		  AND u.created_at >= $%d AND u.created_at < $%d
+		  AND u.created_at >= %s AND u.created_at < %s
 		GROUP BY date, u.user_id, us.email, us.username
 		ORDER BY date ASC, tokens DESC
-	`, extraWhere, limitIdx, dateFormat, outerStartIdx, outerEndIdx)
+	`, extraWhere, limitPlaceholder, dateFormat, outerStartPlaceholder, outerEndPlaceholder)
 
 	rows, err := r.sql.QueryContext(ctx, query, args...)
 	if err != nil {
