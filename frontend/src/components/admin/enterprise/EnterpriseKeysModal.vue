@@ -15,11 +15,13 @@
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ item.name }}</span>
-              <span :class="['inline-block h-1.5 w-1.5 rounded-full', item.status === 'active' ? 'bg-green-500' : 'bg-gray-400']" />
+              <span :class="['inline-block h-1.5 w-1.5 rounded-full', item.status === 'active' ? 'bg-green-500' : 'bg-red-500']" />
+              <span v-if="item.bound_tool" class="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500 dark:bg-dark-700">{{ item.bound_tool }}</span>
             </div>
             <span class="text-xs text-gray-400">{{ formatDateTime(item.created_at) }}</span>
           </div>
-          <p class="mt-1 font-mono text-xs text-gray-500 dark:text-gray-400">{{ item.key.slice(0, 12) }}...{{ item.key.slice(-6) }}</p>
+          <p class="mt-1 font-mono text-xs text-gray-500 dark:text-gray-400">{{ item.key.slice(0, 16) }}...{{ item.key.slice(-8) }}</p>
+          <p v-if="item.assigned_member_name" class="mt-0.5 text-xs text-gray-400">{{ t('admin.enterprises.assignedTo') }}: {{ item.assigned_member_name }}</p>
         </div>
       </div>
     </div>
@@ -38,7 +40,7 @@ const props = defineProps<{ show: boolean; enterprise: Enterprise | null }>()
 defineEmits(['close'])
 const { t } = useI18n()
 
-interface KeyItem { id: number; name: string; key: string; status: string; created_at: string }
+interface KeyItem { id: number; name: string; key: string; status: string; bound_tool?: string; assigned_member_name?: string; created_at: string }
 const items = ref<KeyItem[]>([])
 const loading = ref(false)
 

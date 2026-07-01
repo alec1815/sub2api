@@ -13,14 +13,16 @@ import (
 
 // EnterpriseHandler 企业 CRUD 管理 handler（平台运营方视角）
 type EnterpriseHandler struct {
-	enterpriseService *service.EnterpriseService
-	apiKeyRepo        service.APIKeyRepository
+	enterpriseService    *service.EnterpriseService
+	apiKeyRepo           service.APIKeyRepository
+	enterpriseKeyService *service.EnterpriseKeyService
 }
 
-func NewEnterpriseHandler(enterpriseService *service.EnterpriseService, apiKeyRepo service.APIKeyRepository) *EnterpriseHandler {
+func NewEnterpriseHandler(enterpriseService *service.EnterpriseService, apiKeyRepo service.APIKeyRepository, enterpriseKeyService *service.EnterpriseKeyService) *EnterpriseHandler {
 	return &EnterpriseHandler{
-		enterpriseService: enterpriseService,
-		apiKeyRepo:        apiKeyRepo,
+		enterpriseService:    enterpriseService,
+		apiKeyRepo:           apiKeyRepo,
+		enterpriseKeyService: enterpriseKeyService,
 	}
 }
 
@@ -183,22 +185,43 @@ func (h *EnterpriseHandler) GetEnterpriseKeys(c *gin.Context) {
 		return
 	}
 
+	page, pageSize := response.ParsePagination(c)
+	params := pagination.PaginationParams{Page: page, PageSize: pageSize}
+
+	keys, result, err := h.enterpriseKeyService.ListEnterpriseKeys(c.Request.Context(), id, params)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Paginated(c, keys, result.Total, page, pageSize)
+}
+
+// CreateEnterpriseKey POST /api/admin/enterprises/:id/api-keys
+func (h *EnterpriseHandler) CreateEnterpriseKey(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid enterprise ID")
+		return
+	}
+	// 获取当前平台管理员信息
 	ent, err := h.enterpriseService.GetEnterprise(c.Request.Context(), id)
 	if err != nil {
 		response.ErrorFrom(c, err)
 		return
 	}
 
-	page, pageSize := response.ParsePagination(c)
-	params := pagination.PaginationParams{Page: page, PageSize: pageSize}
+	var req service.CreateEnterpriseKeyRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
 
-	// 查企业管理员用户的 API Keys
-	keys, result, err := h.apiKeyRepo.ListByUserID(c.Request.Context(), ent.AdminUserID, params, service.APIKeyListFilters{})
+	key, err := h.enterpriseKeyService.CreateEnterpriseKey(c.Request.Context(), ent.AdminUserID, req)
 	if err != nil {
 		response.ErrorFrom(c, err)
 		return
 	}
-	response.Paginated(c, keys, result.Total, page, pageSize)
+	response.Created(c, key)
 }
 
 // ==================== 企业平台限额 ====================
