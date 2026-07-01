@@ -93,6 +93,7 @@ func ProvideEnterpriseHandlers(
 	departmentHandler *enterprise.DepartmentHandler,
 	billingHandler *enterprise.BillingHandler,
 	profileHandler *enterprise.ProfileHandler,
+	dashboardHandler *enterprise.EnterpriseDashboardHandler,
 ) *EnterpriseHandlers {
 	return &EnterpriseHandlers{
 		Member:     memberHandler,
@@ -100,6 +101,7 @@ func ProvideEnterpriseHandlers(
 		Department: departmentHandler,
 		Billing:    billingHandler,
 		Profile:    profileHandler,
+		Dashboard:  dashboardHandler,
 	}
 }
 
@@ -229,6 +231,7 @@ var ProviderSet = wire.NewSet(
 	enterprise.NewDepartmentHandler,
 	enterprise.NewBillingHandler,
 	enterprise.NewProfileHandler,
+	enterprise.NewEnterpriseDashboardHandler,
 
 	// AdminHandlers, EnterpriseHandlers and Handlers constructors
 	ProvideAdminHandlers,

@@ -99,7 +99,7 @@ func (h *DashboardHandler) getUsageTrendCached(
 		BillingType: billingType,
 	})
 	entry, hit, err := dashboardTrendCache.GetOrLoad(key, func() (any, error) {
-		return h.dashboardService.GetUsageTrendWithFilters(ctx, startTime, endTime, granularity, userID, apiKeyID, accountID, groupID, model, requestType, stream, billingType)
+		return h.dashboardService.GetUsageTrendWithFilters(ctx, startTime, endTime, granularity, userID, apiKeyID, accountID, groupID, 0, model, requestType, stream, billingType)
 	})
 	if err != nil {
 		return nil, hit, err

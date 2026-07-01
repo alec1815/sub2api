@@ -53,6 +53,7 @@ type EnterpriseHandlers struct {
 	Department  *enterprise.DepartmentHandler
 	Billing     *enterprise.BillingHandler
 	Profile     *enterprise.ProfileHandler
+	Dashboard   *enterprise.EnterpriseDashboardHandler
 }
 
 // Handlers contains all HTTP handlers

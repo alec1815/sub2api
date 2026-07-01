@@ -124,26 +124,36 @@ func (s *DashboardService) GetDashboardStats(ctx context.Context) (*usagestats.D
 	return stats, nil
 }
 
-func (s *DashboardService) GetUsageTrendWithFilters(ctx context.Context, startTime, endTime time.Time, granularity string, userID, apiKeyID, accountID, groupID int64, model string, requestType *int16, stream *bool, billingType *int8) ([]usagestats.TrendDataPoint, error) {
-	trend, err := s.usageRepo.GetUsageTrendWithFilters(ctx, startTime, endTime, granularity, userID, apiKeyID, accountID, groupID, model, requestType, stream, billingType)
+func (s *DashboardService) GetUsageTrendWithFilters(ctx context.Context, startTime, endTime time.Time, granularity string, userID, apiKeyID, accountID, groupID, enterpriseID int64, model string, requestType *int16, stream *bool, billingType *int8) ([]usagestats.TrendDataPoint, error) {
+	trend, err := s.usageRepo.GetUsageTrendWithFilters(ctx, startTime, endTime, granularity, userID, apiKeyID, accountID, groupID, enterpriseID, model, requestType, stream, billingType)
 	if err != nil {
 		return nil, fmt.Errorf("get usage trend with filters: %w", err)
 	}
 	return trend, nil
 }
 
-func (s *DashboardService) GetModelStatsWithFilters(ctx context.Context, startTime, endTime time.Time, userID, apiKeyID, accountID, groupID int64, requestType *int16, stream *bool, billingType *int8) ([]usagestats.ModelStat, error) {
-	stats, err := s.usageRepo.GetModelStatsWithFilters(ctx, startTime, endTime, userID, apiKeyID, accountID, groupID, requestType, stream, billingType)
+func (s *DashboardService) GetModelStatsWithFilters(ctx context.Context, startTime, endTime time.Time, userID, apiKeyID, accountID, groupID, enterpriseID int64, requestType *int16, stream *bool, billingType *int8) ([]usagestats.ModelStat, error) {
+	stats, err := s.usageRepo.GetModelStatsWithFilters(ctx, startTime, endTime, userID, apiKeyID, accountID, groupID, enterpriseID, requestType, stream, billingType)
 	if err != nil {
 		return nil, fmt.Errorf("get model stats with filters: %w", err)
 	}
 	return stats, nil
 }
 
+// GetModelStatsForEnterprise 企业仪表盘模型分布
+func (s *DashboardService) GetModelStatsForEnterprise(ctx context.Context, startTime, endTime time.Time, enterpriseID int64) ([]usagestats.ModelStat, error) {
+	return s.GetModelStatsWithFilters(ctx, startTime, endTime, 0, 0, 0, 0, enterpriseID, nil, nil, nil)
+}
+
+// GetUserUsageTrendForEnterprise 企业仪表盘最近使用 Top12
+func (s *DashboardService) GetUserUsageTrendForEnterprise(ctx context.Context, startTime, endTime time.Time, granularity string, enterpriseID int64, limit int) ([]usagestats.UserUsageTrendPoint, error) {
+	return s.usageRepo.GetUserUsageTrend(ctx, startTime, endTime, granularity, enterpriseID, limit)
+}
+
 func (s *DashboardService) GetModelStatsWithFiltersBySource(ctx context.Context, startTime, endTime time.Time, userID, apiKeyID, accountID, groupID int64, requestType *int16, stream *bool, billingType *int8, modelSource string) ([]usagestats.ModelStat, error) {
 	normalizedSource := usagestats.NormalizeModelSource(modelSource)
 	if normalizedSource == usagestats.ModelSourceRequested {
-		return s.GetModelStatsWithFilters(ctx, startTime, endTime, userID, apiKeyID, accountID, groupID, requestType, stream, billingType)
+		return s.GetModelStatsWithFilters(ctx, startTime, endTime, userID, apiKeyID, accountID, groupID, 0, requestType, stream, billingType)
 	}
 
 	type modelStatsBySourceRepo interface {
@@ -158,7 +168,7 @@ func (s *DashboardService) GetModelStatsWithFiltersBySource(ctx context.Context,
 		return stats, nil
 	}
 
-	return s.GetModelStatsWithFilters(ctx, startTime, endTime, userID, apiKeyID, accountID, groupID, requestType, stream, billingType)
+	return s.GetModelStatsWithFilters(ctx, startTime, endTime, userID, apiKeyID, accountID, groupID, 0, requestType, stream, billingType)
 }
 
 func (s *DashboardService) GetGroupStatsWithFilters(ctx context.Context, startTime, endTime time.Time, userID, apiKeyID, accountID, groupID int64, requestType *int16, stream *bool, billingType *int8) ([]usagestats.GroupStat, error) {
@@ -350,7 +360,7 @@ func (s *DashboardService) GetAPIKeyUsageTrend(ctx context.Context, startTime, e
 }
 
 func (s *DashboardService) GetUserUsageTrend(ctx context.Context, startTime, endTime time.Time, granularity string, limit int) ([]usagestats.UserUsageTrendPoint, error) {
-	trend, err := s.usageRepo.GetUserUsageTrend(ctx, startTime, endTime, granularity, limit)
+	trend, err := s.usageRepo.GetUserUsageTrend(ctx, startTime, endTime, granularity, 0, limit)
 	if err != nil {
 		return nil, fmt.Errorf("get user usage trend: %w", err)
 	}

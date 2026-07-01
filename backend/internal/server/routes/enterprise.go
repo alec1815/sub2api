@@ -61,5 +61,8 @@ func RegisterEnterpriseRoutes(
 	{
 		// Profile (只读)
 		memberGroup.GET("/profile", h.Enterprise.Profile.GetProfile)
+		// 企业仪表盘用量查询
+		memberGroup.GET("/usage/models", h.Enterprise.Dashboard.GetModelStats)
+		memberGroup.GET("/usage/trend", h.Enterprise.Dashboard.GetUsageTrend)
 	}
 }
