@@ -1499,7 +1499,14 @@ export default {
       spendShort: 'Spend',
       requestsShort: 'Req',
       tokensShort: 'Tok',
-      failedToLoad: 'Failed to load dashboard statistics'
+      failedToLoad: 'Failed to load dashboard statistics',
+      balance: 'Balance',
+      totalRecharged: 'Total Recharged',
+      last24h: 'Last 24h',
+      last7d: 'Last 7d',
+      last30d: 'Last 30d',
+      accountCount: 'Accounts',
+      noData: 'No data',
     },
 
     backup: {

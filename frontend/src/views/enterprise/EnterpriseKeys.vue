@@ -43,7 +43,7 @@
 
       <template #table>
         <DataTable :columns="visibleColumns" :data="filteredKeys" :loading="loading" :server-side-sort="true" default-sort-key="created_at" default-sort-order="desc" @sort="onSortChange">
-          <template #cell-name="{ value, row }">
+          <template #cell-name="{ value }">
             <span class="font-medium text-gray-900 dark:text-white">{{ value }}</span>
           </template>
           <template #cell-key_prefix="{ value }">
@@ -250,7 +250,7 @@ async function loadData() {
 }
 
 function onFilterChange() { pagination.page = 1; loadData() }
-function onStatusFilterChange(v: string) { filterStatus.value = v; pagination.page = 1; loadData() }
+function onStatusFilterChange(v: string | number | boolean | null) { filterStatus.value = String(v); pagination.page = 1; loadData() }
 function onPageChange(p: number) { pagination.page = p; loadData() }
 function onSortChange() { loadData() }
 

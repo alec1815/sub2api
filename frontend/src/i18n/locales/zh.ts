@@ -1524,7 +1524,14 @@ export default {
       configureAiAccounts: '配置 AI 平台账号',
       systemSettings: '系统设置',
       configureSystem: '配置系统设置',
-      failedToLoad: '加载仪表盘数据失败'
+      failedToLoad: '加载仪表盘数据失败',
+      balance: '余额',
+      totalRecharged: '累计充值',
+      last24h: '近24小时',
+      last7d: '近 7 天',
+      last30d: '近 30 天',
+      accountCount: '账号数',
+      noData: '暂无数据',
     },
 
     backup: {

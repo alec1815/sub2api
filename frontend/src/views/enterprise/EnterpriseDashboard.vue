@@ -201,7 +201,7 @@ async function loadSnapshot() {
   } finally { chartsLoading.value = false }
 }
 
-function onDateRangeChange(v: string) { dateRange.value = v; loadSnapshot() }
+function onDateRangeChange(v: string | number | boolean | null) { dateRange.value = String(v); loadSnapshot() }
 
 onMounted(async () => {
   try {

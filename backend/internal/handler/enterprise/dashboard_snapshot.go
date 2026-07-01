@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/usagestats"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/timezone"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +19,7 @@ func (h *EnterpriseDashboardHandler) GetSnapshotV2(c *gin.Context) {
 		return
 	}
 
-	start, end := parseDateRange(c)
+	start, end := parseEnterpriseTimeRange(c)
 	granularity := c.DefaultQuery("granularity", "day")
 	if granularity != "hour" {
 		granularity = "day"
@@ -114,4 +115,34 @@ func parseBoolQ(s string, def bool) bool {
 		return def
 	}
 	return v
+}
+
+// parseEnterpriseTimeRange 解析 start_date/end_date/timezone 参数
+func parseEnterpriseTimeRange(c *gin.Context) (time.Time, time.Time) {
+	userTZ := c.Query("timezone")
+	now := timezone.NowInUserLocation(userTZ)
+	startDate := c.Query("start_date")
+	endDate := c.Query("end_date")
+
+	var startTime, endTime time.Time
+	if startDate != "" {
+		if t, err := timezone.ParseInUserLocation("2006-01-02", startDate, userTZ); err == nil {
+			startTime = t
+		}
+	}
+	if endDate != "" {
+		if t, err := timezone.ParseInUserLocation("2006-01-02", endDate, userTZ); err == nil {
+			endTime = t.Add(24 * time.Hour)
+		}
+	}
+
+	if startTime.IsZero() && endTime.IsZero() {
+		endTime = now
+		startTime = now.Add(-24 * time.Hour)
+	} else if startTime.IsZero() {
+		startTime = endTime.AddDate(0, 0, -7)
+	} else if endTime.IsZero() {
+		endTime = now
+	}
+	return startTime, endTime
 }
