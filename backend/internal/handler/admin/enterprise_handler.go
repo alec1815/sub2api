@@ -14,11 +14,13 @@ import (
 // EnterpriseHandler 企业 CRUD 管理 handler（平台运营方视角）
 type EnterpriseHandler struct {
 	enterpriseService *service.EnterpriseService
+	apiKeyRepo        service.APIKeyRepository
 }
 
-func NewEnterpriseHandler(enterpriseService *service.EnterpriseService) *EnterpriseHandler {
+func NewEnterpriseHandler(enterpriseService *service.EnterpriseService, apiKeyRepo service.APIKeyRepository) *EnterpriseHandler {
 	return &EnterpriseHandler{
 		enterpriseService: enterpriseService,
+		apiKeyRepo:        apiKeyRepo,
 	}
 }
 
@@ -171,4 +173,30 @@ func (h *EnterpriseHandler) GetBalanceHistory(c *gin.Context) {
 		return
 	}
 	response.Paginated(c, items, total, page, pageSize)
+}
+
+// GetEnterpriseKeys GET /api/admin/enterprises/:id/api-keys
+func (h *EnterpriseHandler) GetEnterpriseKeys(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid enterprise ID")
+		return
+	}
+
+	ent, err := h.enterpriseService.GetEnterprise(c.Request.Context(), id)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+
+	page, pageSize := response.ParsePagination(c)
+	params := pagination.PaginationParams{Page: page, PageSize: pageSize}
+
+	// 查企业管理员用户的 API Keys
+	keys, result, err := h.apiKeyRepo.ListByUserID(c.Request.Context(), ent.AdminUserID, params, service.APIKeyListFilters{})
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Paginated(c, keys, result.Total, page, pageSize)
 }

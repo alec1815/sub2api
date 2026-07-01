@@ -132,6 +132,20 @@ export async function getBalanceHistory(
   return data
 }
 
+/**
+ * List API keys for an enterprise
+ */
+export async function getEnterpriseKeys(
+  id: number,
+  page: number = 1,
+  pageSize: number = 20
+): Promise<BasePaginationResponse<{ id: number; name: string; key: string; status: string; created_at: string }>> {
+  const { data } = await apiClient.get(`/admin/enterprises/${id}/api-keys`, {
+    params: { page, page_size: pageSize }
+  })
+  return data
+}
+
 const enterprisesAPI = {
   list,
   getById,
@@ -141,6 +155,7 @@ const enterprisesAPI = {
   delete: deleteEnterprise,
   updateBalance,
   getBalanceHistory,
+  getEnterpriseKeys,
 }
 
 export default enterprisesAPI

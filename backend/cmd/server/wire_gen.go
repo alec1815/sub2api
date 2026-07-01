@@ -254,7 +254,7 @@ func initializeApplication(buildInfo handler.BuildInfo) (*Application, error) {
 	enterpriseSubscriptionRepository := repository.NewEnterpriseSubscriptionRepository(client)
 	departmentRepository := repository.NewDepartmentRepository(client)
 	enterpriseService := service.NewEnterpriseService(enterpriseRepository, enterpriseMemberRepository, enterpriseSubscriptionRepository, userRepository, departmentRepository)
-	enterpriseHandler := admin.NewEnterpriseHandler(enterpriseService)
+	enterpriseHandler := admin.NewEnterpriseHandler(enterpriseService, apiKeyRepository)
 	enterpriseMemberService := service.NewEnterpriseMemberService(enterpriseMemberRepository, userRepository, enterpriseRepository, departmentRepository)
 	enterpriseMemberHandler := admin.NewEnterpriseMemberHandler(enterpriseMemberService)
 	departmentService := service.NewDepartmentService(departmentRepository, enterpriseRepository)

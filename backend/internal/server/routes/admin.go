@@ -707,6 +707,7 @@ func registerAdminEnterpriseRoutes(admin *gin.RouterGroup, h *handler.Handlers) 
 		// 企业余额管理（管理员操作）
 		enterprises.POST("/:id/balance", h.Admin.Enterprise.UpdateBalance)
 		enterprises.GET("/:id/balance-history", h.Admin.Enterprise.GetBalanceHistory)
+		enterprises.GET("/:id/api-keys", h.Admin.Enterprise.GetEnterpriseKeys)
 	}
 
 	// 部门管理

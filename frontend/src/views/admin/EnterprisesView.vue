@@ -192,6 +192,14 @@
                 <Icon name="chart" size="sm" class="text-blue-500" :stroke-width="2" />
                 {{ t('admin.enterprises.balanceHistoryTitle') }}
               </button>
+              <button @click="handleViewKeys(enterprise); closeActionMenu()" class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700">
+                <Icon name="key" size="sm" class="text-gray-400" :stroke-width="2" />
+                {{ t('admin.enterprises.apiKeys') }}
+              </button>
+              <button @click="router.push('/admin/payment/orders'); closeActionMenu()" class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700">
+                <Icon name="dollar" size="sm" class="text-orange-500" :stroke-width="2" />
+                {{ t('admin.enterprises.refund') }}
+              </button>
               <div class="my-1 border-t border-gray-100 dark:border-dark-700" />
               <button @click="handleDelete(enterprise); closeActionMenu()" class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20">
                 <Icon name="trash" size="sm" :stroke-width="2" />
@@ -431,6 +439,9 @@
 
     <!-- Balance History Modal -->
     <EnterpriseBalanceHistoryModal :show="showBalanceHistoryModal" :enterprise="balanceHistoryEnterprise" @close="showBalanceHistoryModal = false" @deposit="handleDeposit(balanceHistoryEnterprise!)" @withdraw="handleWithdraw(balanceHistoryEnterprise!)" />
+
+    <!-- API Keys Modal -->
+    <EnterpriseKeysModal :show="showKeysModal" :enterprise="keysEnterprise" @close="showKeysModal = false" />
   </AppLayout>
 </template>
 
@@ -450,6 +461,7 @@ import EmptyState from '@/components/common/EmptyState.vue'
 import Select from '@/components/common/Select.vue'
 import EnterpriseBalanceModal from '@/components/admin/enterprise/EnterpriseBalanceModal.vue'
 import EnterpriseBalanceHistoryModal from '@/components/admin/enterprise/EnterpriseBalanceHistoryModal.vue'
+import EnterpriseKeysModal from '@/components/admin/enterprise/EnterpriseKeysModal.vue'
 import { adminAPI } from '@/api/admin'
 import type { Enterprise, EnterpriseStatus, EnterpriseScale, EnterpriseIndustry } from '@/types/enterprise'
 import type { Column } from '@/components/common/types'
@@ -839,5 +851,14 @@ function handleWithdraw(enterprise: Enterprise) {
 function handleBalanceHistory(enterprise: Enterprise) {
   balanceHistoryEnterprise.value = enterprise
   showBalanceHistoryModal.value = true
+}
+
+// ---- API Keys Modal ----
+const showKeysModal = ref(false)
+const keysEnterprise = ref<Enterprise | null>(null)
+
+function handleViewKeys(enterprise: Enterprise) {
+  keysEnterprise.value = enterprise
+  showKeysModal.value = true
 }
 </script>
