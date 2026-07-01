@@ -118,6 +118,27 @@
         </div>
       </template>
 
+      <!-- Enterprise Admin View -->
+      <template v-else-if="authStore.isEnterpriseAdmin">
+        <!-- Enterprise Management -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-title"><span class="sidebar-section-title-text">{{ t('nav.enterpriseManagement') }}</span></div>
+          <router-link v-for="item in enterpriseAdminNavItems" :key="item.path" :to="item.path" class="sidebar-link mb-1" :class="{ 'sidebar-link-active': isActive(item.path) }" @click="handleMenuItemClick(item.path)">
+            <component :is="item.icon" class="h-5 w-5 flex-shrink-0" />
+            <span class="sidebar-label">{{ item.label }}</span>
+          </router-link>
+        </div>
+
+        <!-- Personal Section -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-title"><span class="sidebar-section-title-text">{{ t('nav.myAccount') }}</span></div>
+          <router-link v-for="item in personalNavItems" :key="item.path" :to="item.path" class="sidebar-link mb-1" :class="{ 'sidebar-link-active': isActive(item.path) }" @click="handleMenuItemClick(item.path)">
+            <component v-if="!item.iconSvg" :is="item.icon" class="h-5 w-5 flex-shrink-0" />
+            <span class="sidebar-label">{{ item.label }}</span>
+          </router-link>
+        </div>
+      </template>
+
       <!-- Regular User View -->
       <template v-else-if="!appStore.backendModeEnabled">
         <div class="sidebar-section">
@@ -714,6 +735,16 @@ const userNavItems = computed((): NavItem[] => finalizeNav(buildSelfNavItems(tru
 // Admins access 可用渠道 from this section just like regular users — there is no
 // separate admin entry, since the page is purely a user-facing view.
 const personalNavItems = computed((): NavItem[] => finalizeNav(buildSelfNavItems(false)))
+
+// Enterprise admin navigation items (for enterprise admins)
+const enterpriseAdminNavItems = computed((): NavItem[] => [
+  { path: '/enterprise/keys', label: t('nav.enterpriseKeys'), icon: KeyIcon },
+  { path: '/enterprise/finance', label: t('nav.enterpriseFinance'), icon: CreditCardIcon },
+  { path: '/enterprise/members', label: t('nav.enterpriseMemberManagement'), icon: UsersIcon },
+  { path: '/enterprise/departments', label: t('nav.enterpriseDepartments'), icon: FolderIcon },
+  { path: '/enterprise/settings', label: t('nav.enterpriseSettings'), icon: CogIcon },
+  { path: '/enterprise/profile', label: t('nav.enterpriseProfile'), icon: BuildingOfficeIcon },
+])
 
 // Custom menu items filtered by visibility
 const customMenuItemsForUser = computed(() => {

@@ -90,6 +90,21 @@ export const useAuthStore = defineStore('auth', () => {
     return user.value?.role === 'admin'
   })
 
+  // 企业角色（异步获取）
+  const enterpriseRole = ref<string | null>(null)
+  const isEnterpriseAdmin = computed(() => enterpriseRole.value === 'enterprise_admin')
+
+  async function fetchEnterpriseRole() {
+    if (isAdmin.value) return // admin doesn't need enterprise role
+    try {
+      const { enterpriseAPI } = await import('@/api/enterprise')
+      const profile = await enterpriseAPI.getProfile()
+      enterpriseRole.value = profile.my_role || null
+    } catch {
+      enterpriseRole.value = null // not in any enterprise
+    }
+  }
+
   const isSimpleMode = computed(() => runMode.value === 'simple')
   const hasPendingAuthSession = computed(() => pendingAuthSession.value !== null)
 
@@ -121,6 +136,9 @@ export const useAuthStore = defineStore('auth', () => {
 
         // Start auto-refresh interval for user data
         startAutoRefresh()
+
+        // 加载企业角色
+        fetchEnterpriseRole()
 
         // Start proactive token refresh if we have refresh token and expiry info
         // Note: use !== null to handle case when tokenExpiresAt.value is 0 (expired)
@@ -304,6 +322,9 @@ export const useAuthStore = defineStore('auth', () => {
     // Start auto-refresh interval for user data
     startAutoRefresh()
 
+    // 加载企业角色
+    fetchEnterpriseRole()
+
     // Start proactive token refresh if we have refresh token and expiry info
     // scheduleTokenRefresh will also store the expiry timestamp
     if (response.refresh_token && response.expires_in) {
@@ -476,6 +497,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Computed
     isAuthenticated,
     isAdmin,
+    isEnterpriseAdmin,
     isSimpleMode,
     hasPendingAuthSession,
 
