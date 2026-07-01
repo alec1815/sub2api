@@ -99,8 +99,10 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const enterpriseAPI = (await import('@/api/enterprise')).default
       const profile = await enterpriseAPI.getProfile()
-      enterpriseRole.value = profile.my_role || null
-    } catch {
+      // 后端返回 {enterprise, member: {role}, ...}，取 member.role
+      enterpriseRole.value = (profile as any).member?.role || null
+    } catch (err) {
+      console.error('[auth] fetchEnterpriseRole failed:', err)
       enterpriseRole.value = null // not in any enterprise
     }
   }

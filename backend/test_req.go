@@ -1,78 +1,69 @@
 // +build ignore
-
 package main
 
 import (
-	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"time"
+	"strings"
 )
 
 func main() {
 	token := os.Getenv("TEST_TOKEN")
 	if token == "" {
-		fmt.Println("请设置 TEST_TOKEN 环境变量")
+		fmt.Println("请设置 TEST_TOKEN 环境变量 (需要企业管理员 token)")
 		os.Exit(1)
 	}
 	token = "Bearer " + token
-	client := &http.Client{}
-	ts := time.Now().UnixNano()
 
-	do := func(method, path, body string) (int, string) {
-		var r io.Reader
-		if body != "" {
-			r = bytes.NewBufferString(body)
-		}
-		req, _ := http.NewRequest(method, "http://127.0.0.1:8080"+path, r)
+	// 1. 测试获取用户信息
+	do := func(path string) (int, string) {
+		req, _ := http.NewRequest("GET", "http://127.0.0.1:8080"+path, nil)
 		req.Header.Set("Authorization", token)
-		if body != "" {
-			req.Header.Set("Content-Type", "application/json")
-		}
-		resp, err := client.Do(req)
-		if err != nil {
-			return 0, err.Error()
-		}
-		b, _ := io.ReadAll(resp.Body)
+		resp, _ := http.DefaultClient.Do(req)
+		body, _ := io.ReadAll(resp.Body)
 		resp.Body.Close()
-		s := string(b)
-		if len(s) > 200 {
-			s = s[:200] + "..."
-		}
-		return resp.StatusCode, s
+		return resp.StatusCode, string(body)
 	}
 
-	fmt.Println("=== 1. 列表 ===")
-	code, body := do("GET", "/api/v1/admin/enterprises?page_size=1", "")
-	fmt.Printf("List => HTTP %d: %s\n", code, body)
+	// 获取用户信息
+	fmt.Println("=== 1. 用户信息 ===")
+	code, body := do("/api/v1/user/me")
+	fmt.Printf("GET /user/me => %d\n", code)
+	var me struct {
+		Data struct {
+			ID    int64  `json:"id"`
+			Email string `json:"email"`
+			Role  string `json:"role"`
+		} `json:"data"`
+	}
+	json.Unmarshal([]byte(body), &me)
+	fmt.Printf("  ID=%d Email=%s Role=%s\n", me.Data.ID, me.Data.Email, me.Data.Role)
 
-	fmt.Println("\n=== 2. 充值 ===")
-	code, body = do("POST", "/api/v1/admin/enterprises/1/balance", fmt.Sprintf(`{"balance":50,"operation":"add","notes":"dep-%d"}`, ts%1000))
-	fmt.Printf("Deposit => HTTP %d: %s\n", code, body)
+	// 2. 测试 GET /enterprise/profile
+	fmt.Println("\n=== 2. 企业 Profile ===")
+	code, body = do("/api/v1/enterprise/profile")
+	fmt.Printf("GET /enterprise/profile => %d\n", code)
+	s := string(body)
+	if len(s) > 200 { s = s[:200] + "..." }
+	fmt.Printf("  %s\n", s)
 
-	fmt.Println("\n=== 3. 扣款 ===")
-	code, body = do("POST", "/api/v1/admin/enterprises/1/balance", `{"balance":5,"operation":"subtract","notes":"withdrawal"}`)
-	fmt.Printf("Withdraw => HTTP %d: %s\n", code, body)
+	// 3. 测试企业密钥接口（需要企业管理员权限）
+	fmt.Println("\n=== 3. 企业密钥 ===")
+	code, body = do("/api/v1/enterprise/keys")
+	fmt.Printf("GET /enterprise/keys => %d\n", code)
+	s = string(body)
+	if len(s) > 150 { s = s[:150] + "..." }
+	fmt.Printf("  %s\n", s)
 
-	fmt.Println("\n=== 4. 充值记录 ===")
-	code, body = do("GET", "/api/v1/admin/enterprises/1/balance-history?page_size=2", "")
-	fmt.Printf("History => HTTP %d: %s\n", code, body)
-
-	fmt.Println("\n=== 5. API密钥 ===")
-	code, body = do("GET", "/api/v1/admin/enterprises/1/api-keys?page_size=2", "")
-	fmt.Printf("APIKeys => HTTP %d: %s\n", code, body)
-
-	fmt.Println("\n=== 6. 平台限额 (GET) ===")
-	code, body = do("GET", "/api/v1/admin/enterprises/1/platform-quotas", "")
-	fmt.Printf("Quotas(GET) => HTTP %d: %s\n", code, body)
-
-	fmt.Println("\n=== 7. 平台限额 (PUT) ===")
-	code, body = do("PUT", "/api/v1/admin/enterprises/1/platform-quotas", `{"quotas":[{"platform":"openai","daily_limit_usd":100}]}`)
-	fmt.Printf("Quotas(PUT) => HTTP %d: %s\n", code, body)
-
-	fmt.Println("\n=== 8. 验证限额已设置 ===")
-	code, body = do("GET", "/api/v1/admin/enterprises/1/platform-quotas", "")
-	fmt.Printf("Quotas(GET2) => HTTP %d: %s\n", code, body)
+	// 4. 解码 JWT token 看 claims
+	fmt.Println("\n=== 4. JWT Claims ===")
+	parts := strings.Split(os.Getenv("TEST_TOKEN"), ".")
+	if len(parts) == 3 {
+		fmt.Printf("Payload (base64): %s...\n", parts[1][:min(50, len(parts[1]))])
+	}
 }
+
+func min(a, b int) int { if a < b { return a }; return b }
