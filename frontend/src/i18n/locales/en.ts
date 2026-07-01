@@ -7743,7 +7743,8 @@ export default {
       title: 'Enterprise API Keys',
       description: 'Manage API keys for your enterprise members',
       createKey: 'Create API Key',
-      noKeys: 'No API keys yet',
+      noKeys: 'No enterprise keys yet',
+      createFirstHint: 'Create your first enterprise key to start using the API',
       columns: {
         name: 'Name',
         keyPrefix: 'Key',

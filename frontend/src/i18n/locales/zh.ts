@@ -7925,7 +7925,8 @@ export default {
       title: '企业 API 密钥',
       description: '管理企业成员的 API 密钥',
       createKey: '创建 API 密钥',
-      noKeys: '暂无 API 密钥',
+      noKeys: '暂无企业密钥',
+      createFirstHint: '创建您的第一个企业密钥以开始使用 API',
       columns: {
         name: '名称',
         keyPrefix: '密钥',
