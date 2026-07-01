@@ -217,6 +217,21 @@ export async function getEnterpriseUsageTrend(start: string, end: string, granul
   return data
 }
 
+// 企业仪表盘 Snapshot (一次性返回所有数据, 对标 /admin/dashboard)
+export async function getEnterpriseDashboardSnapshot(params: {
+  start_date: string
+  end_date: string
+  granularity?: string
+  include_stats?: boolean
+  include_trend?: boolean
+  include_model_stats?: boolean
+  include_users_trend?: boolean
+  users_trend_limit?: number
+}) {
+  const { data } = await apiClient.get('/enterprise/dashboard/snapshot', { params })
+  return data as any
+}
+
 const enterpriseAdminAPI = {
   // Members
   listMembers,
@@ -247,6 +262,7 @@ const enterpriseAdminAPI = {
   // Dashboard
   getEnterpriseModelStats,
   getEnterpriseUsageTrend,
+  getEnterpriseDashboardSnapshot,
 }
 
 export default enterpriseAdminAPI

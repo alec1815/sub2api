@@ -2,41 +2,135 @@
   <AppLayout>
     <div class="space-y-6">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('enterprise.dashboard.title') }}</h1>
-      <div v-if="loading" class="flex justify-center py-20"><div class="h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" /></div>
-      <template v-else-if="profile">
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <div class="card p-4"><div class="flex items-center gap-3"><div class="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30"><Icon name="dollar" size="md" class="text-emerald-600" /></div><div><p class="text-xs text-gray-500">{{ t('enterprise.dashboard.balance') }}</p><p class="text-xl font-bold text-emerald-600">${{ Number(profile.enterprise?.balance ?? 0).toFixed(2) }}</p></div></div></div>
-          <div class="card p-4"><div class="flex items-center gap-3"><div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30"><Icon name="key" size="md" class="text-blue-600" /></div><div><p class="text-xs text-gray-500">{{ t('enterprise.dashboard.keys') }}</p><p class="text-xl font-bold text-gray-900 dark:text-white">{{ keyCount }}</p></div></div></div>
-          <div class="card p-4"><div class="flex items-center gap-3"><div class="rounded-lg bg-green-100 p-2 dark:bg-green-900/30"><Icon name="users" size="md" class="text-green-600" /></div><div><p class="text-xs text-gray-500">{{ t('enterprise.dashboard.members') }}</p><p class="text-xl font-bold text-gray-900 dark:text-white">{{ memberCount }}</p></div></div></div>
-          <div class="card p-4"><div class="flex items-center gap-3"><div class="rounded-lg bg-amber-100 p-2 dark:bg-amber-900/30"><Icon name="chart" size="md" class="text-amber-600" /></div><div><p class="text-xs text-gray-500">{{ t('enterprise.dashboard.usage') }}</p><p class="text-xl font-bold text-gray-900 dark:text-white">${{ Number(monthlyCost).toFixed(2) }}</p></div></div></div>
-        </div>
 
-        <!-- Charts (from enterprise usage APIs) -->
-        <template v-if="!chartsLoading && (modelStats.length || trend.length)">
+      <div v-if="loading" class="flex justify-center py-20">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
+      </div>
+
+      <template v-else>
+        <!-- Row 1: Core Stats (4 cards) -->
+        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <div class="card p-4">
-            <div class="flex flex-wrap items-center gap-4 mb-4">
-              <span class="text-sm font-medium">{{ t('admin.dashboard.timeRange') }}:</span>
-              <div class="flex items-center gap-2"><span class="text-xs text-gray-500">{{ startDate }}</span><span class="text-xs">~</span><span class="text-xs text-gray-500">{{ endDate }}</span></div>
-              <div class="ml-auto flex items-center gap-2">
-                <span class="text-sm font-medium">{{ t('admin.dashboard.granularity') }}:</span>
-                <Select v-model="granularity" :options="chartGranularityOptions" @change="loadCharts" />
+            <div class="flex items-center gap-3">
+              <div class="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
+                <Icon name="dollar" size="md" class="text-emerald-600" :stroke-width="2" />
+              </div>
+              <div>
+                <p class="text-xs font-medium text-gray-500">{{ t('admin.dashboard.balance') }}</p>
+                <p class="text-xl font-bold text-emerald-600">${{ formatNumber(profile?.enterprise?.balance) }}</p>
+                <p class="text-xs text-gray-500">{{ t('admin.dashboard.totalRecharged') }}: ${{ formatNumber(profile?.enterprise?.total_recharged) }}</p>
               </div>
             </div>
           </div>
-          <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div class="card p-4"><h3 class="mb-3 text-sm font-semibold">{{ t('admin.dashboard.modelDistribution') }}</h3><div class="h-64"><model-distribution-chart :model-stats="modelStats" :loading="false" /></div></div>
-            <div class="card p-4"><h3 class="mb-3 text-sm font-semibold">{{ t('admin.dashboard.tokenUsageTrend') }}</h3><div class="h-64"><token-usage-trend :trend-data="trend" :loading="false" /></div></div>
-          </div>
-        </template>
 
-        <!-- Quick Actions -->
-        <div class="card p-6">
-          <h2 class="mb-3 text-base font-semibold text-gray-700 dark:text-gray-300">{{ profile.enterprise?.name || '-' }}</h2>
-          <div class="flex flex-wrap gap-2">
-            <router-link to="/enterprise/keys" class="btn btn-primary btn-sm">{{ t('enterprise.keys.createKey') }}</router-link>
-            <router-link to="/enterprise/members" class="btn btn-secondary btn-sm">{{ t('enterprise.members.title') }}</router-link>
-            <router-link to="/enterprise/finance" class="btn btn-secondary btn-sm">{{ t('nav.enterpriseFinance') }}</router-link>
+          <div class="card p-4">
+            <div class="flex items-center gap-3">
+              <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
+                <Icon name="key" size="md" class="text-blue-600" :stroke-width="2" />
+              </div>
+              <div>
+                <p class="text-xs font-medium text-gray-500">{{ t('admin.dashboard.apiKeys') }}</p>
+                <p class="text-xl font-bold text-gray-900 dark:text-white">{{ keyCount }}</p>
+                <p class="text-xs text-gray-500">{{ t('admin.dashboard.accountCount') }}: {{ memberCount }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card p-4">
+            <div class="flex items-center gap-3">
+              <div class="rounded-lg bg-green-100 p-2 dark:bg-green-900/30">
+                <Icon name="chart" size="md" class="text-green-600" :stroke-width="2" />
+              </div>
+              <div>
+                <p class="text-xs font-medium text-gray-500">{{ t('admin.dashboard.todayRequests') }}</p>
+                <p class="text-xl font-bold text-gray-900 dark:text-white">{{ stats?.today_requests || 0 }}</p>
+                <p class="text-xs text-gray-500">{{ t('common.total') }}: {{ formatNumber(stats?.total_requests) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card p-4">
+            <div class="flex items-center gap-3">
+              <div class="rounded-lg bg-amber-100 p-2 dark:bg-amber-900/30">
+                <Icon name="cube" size="md" class="text-amber-600" :stroke-width="2" />
+              </div>
+              <div>
+                <p class="text-xs font-medium text-gray-500">{{ t('admin.dashboard.todayTokens') }}</p>
+                <p class="text-xl font-bold text-gray-900 dark:text-white">{{ formatTokens(stats?.today_tokens) }}</p>
+                <p class="text-xs">
+                  <span class="text-emerald-600">${{ stats?.today_actual_cost?.toFixed(4) || '0.0000' }}</span>
+                  <span class="text-gray-400"> / </span>
+                  <span class="text-gray-400">${{ stats?.today_cost?.toFixed(4) || '0.0000' }}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Time range filter -->
+        <div class="card p-4">
+          <div class="flex flex-wrap items-center gap-4">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('admin.dashboard.timeRange') }}:</span>
+            <div class="flex items-center gap-2">
+              <Select :model-value="dateRange" :options="dateRangeOptions" @update:model-value="onDateRangeChange" />
+            </div>
+            <button @click="loadSnapshot" :disabled="chartsLoading" class="btn btn-secondary">
+              {{ t('common.refresh') }}
+            </button>
+            <div class="ml-auto flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('admin.dashboard.granularity') }}:</span>
+              <div class="w-28">
+                <Select v-model="granularity" :options="granularityOptions" @update:model-value="loadSnapshot" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Model distribution + Token trend -->
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div class="card p-4">
+            <h3 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.dashboard.modelDistribution') }}</h3>
+            <div class="h-64">
+              <ModelDistributionChart v-if="models.length || !chartsLoading" :model-stats="models" :loading="chartsLoading" />
+              <div v-else class="flex h-full items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+                {{ t('admin.dashboard.noData') }}
+              </div>
+            </div>
+          </div>
+          <div class="card p-4">
+            <h3 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.dashboard.tokenUsageTrend') }}</h3>
+            <div class="h-64">
+              <TokenUsageTrend v-if="trend.length || !chartsLoading" :trend-data="trend" :loading="chartsLoading" />
+              <div v-else class="flex h-full items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+                {{ t('admin.dashboard.noData') }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4: Recent usage (Top 12) -->
+        <div class="card p-4">
+          <h3 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.dashboard.recentUsage') }} (Top 12)</h3>
+          <div class="overflow-y-auto" style="max-height: 16rem;">
+            <table v-if="usersTrend.length > 0" class="w-full text-sm">
+              <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-dark-700">
+                <tr>
+                  <th class="px-3 py-2 text-left">User</th>
+                  <th class="px-3 py-2 text-right">Requests</th>
+                  <th class="px-3 py-2 text-right">Tokens</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="u in usersTrend" :key="u.user_id" class="border-t dark:border-dark-700">
+                  <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ u.email || u.username || ('User#' + u.user_id) }}</td>
+                  <td class="px-3 py-2 text-right">{{ u.requests }}</td>
+                  <td class="px-3 py-2 text-right">{{ formatTokens(u.tokens) }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div v-else class="flex h-32 items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+              {{ t('admin.dashboard.noData') }}
+            </div>
           </div>
         </div>
       </template>
@@ -58,44 +152,64 @@ const { t } = useI18n()
 const loading = ref(true)
 const chartsLoading = ref(false)
 const profile = ref<any>(null)
-const memberCount = ref(0)
-const keyCount = ref(0)
-const monthlyCost = ref(0)
-const modelStats = ref<any[]>([])
+const stats = ref<any>(null)
 const trend = ref<any[]>([])
+const models = ref<any[]>([])
+const usersTrend = ref<any[]>([])
+const keyCount = ref(0)
+const memberCount = ref(0)
 
-const granularity = ref('hour')
-const chartGranularityOptions = computed(() => [
+const dateRange = ref('1')
+const granularity = ref('day')
+const dateRangeOptions = computed(() => [
+  { value: '1', label: t('admin.dashboard.last24h') },
+  { value: '7', label: t('admin.dashboard.last7d') },
+  { value: '30', label: t('admin.dashboard.last30d') },
+])
+const granularityOptions = computed(() => [
   { value: 'day', label: t('admin.dashboard.day') },
   { value: 'hour', label: t('admin.dashboard.hour') },
 ])
 
 const formatLD = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-const startDate = ref(formatLD(new Date(Date.now() - 24*3600000)))
-const endDate = ref(formatLD(new Date()))
+const startDate = computed(() => formatLD(new Date(Date.now() - Number(dateRange.value) * 86400000)))
+const endDate = computed(() => formatLD(new Date()))
 
-async function loadCharts() {
+const formatNumber = (v: number) => (v == null ? '0' : Number(v).toLocaleString('en-US'))
+const formatTokens = (v: number) => {
+  if (v == null) return '0'
+  const n = Number(v)
+  if (n < 1000) return n.toString()
+  if (n < 1e6) return (n / 1000).toFixed(1) + 'K'
+  if (n < 1e9) return (n / 1e6).toFixed(1) + 'M'
+  return (n / 1e9).toFixed(1) + 'B'
+}
+
+async function loadSnapshot() {
   chartsLoading.value = true
   try {
-    const [m, t2] = await Promise.all([
-      enterpriseAPI.getEnterpriseModelStats(startDate.value, endDate.value),
-      enterpriseAPI.getEnterpriseUsageTrend(startDate.value, endDate.value, granularity.value, 12),
-    ])
-    modelStats.value = (m as any).data || []
-    trend.value = (t2 as any).data?.trend || []
-  } catch { /* non-critical */ }
-  chartsLoading.value = false
+    const res = await enterpriseAPI.getEnterpriseDashboardSnapshot({
+      start_date: startDate.value,
+      end_date: endDate.value,
+      granularity: granularity.value,
+    }) as any
+    const d = res.data ?? res
+    stats.value = d.stats
+    trend.value = d.trend || []
+    models.value = d.models || []
+    usersTrend.value = d.users_trend || []
+  } finally { chartsLoading.value = false }
 }
+
+function onDateRangeChange(v: string) { dateRange.value = v; loadSnapshot() }
 
 onMounted(async () => {
   try {
-    const p = await enterpriseAPI.getProfile()
-    profile.value = p
-    monthlyCost.value = Number(p.monthly_usage?.total_cost ?? 0)
+    profile.value = await enterpriseAPI.getProfile()
   } catch {}
   try { const r = await enterpriseAPI.listMembers(1, 1); memberCount.value = (r as any).total ?? 0 } catch {}
   try { const r = await enterpriseAPI.listKeys(1, 1); keyCount.value = (r as any).total ?? 0 } catch {}
   loading.value = false
-  loadCharts()
+  loadSnapshot()
 })
 </script>
