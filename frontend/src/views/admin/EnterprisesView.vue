@@ -196,7 +196,7 @@
                 <Icon name="key" size="sm" class="text-gray-400" :stroke-width="2" />
                 {{ t('admin.enterprises.apiKeys') }}
               </button>
-              <button @click="router.push('/admin/payment/orders'); closeActionMenu()" class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700">
+              <button @click="handleWithdraw(enterprise); closeActionMenu()" class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700">
                 <Icon name="dollar" size="sm" class="text-orange-500" :stroke-width="2" />
                 {{ t('admin.enterprises.refund') }}
               </button>
